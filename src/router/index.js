@@ -11,7 +11,6 @@ import ProductFeed from '../views/ProductFeed.vue';
 // Your custom navigation view components
 import AboutUsView from '../views/AboutUsView.vue';    // Corresponds to 'Nosotros'
 import PublishView from '../views/PublishView.vue';  // Corresponds to 'Publicar'
-import EventsView from '../views/EventsView.vue';    // Corresponds to 'Eventos'
 import InboxView from '../views/InboxView.vue';      // Corresponds to 'Buzón'
 
 // --- Nuevas importaciones para Login, Register, MyProfile y Configuration ---
@@ -84,14 +83,7 @@ const routes = [
       title: 'Publicar | KambiaPe'
     }
   },
-  {
-    path: '/eventos', // Path for 'Eventos'
-    name: 'events',
-    component: EventsView,
-    meta: {
-      title: 'Eventos | KambiaPe'
-    }
-  },
+
   {
     path: '/buzon', // Path for 'Buzón'
     name: 'inbox',

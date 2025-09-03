@@ -334,75 +334,73 @@
 <!--Valores que nos impulsan-->
 
 <!--Equipo-->
-    <section class="py-16 sm:py-24 bg-white">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4">
-          <span class="inline-flex items-center justify-center">
-            <UsersIcon class="h-9 w-9 text-[#d7037b] mr-4 animate-jiggle" />
-            Conoce a Nuestro Equipo
-          </span>
+<section class="relative py-20 sm:py-28 bg-[#fdf2f8] overflow-hidden">
+  <div class="absolute inset-0 opacity-50">
+    <div class="absolute inset-0 bg-repeat" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23d7037b\' fill-opacity=\'0.04\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+  </div>
+
+  <div class="relative container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+      
+      <div class="lg:col-span-3">
+        <p class="font-semibold text-[#d7037b] mb-2">Comunidad KambiaPe</p>
+        <h2 class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
+          Un espacio donde cada intercambio cuenta una historia.
         </h2>
-        <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-16">
-          Un grupo de apasionados por la economía colaborativa y la tecnología, trabajando para que cada intercambio sea una experiencia excepcional.
+        <p class="mt-6 text-lg text-gray-700 leading-relaxed max-w-2xl">
+          Conecta con personas que comparten tu pasión por la sostenibilidad y la economía circular. Nuestra comunidad es el corazón de KambiaPe, un lugar para aprender, apoyar y crecer.
         </p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 max-w-7xl mx-auto">
-          <div
-            v-for="(member, index) in team"
-            :key="index"
-            class="[perspective:1000px] flex justify-center group"
-            @mousemove="handleTeamHover($event, index)"
-            @mouseenter="activeTeamMember = index"
-            @mouseleave="activeTeamMember = null"
-          >
-            <div
-              class="bg-white rounded-xl shadow-lg p-7 border border-gray-100 w-full max-w-xs h-full flex flex-col items-center transition-all duration-300 [transform-style:preserve-3d] transform-gpu hover:shadow-2xl"
-              :style="activeTeamMember === index ? teamCardTransform[index] : ''"
-            >
-              <div class="relative mb-6 flex justify-center">
-                <div class="w-32 h-32 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-4 transition-all duration-300 overflow-hidden"
-                  :class="activeTeamMember === index ? 'border-[#d7037b] scale-110' : 'border-[#fce4ec]'">
-                  <img v-if="member.image" :src="member.image" :alt="member.name" class="w-full h-full object-cover rounded-full p-0.5 transform transition-transform duration-300 group-hover:scale-105" />
-                  <UserCircleIcon v-else class="h-20 w-20 transition-all duration-300"
-                    :class="activeTeamMember === index ? 'text-gray-500 scale-105' : 'text-gray-400'" />
-                </div>
-                <span class="absolute bottom-0 right-1/2 translate-x-1/2 text-white rounded-full px-3 py-1 text-xs font-bold transform translate-y-1/2 shadow-md transition-all duration-300"
-                  :class="[
-                    activeTeamMember === index ? 'scale-110 opacity-100' : 'opacity-90',
-                    member.badgeColor
-                  ]">
-                  {{ member.badgeText }}
-                </span>
-              </div>
-
-              <h3 class="text-xl font-bold text-gray-900 mb-1 transition-colors duration-300"
-                :class="activeTeamMember === index ? 'text-[#d7037b] text-2xl' : ''">
-                {{ member.name }}
-              </h3>
-
-              <p class="text-sm font-medium mb-4 transition-all duration-300"
-                :class="activeTeamMember === index ? 'text-[#9e0154] scale-105' : 'text-[#d7037b]'">
-                {{ member.role }}
-              </p>
-
-              <p class="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">
-                {{ member.bio }}
-              </p>
-
-              <div class="flex justify-center space-x-4 mt-auto">
-                <a v-for="(social, i) in member.social" :key="i"
-                  :href="social.url"
-                  class="text-gray-400 hover:text-[#d7037b] transition-colors duration-300 transform hover:scale-125 hover:-translate-y-1"
-                  target="_blank" rel="noopener noreferrer">
-                  <span class="sr-only">{{ social.name }}</span>
-                  <component :is="social.icon" class="h-5 w-5" />
-                </a>
-              </div>
+        <ul class="mt-8 space-y-5">
+          <li class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-[#d7037b]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
+            <p class="ml-4 text-gray-800 font-medium">Accede a oportunidades y artículos exclusivos para miembros.</p>
+          </li>
+          <li class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-[#d7037b]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p class="ml-4 text-gray-800 font-medium">Recibe consejos, resuelve dudas y comparte tus experiencias.</p>
+          </li>
+          <li class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-[#d7037b]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p class="ml-4 text-gray-800 font-medium">Participa en eventos y discusiones que generan impacto.</p>
+          </li>
+        </ul>
+
+        <div class="mt-12">
+          <a href="https://chat.whatsapp.com/Kekd3xJZtet8J6TLhTGFDQ?mode=ems_wa_t"
+             target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center justify-center px-8 py-4 bg-[#d7037b] text-white font-bold rounded-full text-lg shadow-lg transform transition-all duration-300 hover:bg-[#b50266] hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d7037b] focus:ring-offset-[#fdf2f8]">
+            <svg class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52s-.67-.816-.916-.816-.52.05-.67.05-.916.223-1.163.471c-.247.247-.966.94-1.163 2.304-.198 1.364.767 2.796 1.164 3.295.397.498 2.03 3.216 4.905 4.354.397.149.695.223.992.298.695.174 1.49.149 2.03.05.588-.099 1.758-1.016 2.131-1.475.372-.459.372-.816.273-.967dM12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0z"/></svg>
+            Unirme al Grupo de WhatsApp
+          </a>
+          <p class="mt-4 text-sm text-gray-600">Únete a +500 miembros activos y empieza a conectar.</p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 flex items-center justify-center p-8">
+        <div class="relative w-72 h-[540px] bg-gray-900 rounded-[48px] shadow-2xl p-4 border-4 border-gray-700 animate-float-slow">
+          <div class="absolute top-6 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-b-xl z-20"></div>
+          <div class="h-full w-full bg-white rounded-[32px] overflow-hidden">
+            <img src="https://i.ibb.co/6ZzXz1j/whatsapp-community-mockup.png" alt="Maqueta de la comunidad de KambiaPe en WhatsApp" class="h-full w-full object-cover">
           </div>
         </div>
       </div>
-    </section>
+
+    </div>
+  </div>
+</section>
 <!--Equipo-->
 
 <!--Footer-->

@@ -269,12 +269,11 @@ import { useUserStore } from '@/stores/user';
 import {
   UserGroupIcon as AboutIcon,
   PlusCircleIcon as PostIcon,
-  CalendarIcon as EventsIcon,
   InboxIcon as InboxIcon,
-  UserIcon, // Para el icono de "Mi perfil"
-  PowerIcon, // Para el icono de "Cerrar sesión"
-  Cog6ToothIcon // ¡Nuevo! Para el icono de Configuración
-} from '@heroicons/vue/24/outline'; // O @heroicons/vue/solid para iconos rellenos
+  UserIcon,
+  PowerIcon,
+  Cog6ToothIcon
+} from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 const route = useRoute();
@@ -285,7 +284,7 @@ const searchOpen = ref(false);
 const userMenuOpen = ref(false);
 const searchQuery = ref('');
 
-// Definición de los enlaces de navegación
+// Definición de los enlaces de navegación (sin "Eventos")
 const navLinks = [
   {
     path: '/nosotros',
@@ -296,15 +295,6 @@ const navLinks = [
     path: '/publicar',
     label: 'Publicar',
     icon: PostIcon
-  },
-  {
-    path: '/eventos',
-    label: 'Eventos',
-    icon: EventsIcon,
-    badge: {
-      text: 'Nuevo',
-      class: 'bg-[#ff4081] text-white'
-    }
   },
   {
     path: '/buzon',
@@ -319,12 +309,11 @@ const navLinks = [
 
 // Propiedad computada para las iniciales del usuario (usa el getter del store)
 const userInitials = computed(() => userStore.userInitials);
-const userFirstName = computed(() => userStore.userFirstName); // Asegúrate de que tu store tenga este getter
+const userFirstName = computed(() => userStore.userFirstName);
 
 // Métodos para alternar la visibilidad de los menús
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
-  // Cierra otros menús si este se abre
   if (menuOpen.value) {
     searchOpen.value = false;
     userMenuOpen.value = false;
@@ -333,7 +322,6 @@ const toggleMenu = () => {
 
 const toggleSearch = () => {
   searchOpen.value = !searchOpen.value;
-  // Cierra otros menús si este se abre
   if (searchOpen.value) {
     menuOpen.value = false;
     userMenuOpen.value = false;
@@ -342,7 +330,6 @@ const toggleSearch = () => {
 
 const toggleUserMenu = () => {
   userMenuOpen.value = !userMenuOpen.value;
-  // Cierra otros menús si este se abre
   if (userMenuOpen.value) {
     menuOpen.value = false;
     searchOpen.value = false;
@@ -352,7 +339,6 @@ const toggleUserMenu = () => {
 const performSearch = () => {
   if (searchQuery.value.trim()) {
     console.log('Buscando:', searchQuery.value);
-    // TODO: Implementar lógica de búsqueda real, ej: router.push('/search?q=' + searchQuery.value);
     searchOpen.value = false;
     searchQuery.value = '';
   }
@@ -360,12 +346,9 @@ const performSearch = () => {
 
 const logout = () => {
   console.log('Cerrando sesión...');
-  // Llama a la acción para limpiar el usuario del store
   userStore.clearUser();
-  // Cierra todos los menús
   menuOpen.value = false;
   userMenuOpen.value = false;
-  // Redirige al inicio o a la página de login
   router.push('/login');
 };
 
@@ -379,7 +362,6 @@ const handleClickOutside = (event) => {
   }
 };
 
-// Montar y desmontar el event listener para clics fuera
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
 });
@@ -397,25 +379,22 @@ button, a, .router-link {
 
 /* Ajuste del contorno de foco general para accesibilidad */
 :focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5); /* Un blanco semitransparente para el contorno */
+  outline: 2px solid rgba(255, 255, 255, 0.5);
   outline-offset: 2px;
 }
 
 /* ANULACIÓN ESPECÍFICA PARA EL LOGO KAMBIAPE */
-/* El router-link del logo siempre debe ser transparente y con texto blanco */
 .router-link[aria-label="KambiaPe - Inicio"].router-link-active,
 .router-link[aria-label="KambiaPe - Inicio"].router-link-exact-active {
     background-color: transparent !important;
-    color: white !important; /* Asegura que el color del texto del link sea blanco */
+    color: white !important;
 }
 
-/* Y también asegúrate de que el span de texto dentro del logo sea blanco */
 .router-link[aria-label="KambiaPe - Inicio"] .text-white {
     color: white !important;
 }
 
 /* Estilos para los enlaces de navegación (NO el logo) cuando están activos */
-/* Este estilo aplicará el fondo y color específicos a los NavLinks activos */
 .px-4.py-2.5.text-sm.font-medium.rounded-lg.router-link-active {
     @apply text-white bg-white/10;
 }
@@ -424,7 +403,6 @@ button, a, .router-link {
 .px-4.py-3.text-base.font-medium.text-gray-800.router-link-active {
     @apply bg-[#fce4ec] text-[#d7037b];
 }
-
 
 /* Animación para el botón del menú móvil (hamburguesa) */
 .hamburger-line {
@@ -435,7 +413,6 @@ button, a, .router-link {
 .router-link:hover {
   transform: translateY(-1px);
 }
-
 
 /* Sombra del menú desplegable de usuario */
 .user-menu {
