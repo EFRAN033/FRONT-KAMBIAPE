@@ -423,7 +423,7 @@ const mobileSections = [
   {
     title: 'Soporte',
     links: [
-      { label: 'soporte@kambiape.com', to: 'mailto:soporte@kambiape.com' },
+      { label: 'kambiapex@gmail.com', to: 'mailto:kambiapex@gmail.com' },
       { label: 'Dejar un comentario', action: 'comment' },
     ],
   },
