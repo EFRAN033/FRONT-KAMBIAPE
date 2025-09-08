@@ -6,3 +6,4 @@ yarn-debug.log*
 # Ignorar la carpeta 'backend' si no quieres subirla (opcional, dependiendo de tu backend)
 # backend/
 .vscode
+.env

@@ -3,55 +3,153 @@
     <Header />
 
     <!-- ===== Hero ===== -->
-    <section class="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#4e022b] to-[#2d0016] text-white font-sans">
-      <div class="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div class="absolute inset-0 bg-gradient-to-br from-[#a8025e] to-[#6d0039] opacity-80"></div>
+    <section class="relative min-h-[88vh] overflow-hidden bg-gradient-to-br from-rose-50 via-white to-pink-50 text-slate-900">
+  <!-- acentos suaves -->
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="absolute -top-24 left-[-8%] h-[32rem] w-[32rem] rounded-full bg-pink-200/40 blur-[100px]"></div>
+    <div class="absolute bottom-[-15%] right-[-10%] h-[44rem] w-[44rem] rounded-full bg-fuchsia-200/40 blur-[120px]"></div>
+  </div>
 
-        <!-- halos -->
-        <div class="absolute inset-0 motion-safe:animate-[float-particles_30s_linear_infinite]">
-          <div class="absolute top-[10%] left-[0%] h-[40rem] w-[40rem] rounded-full bg-pink-300 opacity-5 mix-blend-screen blur-[100px] motion-safe:animate-[pulse-slow_12s_ease-in-out_infinite_2s]"></div>
-          <div class="absolute bottom-[0%] right-[0%] h-[50rem] w-[50rem] rounded-full bg-pink-200 opacity-5 mix-blend-screen blur-[100px] motion-safe:animate-[pulse-slow_10s_ease-in-out_infinite_3.5s]"></div>
-          <div class="absolute top-[50%] left-[10%] h-[30rem] w-[30rem] rounded-full bg-rose-200 opacity-5 mix-blend-screen blur-[100px] motion-safe:animate-[pulse-slow_11s_ease-in-out_infinite_1s]"></div>
-        </div>
+  <div class="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-12 py-10 sm:py-14">
+    <!-- Encabezado minimal -->
+    <header class="flex items-center justify-between gap-6">
+      <div>
+        <span class="inline-flex items-center gap-2 rounded-full border border-pink-300/50 bg-pink-100/60 px-3 py-1 text-[12px] font-medium text-pink-800">
+          • Hecho en Perú • Comunidad abierta
+        </span>
+        <h1 class="mt-3 text-3xl sm:text-4xl font-black tracking-tight">
+          KambiaPe
+        </h1>
+      </div>
+      <nav class="hidden sm:flex items-center gap-5 text-sm text-slate-700">
+        <a href="#mision" class="hover:text-slate-900 underline underline-offset-4 decoration-pink-500/50">Misión</a>
+        <a href="#proyectos" class="hover:text-slate-900 underline underline-offset-4 decoration-pink-500/50">Proyectos</a>
+        <a href="#comunidad" class="hover:text-slate-900 underline underline-offset-4 decoration-pink-500/50">Comunidad</a>
+      </nav>
+    </header>
+
+    <!-- CARRUSEL protagonista -->
+    <div class="mt-10">
+      <!-- rail -->
+      <div
+        class="relative overflow-x-auto scroll-smooth snap-x snap-mandatory flex gap-6 pr-4"
+        role="region" aria-label="Carrusel KambiaPe">
+
+        <!-- Slide 1 -->
+        <article id="slide-1"
+          class="snap-center relative h-[22rem] sm:h-[26rem] w-[88%] sm:w-[72%] lg:w-[64%] min-w-[88%] sm:min-w-[72%] lg:min-w-[64%]
+                 rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-tr from-pink-200/80 via-rose-100/80 to-white/80"></div>
+          <div class="relative z-10 h-full p-8 sm:p-10 flex flex-col justify-between">
+            <div>
+              <p class="text-[12px] tracking-[0.25em] uppercase text-pink-900/80">01 • Educación</p>
+              <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold leading-tight">Escuelas que inspiran</h2>
+              <p class="mt-2 max-w-[60ch] text-slate-700">Talleres STEAM y mentorías para colegios públicos.</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <a href="#mision"
+                 class="group inline-flex items-center gap-2 rounded-full border border-pink-500/40 bg-pink-600/10 px-5 py-2.5 text-sm font-semibold text-pink-800 backdrop-blur hover:bg-pink-600/15 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                Conoce la historia
+                <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              </a>
+              <a href="#slide-2" aria-label="Siguiente" class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white/70 hover:bg-white">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5l8 7-8 7"/></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 2 -->
+        <article id="slide-2"
+          class="snap-center relative h-[22rem] sm:h-[26rem] w-[88%] sm:w-[72%] lg:w-[64%] min-w-[88%] sm:min-w-[72%] lg:min-w-[64%]
+                 rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-tr from-fuchsia-200/80 via-pink-100/80 to-white/80"></div>
+          <div class="relative z-10 h-full p-8 sm:p-10 flex flex-col justify-between">
+            <div>
+              <p class="text-[12px] tracking-[0.25em] uppercase text-pink-900/80">02 • Sostenibilidad</p>
+              <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold leading-tight">Rutas verdes</h2>
+              <p class="mt-2 max-w-[60ch] text-slate-700">Reciclaje, compostaje y ferias barriales sostenibles.</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <a href="#proyectos"
+                 class="group inline-flex items-center gap-2 rounded-full border border-pink-500/40 bg-pink-600/10 px-5 py-2.5 text-sm font-semibold text-pink-800 backdrop-blur hover:bg-pink-600/15 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                Ver proyectos
+                <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              </a>
+              <a href="#slide-3" aria-label="Siguiente" class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white/70 hover:bg-white">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5l8 7-8 7"/></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 3 -->
+        <article id="slide-3"
+          class="snap-center relative h-[22rem] sm:h-[26rem] w-[88%] sm:w-[72%] lg:w-[64%] min-w-[88%] sm:min-w-[72%] lg:min-w-[64%]
+                 rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-tr from-rose-200/80 via-pink-100/80 to-white/80"></div>
+          <div class="relative z-10 h-full p-8 sm:p-10 flex flex-col justify-between">
+            <div>
+              <p class="text-[12px] tracking-[0.25em] uppercase text-pink-900/80">03 • Emprendimiento</p>
+              <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold leading-tight">Impulso emprendedor</h2>
+              <p class="mt-2 max-w-[60ch] text-slate-700">Finanzas, UX y comercio digital para pymes.</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <a href="#comunidad"
+                 class="group inline-flex items-center gap-2 rounded-full border border-pink-500/40 bg-pink-600/10 px-5 py-2.5 text-sm font-semibold text-pink-800 backdrop-blur hover:bg-pink-600/15 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                Únete
+                <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              </a>
+              <a href="#slide-4" aria-label="Siguiente" class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white/70 hover:bg-white">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5l8 7-8 7"/></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Slide 4 -->
+        <article id="slide-4"
+          class="snap-center relative h-[22rem] sm:h-[26rem] w-[88%] sm:w-[72%] lg:w-[64%] min-w-[88%] sm:min-w-[72%] lg:min-w-[64%]
+                 rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-tr from-pink-100/90 via-white/90 to-rose-100/90"></div>
+          <div class="relative z-10 h-full p-8 sm:p-10 flex flex-col justify-between">
+            <div>
+              <p class="text-[12px] tracking-[0.25em] uppercase text-pink-900/80">04 • Voluntariado</p>
+              <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold leading-tight">Red Kambia</h2>
+              <p class="mt-2 max-w-[60ch] text-slate-700">Formación y coordinación para voluntariado local.</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <a href="#comunidad"
+                 class="group inline-flex items-center gap-2 rounded-full border border-pink-500/40 bg-pink-600/10 px-5 py-2.5 text-sm font-semibold text-pink-800 backdrop-blur hover:bg-pink-600/15 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                Súmate
+                <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              </a>
+              <a href="#slide-1" aria-label="Volver al inicio" class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white/70 hover:bg-white">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 5l-8 7 8 7"/></svg>
+              </a>
+            </div>
+          </div>
+        </article>
       </div>
 
-      <div class="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-center px-6 py-24 sm:px-10 lg:px-8">
-        <div class="max-w-xl space-y-8">
-          <div class="space-y-4">
-            <p class="font-sans text-base italic text-pink-200/90 leading-relaxed tracking-wide motion-safe:animate-fade-in-up" style="animation-delay:200ms">
-              "KambiaPe nace de la visión de un grupo de jóvenes peruanos..."
-            </p>
-
-            <h1 class="font-sans text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-white tracking-tight transition-all duration-300 hover:scale-[1.02] transform-gpu motion-safe:animate-fade-in-up" style="animation-delay:400ms">
-              KambiaPe
-            </h1>
-          </div>
-
-          <!-- chips -->
-          <div class="flex flex-wrap gap-3 motion-safe:animate-fade-in-up" style="animation-delay:600ms">
-            <a href="#" class="group relative rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:border-pink-300 hover:bg-white/10 hover:text-pink-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:ring-offset-[#4e022b]">
-              #Comunidad
-            </a>
-            <a href="#" class="group relative rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:border-pink-300 hover:bg-white/10 hover:text-pink-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:ring-offset-[#4e022b]">
-              #Sostenibilidad
-            </a>
-            <a href="#" class="group relative rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:border-pink-300 hover:bg-white/10 hover:text-pink-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:ring-offset-[#4e022b]">
-              #Innovación
-            </a>
-          </div>
-
-          <!-- CTA -->
-          <div class="mt-10 motion-safe:animate-fade-in-up" style="animation-delay:800ms">
-            <a href="#nuestra-mision" class="group relative inline-flex items-center gap-x-4 rounded-full bg-pink-500/10 px-8 py-4 font-bold text-pink-200 backdrop-blur-sm transition-all duration-500 hover:text-white hover:bg-pink-500/20 hover:shadow-xl hover:shadow-pink-500/30 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 focus:ring-offset-[#4e022b]">
-              <span class="z-10 transition-transform duration-500 group-hover:-translate-x-1">Conoce la historia</span>
-              <div class="z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-[360deg] group-hover:border-pink-300">
-                <ArrowRightIcon class="h-4 w-4 transition-colors duration-500 group-hover:text-pink-300" />
-              </div>
-            </a>
-          </div>
-        </div>
+      <!-- Dots de navegación -->
+      <div class="mt-6 flex items-center justify-center gap-2">
+        <a href="#slide-1" class="h-2.5 w-2.5 rounded-full bg-pink-500/70 hover:bg-pink-500" aria-label="Ir al 1"></a>
+        <a href="#slide-2" class="h-2.5 w-2.5 rounded-full bg-pink-400/70 hover:bg-pink-400" aria-label="Ir al 2"></a>
+        <a href="#slide-3" class="h-2.5 w-2.5 rounded-full bg-pink-300/70 hover:bg-pink-300" aria-label="Ir al 3"></a>
+        <a href="#slide-4" class="h-2.5 w-2.5 rounded-full bg-pink-200/70 hover:bg-pink-200" aria-label="Ir al 4"></a>
       </div>
-    </section>
+    </div>
+
+    <!-- Franja de métricas -->
+    <div class="mt-10 border-t border-slate-200 pt-6 flex flex-wrap gap-x-10 gap-y-4 text-sm text-slate-700">
+      <div class="flex items-baseline gap-2"><span class="text-3xl font-extrabold text-slate-900">+120</span> escuelas</div>
+      <div class="flex items-baseline gap-2"><span class="text-3xl font-extrabold text-slate-900">+800</span> voluntarios</div>
+      <div class="flex items-baseline gap-2"><span class="text-3xl font-extrabold text-slate-900">24</span> comunidades</div>
+    </div>
+  </div>
+</section>
+
 
     <!-- ===== Historia ===== -->
     <section

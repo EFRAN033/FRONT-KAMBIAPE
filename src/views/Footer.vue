@@ -27,7 +27,7 @@
                   type="email"
                   required
                   autocomplete="email"
-                  placeholder="tu@email.com"
+                  placeholder="Kambix@email.com"
                   class="flex-1 rounded-md border border-white/10 bg-white/10 px-2.5 py-2 text-[13px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
                 />
                 <button
@@ -140,7 +140,7 @@
               type="email"
               required
               autocomplete="email"
-              placeholder="tu@email.com"
+              placeholder="Kambix@email.com"
               class="w-full rounded-md border border-white/10 bg-white/10 px-3 py-2 text-[13px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
             />
             <button
@@ -218,7 +218,7 @@
         <div class="col-span-3">
           <h3 class="text-sm font-bold text-pink-300 mb-2.5">Soporte</h3>
           <ul class="space-y-1.5 text-gray-300 text-[13px]">
-            <li><a href="mailto:soporte@kambiape.com" class="hover:text-pink-300">soporte@kambiape.com</a></li>
+            <li><a href="mailto:kambiapex@gmail.com" class="hover:text-pink-300">kambiapex@gmail.com</a></li>
             <li><button @click="openCommentModal" class="hover:text-pink-300">Dejar un comentario</button></li>
           </ul>
         </div>
