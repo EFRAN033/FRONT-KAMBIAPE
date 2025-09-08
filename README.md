@@ -34,7 +34,7 @@ Asegúrate de tener instalado [Node.js](https://nodejs.org/) (se recomienda la v
 
 1.  **Clona el repositorio:**
     ```bash
-    git clone [https://github.com/tu-usuario/front-kambiape.git](https://github.com/tu-usuario/front-kambiape.git)
+    git clone [https://github.com/EFRAN033/FRONT-KAMBIAPE.git](https://github.com/EFRAN033/FRONT-KAMBIAPE.git)
     ```
 
 2.  **Navega al directorio del proyecto:**
