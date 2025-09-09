@@ -44,3 +44,22 @@
     min-width: 18rem; /* 288px */
   }
 }
+
+
+/* Scroll suave para anclas (Conoce la historia -> #mision) */
+html { scroll-behavior: smooth; }
+
+/* Pista infinita: dos segmentos idénticos (A + A).
+   Al llegar a -50% (ancho de un segmento), reinicia sin salto. */
+@keyframes kambia-strip {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.strip-track {
+  width: max-content;
+  will-change: transform;
+  animation: kambia-strip 28s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .strip-track { animation: none !important; }
+}
