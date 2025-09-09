@@ -97,76 +97,81 @@
     </transition>
 
 <!-- Banner Principal con Parallax -->
+<!-- ============ HERO · BIENVENIDA + STACK DE CARTAS (mismo fondo) ============ -->
 <section class="relative overflow-hidden bg-slate-50 dark:bg-slate-900 rounded-3xl">
-  <!-- Overlays de branding (muy sutiles, no cambian el fondo base) -->
+  <!-- Fondo que pediste (halo + puntos) -->
   <div aria-hidden="true" class="pointer-events-none absolute inset-0">
-    <!-- halo suave centrado -->
     <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-[#d7037b]/12 to-[#9e0154]/12 blur-3xl"></div>
-    <!-- patrón de puntos diagonal muy tenue -->
     <div class="absolute inset-0 opacity-[0.06] dark:opacity-[0.09] mix-blend-multiply"
          style="background-image: radial-gradient(circle at 1px 1px, #9e0154 1px, transparent 1.5px);
                 background-size: 22px 22px;"></div>
   </div>
 
   <div class="relative mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="grid items-center grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14 py-12 sm:py-16">
-
-      <!-- Columna izquierda -->
-      <header class="lg:col-span-6">
-        <!-- Eyebrow con pulso de marca -->
-        <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-[#d7037b]/35 bg-white/60 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#9e0154] shadow-sm backdrop-blur-sm dark:bg-white/5">
-          <span class="relative inline-flex h-2 w-2">
-            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#d7037b]/60"></span>
-            <span class="relative inline-flex h-2 w-2 rounded-full bg-[#d7037b]"></span>
-          </span>
-          Tu círculo de intercambio
+    <div class="grid items-center grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14 py-10 sm:py-12">
+      
+      <!-- Izquierda · texto y CTAs (estilo del apartado que te gustó) -->
+      <header class="lg:col-span-7">
+        <div class="inline-flex items-center gap-2 rounded-full bg-white/70 dark:bg-white/5 ring-1 ring-slate-200/70 dark:ring-white/10 px-3 py-1">
+          <span class="h-1.5 w-1.5 rounded-full bg-[#d7037b]"></span>
+          <span class="text-[11px] font-semibold tracking-[0.22em] uppercase text-[#9e0154]">Bienvenido a KambiaPe</span>
         </div>
 
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-snug">
-          Donde <span class="bg-gradient-to-r from-[#d7037b] to-[#9e0154] bg-clip-text text-transparent">tu historia</span> encuentra un nuevo comienzo
+        <h1 class="mt-3 text-[28px] sm:text-[34px] font-black leading-[1.05] tracking-tight text-slate-900 dark:text-white">
+          Intercambia fácil, seguro y sin comisiones.
         </h1>
 
-        <p class="mt-4 max-w-md text-base text-slate-600 dark:text-slate-300">
-          Intercambia, dona y potencia el impacto social. Crea conexiones reales con una experiencia segura y sin comisiones.
+        <p class="mt-3 max-w-[60ch] text-[15px] sm:text-[16px] leading-relaxed text-slate-700 dark:text-slate-300">
+          Publica lo que ya no usas y encuentra lo que necesitas en tu comunidad.
+          Perfiles verificados, chat directo y reglas claras.
         </p>
 
-        <!-- CTA con acentos de marca -->
-        <div class="mt-6 flex flex-col sm:flex-row gap-3">
+        <!-- Subrayado sutil (menos intenso y más delgado) -->
+        <div class="mt-2 h-[2px] w-48 sm:w-56 bg-gradient-to-r from-[#d7037b]/22 to-[#9e0154]/22"></div>
+
+        <!-- CTAs -->
+        <div class="mt-6 flex flex-col sm:flex-row items-stretch gap-3">
           <a href="/publish"
-             class="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d7037b] to-[#9e0154] text-white font-semibold shadow-lg shadow-[#d7037b]/25 transition-all hover:brightness-110 active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#d7037b]/30 text-sm">
-            <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+             class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-[#d7037b] to-[#9e0154] text-white font-semibold shadow-lg shadow-[#d7037b]/20 hover:brightness-[1.08] active:scale-95 transition">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
             </svg>
-            Publicar Objeto
+            Publicar objeto
           </a>
+
           <a href="/explore"
-             class="inline-flex items-center justify-center px-6 py-2.5 rounded-xl ring-1 ring-inset ring-[#d7037b]/35 text-[#9e0154] font-medium hover:bg-[#d7037b]/5 dark:text-rose-200 dark:ring-rose-400/40 text-sm transition">
-            Explorar
+             class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/80 dark:bg-white/5 ring-1 ring-slate-200/70 dark:ring-white/10 text-[#9e0154] font-medium hover:bg-white transition">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 5a7 7 0 1 0 4.9 12l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 5Z"/>
+            </svg>
+            Explorar intercambios
+          </a>
+
+          <a href="/inbox"
+             class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/80 dark:bg-white/5 ring-1 ring-slate-200/70 dark:ring-white/10 text-slate-700 dark:text-slate-200 font-medium hover:bg-white transition">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5a2 2 0 0 0-2 2v12a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V5a2 2 0 0 0-2-2Zm0 10h-3.38a2 2 0 0 0-1.79 1.11l-.66 1.33a1 1 0 0 1-.9.56h-1.54a1 1 0 0 1-.9-.56l-.66-1.33A2 2 0 0 0 8.38 13H5V5h14v8Z"/>
+            </svg>
+            Mis mensajes
           </a>
         </div>
 
-        <!-- mini indicadores de seguridad -->
-        <ul class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-slate-500 dark:text-slate-400">
-          <li class="inline-flex items-center gap-1.5">
-            <span class="h-1.5 w-1.5 rounded-full bg-[#d7037b]"></span> Puntos verificados
-          </li>
-          <li class="inline-flex items-center gap-1.5">
-            <span class="h-1.5 w-1.5 rounded-full bg-[#9e0154]"></span> Sin comisiones
-          </li>
-          <li class="inline-flex items-center gap-1.5">
-            <span class="h-1.5 w-1.5 rounded-full bg-[#d7037b]"></span> Transacciones seguras
-          </li>
+        <!-- Confianza (micro) -->
+        <ul class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[12px] text-slate-600 dark:text-slate-400">
+          <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Perfiles verificados</li>
+          <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span> Mediación segura</li>
+          <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-[#d7037b]"></span> 0% comisiones</li>
         </ul>
       </header>
 
-      <!-- Columna derecha: stack sin degradado inferior -->
-      <div class="relative lg:col-span-6">
+      <!-- Derecha · vuelve el stack de cartas (con tus mismas props/métodos) -->
+      <aside class="lg:col-span-5">
         <div class="relative mx-auto w-full max-w-md group"
              @mouseenter="hovering = true"
              @mouseleave="hovering = false">
 
-          <!-- Orbe con gradiente corporativo -->
-          <svg class="absolute -z-10 left-1/2 top-1/2 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 opacity-55" viewBox="0 0 200 200" fill="none">
+          <!-- Orbe / ring corporativo -->
+          <svg class="absolute -z-10 left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 opacity-55" viewBox="0 0 200 200" fill="none">
             <defs>
               <radialGradient id="kambiaRingX" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 100) rotate(90) scale(100)">
                 <stop offset="0" stop-color="#d7037b" stop-opacity="0.6"/>
@@ -176,27 +181,27 @@
             <circle cx="100" cy="100" r="92" stroke="url(#kambiaRingX)" stroke-width="1.6"/>
           </svg>
 
-          <!-- Cartas -->
-          <div class="relative h-[24rem] select-none">
+          <!-- Cartas apiladas -->
+          <div class="relative h-[23rem] select-none">
             <div
               v-for="(card, i) in orderedCards"
               :key="card.id"
               :class="[
-                'absolute left-1/2 top-1/2 h-[20rem] w-[16rem] -translate-x-1/2 -translate-y-1/2 rounded-2xl overflow-hidden transition-all duration-500 ease-out',
+                'absolute left-1/2 top-1/2 h-[19rem] w-[15rem] -translate-x-1/2 -translate-y-1/2 rounded-2xl overflow-hidden transition-all duration-500 ease-out',
                 'bg-white/40 backdrop-blur-md dark:bg-white/5 shadow-lg',
                 positionClass(i)
               ]"
               :style="transformStyle(i)"
               @click="shuffle()"
             >
-              <img :src="card.img" :alt="card.alt" class="h-full w-full object-cover">
+              <img :src="card.img" :alt="card.alt" class="h-full w-full object-cover" />
 
               <!-- brillo diagonal -->
               <div class="pointer-events-none absolute inset-0 overflow-hidden">
                 <div class="absolute -left-1/3 top-0 h-full w-1/2 bg-gradient-to-r from-white/35 to-transparent opacity-0 group-hover:opacity-40 transition duration-700 translate-x-[-120%] group-hover:translate-x-[180%]"></div>
               </div>
 
-              <!-- contenido inferior (sin degradado rosa) -->
+              <!-- contenido inferior -->
               <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                 <span class="text-white text-xs font-medium drop-shadow">{{ card.alt }}</span>
                 <span class="px-2 py-0.5 text-[10px] rounded-full bg-gradient-to-r from-[#d7037b] to-[#9e0154] text-white shadow">
@@ -212,28 +217,18 @@
             </div>
           </div>
 
-          <!-- Línea de guías -->
-          <div class="mt-4 grid grid-cols-3 gap-3 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            <div class="flex items-center gap-2">
-              <span class="h-1.5 w-6 rounded-full bg-[#d7037b]/70"></span> Publica
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="h-1.5 w-6 rounded-full bg-[#9e0154]/70"></span> Recibe propuestas
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="h-1.5 w-6 rounded-full bg-[#d7037b]/70"></span> Intercambia
-            </div>
+          <!-- Pasos mini -->
+          <div class="mt-3 grid grid-cols-3 gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-[#d7037b]/70"></span> Publica</div>
+            <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-[#9e0154]/70"></span> Propuestas</div>
+            <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-emerald-500/70"></span> Intercambia</div>
           </div>
-
         </div>
-      </div>
+      </aside>
 
     </div>
   </div>
 </section>
-
-
-
 
 
 <!--fin del banner principal-->
