@@ -322,31 +322,70 @@
       </div>
 
       <TransitionGroup name="product-list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
-        <div v-for="product in filteredProducts" :key="product.id" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group border border-gray-100 dark:border-gray-700">
-          <div class="relative">
-            <img :src="`${API_BASE_URL}${product.thumbnail_image_url}`" :alt="product.title" class="w-full h-48 object-cover rounded-t-xl group-hover:scale-105 transition-transform duration-300" />
-            <div class="absolute top-3 right-3 bg-brand-primary text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-              {{ product.category_name }}
-            </div>
-          </div>
-          <div class="p-5">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 truncate">{{ product.title }}</h3>
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
-            <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4">
-              <svg class="w-4 h-4 mr-2 text-rose-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path></svg>
-              <span>{{ product.condition }}</span>
-            </div>
-            <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
-              <span class="text-lg font-semibold text-gray-700 dark:text-gray-200">Hace {{ calculateAgeDays(product.created_at) }} días</span>
-              <button 
-                  @click="openProposalModal(product)"
-                  class="bg-brand-primary text-white px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 transform hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
-              >
-                  Intercambiar
-              </button>
-            </div>
-          </div>
-        </div>
+        <div
+  v-for="product in filteredProducts"
+  :key="product.id"
+  class="relative isolate bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group border border-gray-100 dark:border-gray-700"
+>
+  <!-- Imagen -->
+  <div class="relative overflow-hidden rounded-t-xl">
+    <img
+      :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
+      :alt="product.title"
+      class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+    />
+  </div>
+
+  <!-- BADGE NUEVO (mejorado, sin bordes ni ring) -->
+  <div
+    class="absolute -top-3 right-3 z-10
+           bg-brand-primary/95 text-white text-[11px] font-semibold
+           px-3.5 py-1.5 rounded-full
+           shadow-lg shadow-brand-primary/30 backdrop-blur-sm
+           transition-transform duration-200
+           group-hover:-translate-y-0.5 group-hover:shadow-xl"
+  >
+    {{ product.category_name }}
+  </div>
+
+  <!-- Contenido de la tarjeta -->
+  <div class="p-5">
+    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 truncate">
+      {{ product.title }}
+    </h3>
+    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+      {{ product.description }}
+    </p>
+
+    <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4">
+      <svg
+        class="w-4 h-4 mr-2 text-rose-500"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"
+        ></path>
+      </svg>
+      <span>{{ product.condition }}</span>
+    </div>
+
+    <div
+      class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700"
+    >
+      <span class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+        Hace {{ calculateAgeDays(product.created_at) }} días
+      </span>
+      <button
+        @click="openProposalModal(product)"
+        class="bg-brand-primary text-white px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 transform hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
+      >
+        Intercambiar
+      </button>
+    </div>
+  </div>
+</div>
+
       </TransitionGroup>
     </div>
   </section>
