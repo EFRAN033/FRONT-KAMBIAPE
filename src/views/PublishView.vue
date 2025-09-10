@@ -1,63 +1,93 @@
 <template>
-  <div class="bg-gradient-to-b from-gray-50 to-rose-50 min-h-screen font-sans antialiased flex flex-col">
+  <div class="min-h-screen font-sans antialiased bg-[linear-gradient(180deg,#fafafa,60%,#fff)] text-slate-800">
     <Header />
 
-    <div class="flex flex-1">
-      <Sidebar /> <div class="flex-1 overflow-y-auto">
-        <main class="w-full max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8 mt-6 transform transition-all duration-300 hover:scale-[1.002]">
-          <div class="bg-white rounded-3xl shadow-2xl border border-rose-100 overflow-hidden transition-all duration-300 hover:shadow-2xl">
-            
-            <div class="p-6 sm:p-8 md:p-10 bg-gradient-to-br from-rose-50 to-pink-100 text-center relative overflow-hidden">
-              <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlblRyYW5zZm8..."></div>
-              <h1 class="relative z-10 text-4xl sm:text-5xl font-extrabold text-gray-900 mb-3 drop-shadow-md animate-fade-in-down">
-                Publica tu Producto
-              </h1>
-              <p class="relative z-10 text-lg sm:text-xl text-gray-700 font-medium max-w-2xl mx-auto animate-fade-in">
-                ¡Dale una segunda vida a tus objetos! Completa los detalles de tu producto para iniciar un trueque.
-              </p>
-            </div>
+    <div class="flex">
+      <Sidebar />
 
-            <div class="relative px-6 pt-6 sm:px-8 bg-white z-20">
-              <div class="flex justify-between items-center mb-6">
-                <div class="flex-1 text-center">
-                  <span :class="{'text-rose-600 font-bold': currentStep === 1, 'text-gray-500': currentStep !== 1}" class="text-sm sm:text-base transition-colors duration-300">Paso 1: Detalles Básicos</span>
+      <div class="flex-1 overflow-y-auto">
+        <main class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <!-- HERO — editorial, sobrio; rosa solo como acento -->
+          <section class="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur-xl px-6 sm:px-10 py-10">
+            <div class="pointer-events-none absolute -top-24 -left-10 h-56 w-56 rounded-full bg-rose-300/10 blur-3xl"></div>
+            <h1 class="relative z-10 text-3xl sm:text-[2.3rem] leading-tight font-extrabold tracking-tight text-slate-900">
+              Publica tu Producto
+            </h1>
+            <p class="relative z-10 mt-3 max-w-2xl text-[15px] sm:text-base text-slate-600">
+              Completa los detalles de tu producto y ponlo en circulación para un nuevo trueque.
+            </p>
+          </section>
+
+          <!-- PROGRESO — sticky, minimal (rosa solo en progreso) -->
+          <section class="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 mt-6 border-y border-slate-200/70 bg-white/70 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3">
+            <div class="max-w-5xl mx-auto">
+              <div class="flex items-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full px-2 font-semibold"
+                    :class="currentStep === 1 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'"
+                  >1</span>
+                  <span :class="currentStep === 1 ? 'text-slate-900 font-medium' : 'text-slate-500'">Detalles</span>
                 </div>
-                <div class="flex-1 text-center">
-                  <span :class="{'text-rose-600 font-bold': currentStep === 2, 'text-gray-500': currentStep !== 2}" class="text-sm sm:text-base transition-colors duration-300">Paso 2: Fotos</span>
+                <div class="h-px flex-1 bg-slate-200/80"></div>
+                <div class="flex items-center gap-2">
+                  <span
+                    class="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full px-2 font-semibold"
+                    :class="currentStep === 2 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'"
+                  >2</span>
+                  <span :class="currentStep === 2 ? 'text-slate-900 font-medium' : 'text-slate-500'">Fotos</span>
                 </div>
               </div>
-              <div class="h-1 bg-gray-200 rounded-full overflow-hidden">
-                <div :style="{ width: currentStep === 1 ? '50%' : '100%' }" class="h-full bg-gradient-to-r from-rose-500 to-purple-600 transition-all duration-500 ease-out"></div>
+              <div class="mt-3 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-rose-500 to-rose-400 transition-all duration-500 ease-out"
+                  :style="{ width: currentStep === 1 ? '50%' : '100%' }"
+                ></div>
               </div>
             </div>
+          </section>
 
-            <form @submit.prevent="handleSubmit" class="p-6 sm:p-8 md:p-10 bg-white">
-              <transition name="slide-fade" mode="out-in">
-                <div v-if="currentStep === 1" key="step1">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <!-- FORM — sin tarjetas, con secciones claras -->
+          <form @submit.prevent="handleSubmit" class="mt-8">
+            <transition name="slide-fade" mode="out-in">
+              <!-- PASO 1 -->
+              <div v-if="currentStep === 1" key="step1" class="space-y-10">
+                <!-- Encabezado de sección -->
+                <header class="flex items-center gap-3">
+                  <span class="grid h-8 w-8 place-items-center rounded-md bg-slate-100 text-slate-700">
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 012-2h8a2 2 0 012 2v1H4V5zm0 3h12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg>
+                  </span>
+                  <h2 class="text-lg font-semibold text-slate-900">Detalles del producto</h2>
+                </header>
+
+                <!-- Campos -->
+                <section class="space-y-6">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Nombre -->
                     <div>
-                      <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Nombre del Producto <span class="text-red-500">*</span></label>
+                      <label for="name" class="block text-sm font-medium text-slate-700">Nombre del Producto <span class="text-rose-600">*</span></label>
                       <input
-                        type="text"
                         id="name"
+                        type="text"
                         v-model="product.name"
-                        placeholder="Ej. Consola de Videojuegos, Bicicleta de Montaña"
-                        class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-500 transition duration-200 text-gray-800 placeholder-gray-400"
-                        :class="{'border-red-500': step1Errors.name}"
+                        placeholder="Ej. Consola, Bicicleta de montaña…"
+                        class="mt-2 w-full px-3.5 py-2.5 rounded-lg border border-slate-300/80 bg-white focus:outline-none focus:ring-4 focus:ring-rose-200 focus:border-rose-400 text-slate-900 placeholder-slate-400 transition"
+                        :class="{'border-rose-400': step1Errors.name}"
                         aria-required="true"
                         aria-describedby="name-error"
                       />
-                      <p v-if="step1Errors.name" id="name-error" class="text-red-500 text-xs mt-1">{{ step1Errors.name }}</p>
+                      <p v-if="step1Errors.name" id="name-error" class="text-rose-600 text-xs mt-1">{{ step1Errors.name }}</p>
                     </div>
 
+                    <!-- Categoría -->
                     <div>
-                      <label for="category" class="block text-sm font-semibold text-gray-700 mb-2">Categoría <span class="text-red-500">*</span></label>
-                      <div class="relative">
+                      <label for="category" class="block text-sm font-medium text-slate-700">Categoría <span class="text-rose-600">*</span></label>
+                      <div class="relative mt-2">
                         <select
                           id="category"
                           v-model="product.category"
-                          class="block w-full px-4 py-2.5 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-500 transition duration-200 text-gray-800 appearance-none bg-white pr-10"
-                          :class="{'border-red-500': step1Errors.category}"
+                          class="block w-full px-3.5 py-2.5 rounded-lg border border-slate-300/80 bg-white pr-10 focus:outline-none focus:ring-4 focus:ring-rose-200 focus:border-rose-400 text-slate-900 transition appearance-none"
+                          :class="{'border-rose-400': step1Errors.category}"
                           aria-required="true"
                           aria-describedby="category-error"
                         >
@@ -76,21 +106,22 @@
                           <option>Arte</option>
                           <option>Otros</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z"/></svg>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4H6z"/></svg>
                         </div>
                       </div>
-                      <p v-if="step1Errors.category" id="category-error" class="text-red-500 text-xs mt-1">{{ step1Errors.category }}</p>
+                      <p v-if="step1Errors.category" id="category-error" class="text-rose-600 text-xs mt-1">{{ step1Errors.category }}</p>
                     </div>
 
+                    <!-- Estado -->
                     <div>
-                      <label for="condition" class="block text-sm font-semibold text-gray-700 mb-2">Estado del Producto <span class="text-red-500">*</span></label>
-                      <div class="relative">
+                      <label for="condition" class="block text-sm font-medium text-slate-700">Estado del Producto <span class="text-rose-600">*</span></label>
+                      <div class="relative mt-2">
                         <select
                           id="condition"
                           v-model="product.condition"
-                          class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-500 transition duration-200 text-gray-800 appearance-none bg-white pr-10"
-                          :class="{'border-red-500': step1Errors.condition}"
+                          class="block w-full px-3.5 py-2.5 rounded-lg border border-slate-300/80 bg-white pr-10 focus:outline-none focus:ring-4 focus:ring-rose-200 focus:border-rose-400 text-slate-900 transition appearance-none"
+                          :class="{'border-rose-400': step1Errors.condition}"
                           aria-required="true"
                           aria-describedby="condition-error"
                         >
@@ -101,104 +132,126 @@
                           <option>Usado - Aceptable</option>
                           <option>Para Piezas/Reparar</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z"/></svg>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4H6z"/></svg>
                         </div>
                       </div>
-                      <p v-if="step1Errors.condition" id="condition-error" class="text-red-500 text-xs mt-1">{{ step1Errors.condition }}</p>
+                      <p v-if="step1Errors.condition" id="condition-error" class="text-rose-600 text-xs mt-1">{{ step1Errors.condition }}</p>
                     </div>
 
+                    <!-- Descripción -->
                     <div class="md:col-span-2">
-                      <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">Descripción <span class="text-red-500">*</span></label>
+                      <label for="description" class="block text-sm font-medium text-slate-700">Descripción <span class="text-rose-600">*</span></label>
                       <textarea
                         id="description"
                         v-model="product.description"
                         rows="4"
-                        placeholder="Describe tu producto, su estado, características, y cualquier detalle relevante para un posible trueque. Máximo 500 caracteres."
-                        class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-500 transition duration-200 text-gray-800 placeholder-gray-400 resize-y"
-                        :class="{'border-red-500': step1Errors.description}"
                         maxlength="500"
+                        placeholder="Incluye estado, características y detalles clave (máx. 500)."
+                        class="mt-2 w-full px-3.5 py-2.5 rounded-lg border border-slate-300/80 bg-white focus:outline-none focus:ring-4 focus:ring-rose-200 focus:border-rose-400 text-slate-900 placeholder-slate-400 transition resize-y"
+                        :class="{'border-rose-400': step1Errors.description}"
                         aria-required="true"
                         aria-describedby="description-error"
                       ></textarea>
-                      <p v-if="step1Errors.description" id="description-error" class="text-red-500 text-xs mt-1">{{ step1Errors.description }}</p>
-                      <p class="text-xs text-gray-500 text-right mt-1">{{ product.description.length }}/500</p>
+                      <p v-if="step1Errors.description" id="description-error" class="text-rose-600 text-xs mt-1">{{ step1Errors.description }}</p>
+                      <p class="text-[11px] text-slate-500 text-right mt-1">{{ product.description.length }}/500</p>
                     </div>
                   </div>
+                </section>
 
-                  <div class="flex justify-end">
+                <!-- CTA siguiente -->
+                <div class="pt-4 flex justify-end border-t border-dashed border-slate-200/80">
+                  <button
+                    type="button"
+                    @click="goToNextStep"
+                    class="inline-flex items-center justify-center gap-2 rounded-full bg-rose-600 px-6 py-2.5 text-white font-semibold
+                           hover:bg-rose-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 focus-visible:ring-offset-2
+                           transition-transform hover:-translate-y-0.5"
+                  >
+                    Siguiente Paso
+                  </button>
+                </div>
+              </div>
+
+              <!-- PASO 2 -->
+              <div v-else-if="currentStep === 2" key="step2" class="space-y-10">
+                <header class="flex items-center gap-3">
+                  <span class="grid h-8 w-8 place-items-center rounded-md bg-slate-100 text-slate-700">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 3l3 4 2-3 4 6H7l3-7z"/></svg>
+                  </span>
+                  <h2 class="text-lg font-semibold text-slate-900">Fotos del producto</h2>
+                </header>
+
+                <!-- Dropzone minimal -->
+                <div
+                  class="rounded-xl border-2 border-dashed border-slate-300 px-6 py-6 text-center cursor-pointer
+                         hover:border-rose-400/80 transition"
+                  :class="{'border-rose-500': step2Errors.photos}"
+                  @click="triggerFileInput"
+                  @dragover.prevent="handleDragOver"
+                  @dragleave.prevent="handleDragLeave"
+                  @drop.prevent="handleDrop"
+                  role="button"
+                  tabindex="0"
+                  aria-describedby="photos-error"
+                >
+                  <input type="file" id="photos" ref="fileInput" @change="handleFileChange" multiple accept="image/*" class="hidden" aria-hidden="true" />
+                  <svg class="mx-auto h-10 w-10 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <p class="mt-2 text-sm text-slate-600">Arrastra y suelta imágenes aquí, o haz clic para seleccionar</p>
+                  <p class="text-xs text-slate-500">(Máximo 4 imágenes, JPG/PNG)</p>
+                </div>
+                <p v-if="step2Errors.photos" id="photos-error" class="text-rose-600 text-xs mt-1">{{ step2Errors.photos }}</p>
+
+                <!-- Previews (sin tarjeta; anillo sutil) -->
+                <div v-if="imagePreviews.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div v-for="(image, index) in imagePreviews" :key="index" class="relative group rounded-xl overflow-hidden ring-1 ring-slate-200/70 bg-white">
+                    <img :src="image" :alt="`Preview ${index + 1}`" class="w-full h-32 object-cover" />
                     <button
-                      type="button"
-                      @click="goToNextStep"
-                      class="px-8 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-bold rounded-full shadow-lg hover:from-rose-600 hover:to-pink-700 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-rose-300 focus:ring-offset-2"
+                      @click="removeImage(index)"
+                      class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-1 opacity-0 group-hover:opacity-100 transition"
+                      aria-label="Eliminar imagen"
                     >
-                      Siguiente Paso
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
                     </button>
                   </div>
                 </div>
 
-                <div v-else-if="currentStep === 2" key="step2">
-                  <div class="grid grid-cols-1 gap-6 mb-8">
-                    <div>
-                      <label for="photos" class="block text-sm font-semibold text-gray-700 mb-2">Fotos del Producto <span class="text-red-500">*</span></label>
-                      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-rose-400 transition duration-200"
-                           :class="{'border-red-500': step2Errors.photos}"
-                           @click="triggerFileInput"
-                           @dragover.prevent="handleDragOver"
-                           @dragleave.prevent="handleDragLeave"
-                           @drop.prevent="handleDrop"
-                           role="button"
-                           tabindex="0"
-                           aria-describedby="photos-error"
-                      >
-                        <input type="file" id="photos" ref="fileInput" @change="handleFileChange" multiple accept="image/*" class="hidden" aria-hidden="true" />
-                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        <p class="mt-2 text-sm text-gray-600">Arrastra y suelta tus imágenes aquí, o haz clic para seleccionar</p>
-                        <p class="text-xs text-gray-500">(Máximo 4 imágenes, JPG, PNG)</p>
-                      </div>
-                      <p v-if="step2Errors.photos" id="photos-error" class="text-red-500 text-xs mt-1">{{ step2Errors.photos }}</p>
-                      
-                      <div v-if="imagePreviews.length" class="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <div v-for="(image, index) in imagePreviews" :key="index" class="relative group">
-                          <img :src="image" :alt="`Preview ${index + 1}`" class="w-full h-32 object-cover rounded-lg shadow-md" />
-                          <button @click="removeImage(index)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" aria-label="Eliminar imagen">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <!-- CTAs -->
+                <div class="pt-4 flex items-center justify-between border-t border-dashed border-slate-200/80">
+                  <button
+                    type="button"
+                    @click="goToPreviousStep"
+                    class="px-5 py-2.5 rounded-full font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200
+                           focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300/70 focus-visible:ring-offset-2 transition"
+                  >
+                    Paso Anterior
+                  </button>
 
-                  <div class="flex justify-between mt-8">
-                    <button
-                      type="button"
-                      @click="goToPreviousStep"
-                      class="px-6 py-2.5 bg-gray-300 text-gray-800 font-bold rounded-full shadow hover:bg-gray-400 transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-                    >
-                      Paso Anterior
-                    </button>
-                    <button
-                      type="submit"
-                      :disabled="isSubmitting"
-                      class="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-bold rounded-full shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span v-if="!isSubmitting">Publicar Producto</span>
-                      <span v-else>Publicando...</span>
-                    </button>
-                  </div>
-                  <transition name="fade">
-                    <div v-if="errorMessage" class="mt-6 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center" role="alert">
-                      {{ errorMessage }}
-                    </div>
-                  </transition>
+                  <button
+                    type="submit"
+                    :disabled="isSubmitting"
+                    class="px-7 py-2.5 rounded-full font-semibold text-white
+                           bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600
+                           focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 focus-visible:ring-offset-2
+                           disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <span v-if="!isSubmitting">Publicar Producto</span>
+                    <span v-else>Publicando...</span>
+                  </button>
                 </div>
-              </transition>
-            </form>
-          </div>
+
+                <transition name="fade">
+                  <div v-if="errorMessage" class="mt-6 px-4 py-3 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-center" role="alert">
+                    {{ errorMessage }}
+                  </div>
+                </transition>
+              </div>
+            </transition>
+          </form>
         </main>
       </div>
     </div>
@@ -206,6 +259,7 @@
     <Footer />
   </div>
 </template>
+
 
 <script setup>
 import { ref, reactive } from 'vue';
