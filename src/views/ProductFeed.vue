@@ -132,7 +132,7 @@
         <!-- CTAs -->
         <div class="mt-6 flex flex-col sm:flex-row items-stretch gap-3">
           <a href="/publish"
-             class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-[#d7037b] to-[#9e0154] text-white font-semibold shadow-lg shadow-[#d7037b]/20 hover:brightness-[1.08] active:scale-95 transition">
+              class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#d7037b] text-white font-semibold shadow-lg shadow-[#d7037b]/20 hover:brightness-[1.08] active:scale-95 transition">
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
             </svg>
@@ -339,10 +339,10 @@
             <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
               <span class="text-lg font-semibold text-gray-700 dark:text-gray-200">Hace {{ calculateAgeDays(product.created_at) }} días</span>
               <button 
-                @click="openProposalModal(product)"
-                class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2"
+                  @click="openProposalModal(product)"
+                  class="bg-[#d7037b] text-white px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 transform hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#d7037b] focus:ring-offset-2"
               >
-                Intercambiar
+                  Intercambiar
               </button>
             </div>
           </div>

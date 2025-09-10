@@ -64,9 +64,7 @@
             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
-          <span class="absolute top-4 right-4 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-            {{ product.category }}
-          </span>
+          <span class="absolute top-4 right-4 bg-[#d7037b] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">  {{ product.category }}</span>
         </div>
         
         <div class="p-6">
