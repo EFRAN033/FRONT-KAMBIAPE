@@ -325,7 +325,7 @@
         <div v-for="product in filteredProducts" :key="product.id" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group border border-gray-100 dark:border-gray-700">
           <div class="relative">
             <img :src="`${API_BASE_URL}${product.thumbnail_image_url}`" :alt="product.title" class="w-full h-48 object-cover rounded-t-xl group-hover:scale-105 transition-transform duration-300" />
-            <div class="absolute top-3 right-3 bg-rose-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+            <div class="absolute top-3 right-3 bg-brand-primary text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
               {{ product.category_name }}
             </div>
           </div>

@@ -1,128 +1,96 @@
 <template>
-  <aside class="w-72 bg-gray-50 border-r border-gray-200 flex flex-col h-full">
-    
-    <div class="p-6 pt-8 text-left">
-      <h2 class="text-xl font-bold text-gray-800">Mis Trueques</h2>
-      <p class="text-sm text-gray-500">Gestiona tus publicaciones</p>
-    </div>
-
-    <nav class="flex flex-col px-4 mt-4 flex-grow">
-      <router-link
-        to="/publish-view"
-        class="flex items-center px-4 py-3 bg-[#d7037b] text-white font-semibold rounded-lg shadow-lg shadow-[#d7037b]/30 hover:bg-[#b80268] transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#d7037b] focus:ring-offset-2 focus:ring-offset-gray-50"
-        aria-label="Publicar un nuevo producto"
+  <!-- SIDEBAR PILL (más grande y más transparente) -->
+  <aside
+    class="fixed left-4 top-1/2 -translate-y-1/2 z-40
+           h-auto w-[92px] min-w-[92px]
+           flex flex-col items-center py-5 gap-5
+           bg-white/60 dark:bg-slate-900/50 backdrop-blur-2xl
+           border border-slate-200/50 dark:border-white/5
+           shadow-[0_12px_36px_rgba(2,6,23,.1)]
+           rounded-[26px] select-none"
+    aria-label="Barra lateral"
+  >
+    <!-- 1) Publicar -->
+    <router-link to="/publish-view" class="flex flex-col items-center gap-1" title="Publicar">
+      <div
+        class="h-14 w-14 grid place-items-center rounded-2xl
+               bg-gradient-to-br from-[#d7037b] to-[#b80268] text-white
+               shadow-[0_14px_34px_rgba(215,3,123,.25)]
+               ring-1 ring-white/40 dark:ring-white/10
+               transition-transform hover:-translate-y-0.5"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+        <svg class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H3a1 1 0 110-2h6V3a1 1 0 011-1z" clip-rule="evenodd"/>
         </svg>
-        Publicar Producto
-      </router-link>
-
-      <div class="mt-6 space-y-2">
-        <router-link
-          to="/my-products"
-          class="nav-link"
-          active-class="active"
-          aria-label="Ver y gestionar mis productos publicados"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-          </svg>
-          <span>Mis Productos</span>
-          <span class="ml-auto text-xs font-medium bg-gray-200 text-gray-700 rounded-full px-2 py-0.5">
-            <span v-if="!loading">{{ products.length }}</span>
-            <span v-else>...</span>
-          </span>
-        </router-link>
-
-        </div>
-    </nav>
-    
-    <div class="p-6 mt-auto">
-      <div class="flex items-center space-x-3">
-        <img class="h-10 w-10 rounded-full object-cover" src="https://ui-avatars.com/api/?name=User&background=d7037b&color=fff" alt="Avatar de usuario">
-        <div>
-          <p class="font-semibold text-gray-800 text-sm">{{ userStore.user?.username || 'Usuario' }}</p>
-          <a href="#" class="text-xs text-[#d7037b] hover:underline">Ver Perfil</a>
-        </div>
       </div>
-    </div>
+      <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-none">Publicar</span>
+    </router-link>
+
+    <!-- 2) Inventario -->
+    <router-link to="/inventory" class="flex flex-col items-center gap-1" title="Inventario">
+      <div
+        class="h-14 w-14 grid place-items-center rounded-2xl
+               bg-white/70 dark:bg-white/10
+               ring-1 ring-slate-200/70 dark:ring-white/10
+               shadow-sm transition-all
+               hover:-translate-y-0.5 hover:shadow-md"
+      >
+        <svg viewBox="0 0 24 24" class="h-7 w-7 text-slate-700 dark:text-slate-200" fill="currentColor">
+          <path d="M3 7l9-4 9 4v10l-9 4-9-4V7zm9 2L6 9.5v7l6 2.5 6-2.5v-7L12 9z"/>
+        </svg>
+      </div>
+      <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-none">Inventario</span>
+    </router-link>
+
+    <!-- Empuje -->
+    <div class="flex-1"></div>
+
+    <!-- 3) Perfil -->
+    <router-link to="/profile" class="flex flex-col items-center gap-1" title="Perfil">
+      <div
+        class="h-14 w-14 grid place-items-center rounded-2xl
+               bg-white/70 dark:bg-white/10
+               ring-1 ring-slate-200/70 dark:ring-white/10
+               shadow-sm transition-all
+               hover:-translate-y-0.5 hover:shadow-md overflow-hidden"
+      >
+        <img
+          v-if="avatarUrl"
+          :src="avatarUrl"
+          alt="Avatar"
+          class="h-10 w-10 rounded-xl object-cover ring-1 ring-white/50 dark:ring-white/10"
+        />
+        <svg v-else class="h-7 w-7 text-slate-700 dark:text-slate-200" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"/>
+        </svg>
+      </div>
+      <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-none">Perfil</span>
+    </router-link>
   </aside>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useUserStore } from '@/stores/user';
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/user'
 
-const products = ref([]);
-const loading = ref(true);
-const error = ref(null);
-const userStore = useUserStore();
-
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-
-const fetchUserProducts = async () => {
-  try {
-    loading.value = true;
-    error.value = null;
-    const authenticatedUserId = userStore.user?.id;
-    
-    if (!authenticatedUserId) {
-      products.value = [];
-      loading.value = false;
-      return;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/users/${authenticatedUserId}/products`);
-    if (!response.ok) {
-      throw new Error(`Error al cargar productos: ${response.statusText}`);
-    }
-    products.value = await response.json();
-  } catch (err) {
-    console.error("Error al cargar los productos del usuario:", err);
-    error.value = err.message;
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(() => {
-  fetchUserProducts();
-});
+const userStore = useUserStore()
+const avatarUrl = computed(() => {
+  const name = encodeURIComponent(userStore.user?.username || 'User')
+  return `https://ui-avatars.com/api/?name=${name}&background=d7037b&color=fff`
+})
 </script>
 
 <style scoped>
-/* Estilos base para los enlaces de navegación */
-.nav-link {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px; /* 12px vertical, 16px horizontal */
-  font-size: 0.95rem; /* Ligeramente más grande que text-sm */
-  font-weight: 500; /* Medium */
-  color: #4b5563; /* text-gray-600 */
-  border-radius: 0.5rem; /* rounded-lg */
-  transition: all 0.2s ease-in-out;
-  position: relative; /* Necesario para el pseudo-elemento */
-  overflow: hidden; /* Oculta el pseudo-elemento fuera de los bordes */
+/* Estado activo */
+.router-link-exact-active > div {
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(125deg, #d7037b, #b80268) border-box !important;
+  border: 2px solid transparent !important;
+  box-shadow: 0 16px 36px rgba(215,3,123,.22) !important;
 }
-
-/* Efecto hover: un sutil cambio de color de fondo */
-.nav-link:hover {
-  background-color: #f3f4f6; /* bg-gray-100 */
-  color: #1f2937; /* text-gray-800 */
-}
-
-/* Estilos para el enlace ACTIVO */
-.nav-link.active {
-  background-color: #d7037b; /* Color principal */
-  color: white;
-  font-weight: 600; /* Semibold */
-  box-shadow: 0 4px 14px 0 rgba(215, 3, 123, 0.25); /* Sombra sutil del color principal */
-}
-
-/* El contador de productos en el enlace activo debe ser visible */
-.nav-link.active span:last-child {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
+:global(.dark) .router-link-exact-active > div {
+  border-color: transparent !important;
+  box-shadow: 0 18px 40px rgba(215,3,123,.28) !important;
 }
 </style>

@@ -228,10 +228,10 @@
           <h3 class="text-sm font-bold text-pink-300 mb-2.5">¿Quieres publicar?</h3>
           <p class="text-gray-300 text-[13px] mb-2.5">Sube tus productos y dales una segunda vida.</p>
           <button
-            @click="navigateToRegister"
-            class="w-full rounded-md bg-gradient-to-r from-pink-600 to-rose-600 px-4 py-2.5 text-[13px] font-semibold shadow hover:brightness-110"
+              @click="navigateToRegister"
+              class="w-full rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110"
           >
-            Comenzar ahora
+              Comenzar ahora
           </button>
         </div>
       </div>
