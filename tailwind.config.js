@@ -10,7 +10,7 @@ module.exports = {
       // Tus colores personalizados se mantienen intactos
       colors: {
         brand: {
-          primary: '#d60579',
+          primary: '#d7037b',
           light: '#fde9f2',
           medium: '#fbc7cc',
           dark: '#a6045d',

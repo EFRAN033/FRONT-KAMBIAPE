@@ -340,7 +340,7 @@
               <span class="text-lg font-semibold text-gray-700 dark:text-gray-200">Hace {{ calculateAgeDays(product.created_at) }} días</span>
               <button 
                   @click="openProposalModal(product)"
-                  class="bg-[#d7037b] text-white px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 transform hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-[#d7037b] focus:ring-offset-2"
+                  class="bg-brand-primary text-white px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 transform hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
               >
                   Intercambiar
               </button>
