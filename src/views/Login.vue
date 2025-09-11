@@ -1,42 +1,52 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
-      <div class="container mx-auto px-6 py-4">
-        <div class="flex items-center justify-between">
-          <router-link to="/" class="flex items-center space-x-2 group">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-[#d7037b] to-[#9e0154] flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <span class="text-xl font-bold text-gray-900 group-hover:text-[#d7037b] transition-colors">
-              Kambia<span class="text-[#9e0154]">Pe</span>
-            </span>
+    <header class="bg-gradient-to-r from-[#d7037b] to-[#9e0154] shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
+    <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
+      <div class="flex items-center justify-between">
+        
+        <!-- 
+          FLECHA MEJORADA PARA VUE:
+          - Ícono de flecha hacia la izquierda.
+          - Funcionalidad: @click="$router.back()" para usar el historial de Vue Router.
+          - Diseño: Mismas transiciones suaves y efecto de escala.
+          - Accesibilidad: aria-label actualizado a "Volver atrás".
+        -->
+        <button 
+          @click="$router.back()" 
+          class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/25 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 ease-in-out"
+          aria-label="Volver atrás"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
+
+        <!-- Navegación con router-link -->
+        <nav class="hidden md:flex items-center space-x-7">
+          <router-link to="/about" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
+            ¿Qué es KambiaPe?
           </router-link>
+          <router-link to="/pricing" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
+            Planes
+          </router-link>
+        </nav>
 
-          <nav class="hidden md:flex items-center space-x-8">
-            <router-link to="/about" class="text-sm font-medium text-gray-500 hover:text-[#d7037b] transition-colors">
-              ¿Qué es KambiaPe?
-            </router-link>
-            <router-link to="/pricing" class="text-sm font-medium text-gray-500 hover:text-[#d7037b] transition-colors">
-              Planes
-            </router-link>
-            <router-link to="/contact" class="text-sm font-medium text-gray-500 hover:text-[#d7037b] transition-colors">
-              Contacto
-            </router-link>
-          </nav>
-
-          <div class="flex items-center space-x-4">
-            <router-link to="/login" class="text-sm font-medium text-[#d7037b] hover:text-[#9e0154] transition-colors">
-              Iniciar sesión
-            </router-link>
-            <router-link to="/register" class="hidden sm:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-[#d7037b] to-[#9e0154] hover:from-[#c5026f] hover:to-[#8b014a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d7037b] transition-all">
-              Regístrate gratis
-            </router-link>
-          </div>
+        <!-- Botones de acción con router-link -->
+        <div class="flex items-center space-x-4">
+          <router-link to="/login" class="text-sm font-medium text-white hover:text-gray-200 transition-colors">
+            Iniciar sesión
+          </router-link>
+          <router-link
+            to="/register"
+            class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all"
+          >
+            Regístrate gratis
+          </router-link>
         </div>
       </div>
-    </header>
+    </div>
+  </header>
+
 
     <main class="container mx-auto px-4 sm:px-6 py-12">
       <div class="max-w-md mx-auto">
@@ -175,7 +185,7 @@
                   type="submit"
                   :disabled="isLoading || !formValid"
                   :class="{'opacity-75 cursor-not-allowed': isLoading || !formValid, 'hover:shadow-lg': formValid}"
-                  class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#d7037b] to-[#9e0154] hover:from-[#c5026f] hover:to-[#8b014a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d7037b] transition-all duration-300"
+                  class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-lg shadow-[#d7037b]/20 text-sm font-medium text-white bg-[#d7037b] hover:brightness-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d7037b] transition-all duration-300"
                 >
                   <span v-if="!isLoading">Iniciar sesión</span>
                   <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -190,31 +200,8 @@
       </div>
     </main>
 
-    <footer class="bg-white border-t border-gray-200 mt-12">
-      <div class="container mx-auto px-6 py-8">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-          <div class="flex items-center space-x-4">
-            <router-link to="/" class="text-lg font-bold text-gray-900">
-              Kambia<span class="text-[#d7037b]">Pe</span>
-            </router-link>
-            <p class="text-sm text-gray-500">
-              &copy; {{ new Date().getFullYear() }} KambiaPe. Todos los derechos reservados.
-            </p>
-          </div>
-          <div class="flex space-x-6 mt-4 md:mt-0">
-            <router-link to="/privacy" class="text-sm text-gray-500 hover:text-[#d7037b] transition-colors">
-              Privacidad
-            </router-link>
-            <router-link to="/terms" class="text-sm text-gray-500 hover:text-[#d7037b] transition-colors">
-              Términos
-            </router-link>
-            <router-link to="/contact" class="text-sm text-gray-500 hover:text-[#d7037b] transition-colors">
-              Contacto
-            </router-link>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <!-- Footer al final -->
+    <Footer />
   </div>
 </template>
 
@@ -222,14 +209,15 @@
 // Importa el store de usuario de Pinia
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router'; // Importa useRouter para la navegación
+import Footer from '@/views/Footer.vue';
 
 export default {
   name: 'PremiumLoginView',
+  components: { Footer }, // <- registro necesario para que se resuelva el componente
   // `setup` es la forma recomendada en Vue 3 para acceder a composición APIs como Pinia
   setup() {
     const userStore = useUserStore(); // Inicializa el store
     const router = useRouter(); // Inicializa el router
-
     // Retorna lo que necesitas exponer al resto del componente (template o `data`/`methods`)
     return { userStore, router };
   },
@@ -261,7 +249,6 @@ export default {
         4: { width: '100%', text: 'Excelente', color: 'bg-green-500', textColor: 'text-green-600' }
       };
 
-      // Calculador de fuerza de contraseña simple
       let score = 0;
       if (this.password.length >= 8) score++;
       if (this.password.match(/[A-Z]/)) score++;
@@ -289,12 +276,11 @@ export default {
       this.animated = true;
     }, 100);
 
-    // Cargar email guardado si "recordar sesión" estaba activado
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     if (rememberedEmail) {
       this.email = rememberedEmail;
       this.rememberMe = true;
-      this.validateEmail(); // Validar al cargar para actualizar el estado del formulario
+      this.validateEmail();
     }
   },
   methods: {
@@ -330,45 +316,34 @@ export default {
       this.errorMessage = '';
       this.isLoading = true;
 
-      // Validación del lado del cliente antes de enviar la solicitud
       if (!this.emailValid || !this.passwordValid) {
         this.errorMessage = 'Por favor, corrige los errores en el formulario.';
         this.isLoading = false;
-        return; // Detiene la ejecución si el formulario no es válido
+        return;
       }
 
       try {
-        // *** CAMBIO CLAVE AQUÍ: Llama a la acción 'login' de tu store de Pinia ***
-        // Esta acción ya se encarga de la petición HTTP, el procesamiento de datos y la actualización del estado.
         const success = await this.userStore.login({
           email: this.email,
           password: this.password,
         });
 
         if (success) {
-          console.log('Inicio de sesión exitoso gestionado por Pinia.');
-
-          // Guarda email si "recordar sesión" está activado
           if (this.rememberMe) {
             localStorage.setItem('rememberedEmail', this.email);
           } else {
             localStorage.removeItem('rememberedEmail');
           }
-
-          // Redirigir al dashboard o página de inicio
           this.router.push('/dashboard');
         } else {
-          // Si la acción 'login' del store devuelve false (hubo un error manejado en el store)
-          // El mensaje de error ya debería estar en this.userStore.error
           this.errorMessage = this.userStore.error || 'Credenciales incorrectas. Por favor, verifica tu correo y contraseña.';
           console.error('Error de inicio de sesión desde el store:', this.userStore.error);
         }
       } catch (error) {
-        // Esto captura errores si la llamada a 'this.userStore.login' falla por razones inesperadas
         this.errorMessage = 'Ocurrió un error inesperado al intentar iniciar sesión.';
         console.error('Error inesperado al llamar al store de Pinia:', error);
       } finally {
-        this.isLoading = false; // Desactivar el estado de carga
+        this.isLoading = false;
       }
     }
   }

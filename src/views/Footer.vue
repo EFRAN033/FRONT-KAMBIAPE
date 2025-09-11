@@ -129,7 +129,7 @@
       <div class="hidden md:grid grid-cols-12 gap-5">
         <!-- Brand + newsletter -->
         <div class="col-span-4">
-          <h3 class="text-sm font-bold text-pink-300">KambiaPe</h3>
+          <h3 class="text-sm font-bold text-[#d7037b]">KambiaPe</h3>
           <p class="mt-1 text-[13px] text-gray-400">
             Intercambia, dona y potencia el impacto social en tu comunidad.
           </p>
@@ -145,7 +145,7 @@
             />
             <button
               :disabled="newsletterSubmitting"
-              class="rounded-md bg-white px-3.5 py-2 text-[13px] font-semibold text-pink-700 shadow hover:shadow-md disabled:opacity-50"
+              class="rounded-md bg-[#d7037b] px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg shadow-[#d7037b]/20 hover:brightness-110 active:scale-95 transition disabled:opacity-50"
             >
               {{ newsletterSubmitting ? 'Enviando…' : 'Suscribirme' }}
             </button>
@@ -205,7 +205,7 @@
 
         <!-- Navegación -->
         <div class="col-span-3">
-          <h3 class="text-sm font-bold text-pink-300 mb-2.5">Navegación</h3>
+          <h3 class="text-sm font-bold text-[#d7037b] mb-2.5">Navegación</h3>
           <ul class="space-y-1.5 text-gray-300 text-[13px]">
             <li><router-link to="/" class="hover:text-pink-300">Inicio</router-link></li>
             <li><router-link to="/explorar" class="hover:text-pink-300">Explorar productos</router-link></li>
@@ -216,7 +216,7 @@
 
         <!-- Soporte -->
         <div class="col-span-3">
-          <h3 class="text-sm font-bold text-pink-300 mb-2.5">Soporte</h3>
+          <h3 class="text-sm font-bold text-[#d7037b] mb-2.5">Soporte</h3>
           <ul class="space-y-1.5 text-gray-300 text-[13px]">
             <li><a href="mailto:kambiapex@gmail.com" class="hover:text-pink-300">kambiapex@gmail.com</a></li>
             <li><button @click="openCommentModal" class="hover:text-pink-300">Dejar un comentario</button></li>
@@ -225,7 +225,7 @@
 
         <!-- Acción -->
         <div class="col-span-2">
-          <h3 class="text-sm font-bold text-pink-300 mb-2.5">¿Quieres publicar?</h3>
+          <h3 class="text-sm font-bold text-[#d7037b] mb-2.5">¿Quieres publicar?</h3>
           <p class="text-gray-300 text-[13px] mb-2.5">Sube tus productos y dales una segunda vida.</p>
           <button
               @click="navigateToRegister"

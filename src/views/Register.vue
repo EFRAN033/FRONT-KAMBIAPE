@@ -1,36 +1,37 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
-      <div class="container mx-auto px-6 py-4">
+    <header class="bg-gradient-to-r from-[#d7037b] to-[#9e0154] shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
+      <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
         <div class="flex items-center justify-between">
-          <router-link to="/" class="flex items-center space-x-2 group">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-[#d7037b] to-[#9e0154] flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <span class="text-xl font-bold text-gray-900 group-hover:text-[#d7037b] transition-colors">
-              Kambia<span class="text-[#9e0154]">Pe</span>
-            </span>
-          </router-link>
+          <button 
+            @click="$router.back()" 
+            class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/25 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 ease-in-out"
+            aria-label="Volver atrás"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
 
-          <nav class="hidden md:flex items-center space-x-8">
-            <router-link to="/about" class="text-sm font-medium text-gray-500 hover:text-[#d7037b] transition-colors">
+          <!-- Navegación con router-link -->
+          <nav class="hidden md:flex items-center space-x-7">
+            <router-link to="/about" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
               ¿Qué es KambiaPe?
             </router-link>
-            <router-link to="/pricing" class="text-sm font-medium text-gray-500 hover:text-[#d7037b] transition-colors">
+            <router-link to="/pricing" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
               Planes
-            </router-link>
-            <router-link to="/contact" class="text-sm font-medium text-gray-500 hover:text-[#d7037b] transition-colors">
-              Contacto
             </router-link>
           </nav>
 
+          <!-- Botones de acción con router-link -->
           <div class="flex items-center space-x-4">
-            <router-link to="/login" class="text-sm font-medium text-[#d7037b] hover:text-[#9e0154] transition-colors">
+            <router-link to="/login" class="text-sm font-medium text-white hover:text-gray-200 transition-colors">
               Iniciar sesión
             </router-link>
-            <router-link to="/register" class="hidden sm:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-[#d7037b] to-[#9e0154] hover:from-[#c5026f] hover:to-[#8b014a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d7037b] transition-all">
+            <router-link
+              to="/register"
+              class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all"
+            >
               Regístrate gratis
             </router-link>
           </div>
@@ -196,7 +197,7 @@
               <button
                 type="submit"
                 :disabled="isLoading"
-                class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#d7037b] to-[#9e0154] hover:from-[#c5026f] hover:to-[#8b014a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d7037b] transition-all duration-300"
+                class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-lg shadow-[#d7037b]/20 text-sm font-semibold text-white bg-[#d7037b] hover:brightness-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d7037b] transition-all duration-300"
               >
                 <span v-if="!isLoading">Crear cuenta</span>
                 <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -205,6 +206,7 @@
                 </svg>
               </button>
             </div>
+
           </form>
 
           <div class="mt-6 text-center text-sm text-gray-600">
@@ -216,12 +218,18 @@
         </div>
       </div>
     </main>
+
+    <!-- Footer agregado -->
+    <Footer />
   </div>
 </template>
 
 <script>
+import Footer from '@/views/Footer.vue';
+
 export default {
   name: 'PremiumRegisterView',
+  components: { Footer }, // registro mínimo del componente, no afecta tu lógica
   data() {
     return {
       name: '',
@@ -292,49 +300,42 @@ export default {
       }
 
       try {
-        // Lee la URL de la API directamente desde import.meta.env.VITE_APP_API_URL
-        // Vite inyecta estas variables durante el build.
         const API_BASE_URL = import.meta.env.VITE_APP_API_URL;
-
-        // Si por alguna razón la variable no está definida (ej. error de configuración)
-        // puedes añadir un fallback, aunque idealmente siempre debería estar.
         if (!API_BASE_URL) {
-            console.error("Error: VITE_APP_API_URL no está definida en las variables de entorno del frontend.");
-            this.errorMessage = "Error de configuración: No se pudo conectar a la API.";
-            this.isLoading = false;
-            return;
+          console.error("Error: VITE_APP_API_URL no está definida en las variables de entorno del frontend.");
+          this.errorMessage = "Error de configuración: No se pudo conectar a la API.";
+          this.isLoading = false;
+          return;
         }
 
         const API_URL = `${API_BASE_URL}/register`;
 
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             full_name: this.name,
             email: this.email,
             password: this.password,
-            confirm_password: this.confirmPassword, // FastAPI lo usará para validación
+            confirm_password: this.confirmPassword,
             agreed_terms: this.termsAccepted
           }),
         });
 
         let data;
         try {
-            data = await response.json();
+          data = await response.json();
         } catch (jsonError) {
-            this.errorMessage = 'Error inesperado del servidor. Inténtalo de nuevo.';
-            console.error('Error al parsear JSON de la respuesta:', jsonError);
-            this.isLoading = false;
-            return;
+          this.errorMessage = 'Error inesperado del servidor. Inténtalo de nuevo.';
+          console.error('Error al parsear JSON de la respuesta:', jsonError);
+          this.isLoading = false;
+          return;
         }
 
-        if (response.ok) { // Código de estado 2xx
+        if (response.ok) {
           console.log('Registro exitoso:', data);
           this.$router.push('/dashboard');
-        } else { // Códigos de estado de error (4xx, 5xx)
+        } else {
           this.errorMessage = data.detail || 'Error al registrar. Por favor, inténtalo de nuevo.';
           console.error('Error de registro desde el servidor:', data);
         }
@@ -355,24 +356,19 @@ export default {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
+.animate-spin { animation: spin 1s linear infinite; }
 
 /* Transiciones suaves */
 * {
   transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, opacity 0.2s;
 }
 
-/* Mejoras de accesibilidad */
+/* Accesibilidad */
 :focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.3);
 }
 
-/* Efecto hover para elementos interactivos */
-button:hover, .router-link:hover {
-  transform: translateY(-1px);
-}
+/* Hover micro-interacción */
+button:hover, .router-link:hover { transform: translateY(-1px); }
 </style>
