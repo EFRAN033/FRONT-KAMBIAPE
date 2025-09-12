@@ -17,8 +17,7 @@ export default defineConfig({
       '/api': { // Cuando una petición empiece con '/api'
         target: 'http://localhost:8000', // Reenvíala a tu backend de FastAPI
         changeOrigin: true, // Cambia el origen de la petición
-        // ✨ LÍNEA ELIMINADA: La siguiente línea causaba el error 404 ✨
-        // rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
+        // ✨ La línea 'rewrite' que causaba el error 404 ha sido eliminada.
       },
       // Si sirves imágenes u otros archivos estáticos desde tu backend, añade un proxy para ellos también
       '/uploads': { // Por ejemplo, si tus imágenes subidas están en /uploads
