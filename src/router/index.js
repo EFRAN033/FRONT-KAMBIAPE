@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { useUserStore } from '@/stores/user'; // Import your user store for route guards
+import { useUserStore } from '@/stores/user';
 
 // Core layout and main page components
 import MainPage from '../views/MainPage.vue';
@@ -9,20 +9,21 @@ import HeroSection from '../views/HeroSection.vue';
 import ProductFeed from '../views/ProductFeed.vue';
 
 // Your custom navigation view components
-import AboutUsView from '../views/AboutUsView.vue';    // Corresponds to 'Nosotros'
-import PublishView from '../views/PublishView.vue';  // Corresponds to 'Publicar'
-import InboxView from '../views/InboxView.vue';      // Corresponds to 'Buzón'
+import AboutUsView from '../views/AboutUsView.vue';
+import PublishView from '../views/PublishView.vue';
+import InboxView from '../views/InboxView.vue';
 
 // --- Nuevas importaciones para Login, Register, MyProfile y Configuration ---
 import LoginView from '../views/Login.vue';
 import RegisterView from '../views/Register.vue';
 import MyProfile from '../views/MyProfile.vue';
 import ConfigurationView from '../views/Configuration.vue';
-// --- FIN de nuevas importaciones ---
 
 // --- NUEVA IMPORTACIÓN PARA MyProducts.vue ---
 import MyProducts from '../views/MyProducts.vue';
-// --- FIN NUEVA IMPORTACIÓN ---
+
+// --- ✨ NUEVA IMPORTACIÓN PARA FAQsView.vue ---
+import FAQsView from '../views/FAQsView.vue';
 
 const routes = [
   {
@@ -33,7 +34,7 @@ const routes = [
       title: 'Inicio | KambiaPe'
     }
   },
-  // Existing structural routes (consider if these should be direct routes or sub-components)
+  // Existing structural routes
   {
     path: '/header',
     name: 'header',
@@ -68,7 +69,7 @@ const routes = [
   },
   // New routes for your navigation items
   {
-    path: '/nosotros', // Path for 'Nosotros'
+    path: '/nosotros',
     name: 'about',
     component: AboutUsView,
     meta: {
@@ -76,16 +77,15 @@ const routes = [
     }
   },
   {
-    path: '/publicar', // Path for 'Publicar'
+    path: '/publicar',
     name: 'publish',
     component: PublishView,
     meta: {
       title: 'Publicar | KambiaPe'
     }
   },
-
   {
-    path: '/buzon', // Path for 'Buzón'
+    path: '/buzon',
     name: 'inbox',
     component: InboxView,
     meta: {
@@ -129,17 +129,24 @@ const routes = [
   },
   // --- NUEVA RUTA PARA "MIS PRODUCTOS" (INVENTARIO) ---
   {
-    path: '/my-products', // Esta es la ruta a la que apunta el botón del sidebar
+    path: '/my-products',
     name: 'MyProducts',
     component: MyProducts,
     meta: {
       title: 'Mis Productos | KambiaPe',
-      requiresAuth: true // Probablemente quieras que esta ruta esté protegida también
+      requiresAuth: true
     }
   },
-  // --- FIN NUEVA RUTA ---
-
-  // Catch-all route for unmatched paths, redirects to home
+  // --- ✨ NUEVA RUTA PARA FAQs ---
+  {
+    path: '/faqs',
+    name: 'FAQs',
+    component: FAQsView,
+    meta: {
+      title: 'Preguntas Frecuentes | KambiaPe'
+    }
+  },
+  // Catch-all route for unmatched paths
   {
     path: '/:pathMatch(.*)*',
     redirect: '/'
@@ -165,7 +172,6 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || 'KambiaPe';
-
   const userStore = useUserStore();
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     next('/login');
