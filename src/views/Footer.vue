@@ -64,7 +64,7 @@
                     <svg v-else-if="s.icon === 'instagram'" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                       <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm10 2H7a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3zm-5 3a5 5 0 110 10 5 5 0 010-10zm5.8-1.8a1 1 0 110 2 1 1 0 010-2z"/>
                     </svg>
-                    <svg velse-if="s.icon === 'facebook'" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg v-else-if="s.icon === 'facebook'" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                       <path d="M13 22v-8h3l1-4h-4V7a1 1 0 011-1h3V2h-3a5 5 0 00-5 5v3H6v4h3v8h4z"/>
                     </svg>
                   </span>
@@ -255,15 +255,91 @@
               leave-from="opacity-100 translate-y-0 scale-100"
               leave-to="opacity-0 translate-y-3 scale-95"
             >
-              <div class="relative w-full max-w-lg">
-                <div class="pointer-events-none absolute -inset-px rounded-2xl bg-[conic-gradient(from_180deg_at_50%_50%,#d7037b33_0deg,#9e015433_120deg,transparent_200deg,#d7037b33_360deg)]"></div>
+              <DialogPanel class="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0b0b12]/90 p-6 sm:p-7 shadow-[0_10px_40px_-10px_rgba(215,3,123,0.35)] backdrop-blur-xl">
+                <DialogTitle class="text-center text-lg font-bold text-pink-300">Envíanos tus Comentarios</DialogTitle>
 
-                <DialogPanel
-                  class="relative rounded-2xl border border-white/10 bg-[#0b0b12]/90 p-6 sm:p-7 shadow-[0_10px_40px_-10px_rgba(215,3,123,0.35)] backdrop-blur-xl"
+                <form class="mt-4 space-y-3" @submit.prevent="submitComment">
+                  <div>
+                    <label for="commentType" class="mb-1 block text-[13px] text-gray-300">Tipo (opcional)</label>
+                    <select
+                      id="commentType"
+                      v-model="comment.type"
+                      class="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    >
+                      <option value="">Selecciona</option>
+                      <option value="suggestion">Sugerencia</option>
+                      <option value="problem">Reportar un problema</option>
+                      <option value="question">Pregunta</option>
+                      <option value="compliment">Felicitación</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="commentMessage" class="mb-1 block text-[13px] text-gray-300">
+                      Mensaje <span class="text-rose-400">*</span>
+                    </label>
+                    <textarea
+                      id="commentMessage"
+                      v-model="comment.message"
+                      rows="4"
+                      required
+                      class="w-full resize-y rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      placeholder="Escribe tu comentario..."
+                    ></textarea>
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label for="commentName" class="mb-1 block text-[13px] text-gray-300">Tu nombre (opcional)</label>
+                      <input
+                        id="commentName"
+                        v-model="comment.name"
+                        type="text"
+                        class="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      />
+                    </div>
+                    <div>
+                      <label for="commentEmail" class="mb-1 block text-[13px] text-gray-300">Correo (opcional)</label>
+                      <input
+                        id="commentEmail"
+                        v-model="comment.email"
+                        type="email"
+                        class="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      />
+                      <p v-if="emailError" class="mt-1 text-[12px] text-rose-400">{{ emailError }}</p>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      @click="closeCommentModal"
+                      class="rounded-md border border-gray-600 px-4 py-2 text-[13px] text-gray-300 hover:bg-gray-800"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      :disabled="isSubmitting"
+                      class="inline-flex items-center rounded-md bg-gradient-to-r from-pink-600 to-rose-600 px-4 py-2 text-[13px] font-medium text-white shadow hover:brightness-110 disabled:opacity-50"
+                    >
+                      <span v-if="!isSubmitting">Enviar</span>
+                      <svg v-else class="ml-1 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0A12 12 0 000 12h4z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+
+                <p
+                  v-if="feedbackMessage"
+                  class="mt-3 text-center text-[13px]"
+                  :class="isSuccess ? 'text-gray-300' : 'text-rose-400'"
                 >
-                  </DialogPanel>
-              </div>
-
+                  {{ feedbackMessage }}
+                </p>
+                </DialogPanel>
             </TransitionChild>
           </div>
         </div>
@@ -273,17 +349,14 @@
 </template>
 
 <script setup>
-// El script no necesita cambios para esta corrección
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot, Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 
-/* ------- Newsletter ------- */
 const newsletterEmail = ref('')
 const newsletterSubmitting = ref(false)
 const newsletterMsg = ref('')
 const newsletterOk = ref(false)
-
 const submitNewsletter = async () => {
   newsletterMsg.value = ''
   newsletterOk.value = false
@@ -298,15 +371,11 @@ const submitNewsletter = async () => {
   newsletterMsg.value = '¡Gracias por suscribirte!'
   newsletterEmail.value = ''
 }
-
-/* ------- ✨ Social links ACTUALIZADOS ✨ ------- */
 const socialLinks = [
   { name: 'Facebook',  href: 'https://www.facebook.com/share/1A62pnpV8K/', icon: 'facebook' },
   { name: 'Instagram', href: 'https://www.instagram.com/kambia_pe?igsh=MWg2aWR3YnhnNW1qdw==', icon: 'instagram' },
   { name: 'TikTok',    href: 'https://tiktok.com/@kambiape', icon: 'tiktok' },
 ]
-
-/* ------- Mobile sections ------- */
 const mobileSections = [
   { title: 'KambiaPe', type: 'newsletter' },
   {
@@ -332,25 +401,18 @@ const mobileSections = [
     ],
   },
 ]
-
-/* ------- Enrutado y acciones ------- */
 const router = useRouter()
 const handleAction = (link) => {
   if (link.action === 'comment') openCommentModal()
   else if (link.to?.startsWith('/')) router.push(link.to)
 }
-
-/* ------- CTA navegación ------- */
 const navigateToRegister = () => router.push('/Register')
-
-/* ------- Modal Comentarios (compacta) ------- */
 const isCommentModalVisible = ref(false)
 const comment = ref({ type: '', message: '', name: '', email: '' })
 const isSubmitting = ref(false)
 const feedbackMessage = ref('')
 const isSuccess = ref(false)
 const emailError = ref('')
-
 const openCommentModal = () => {
   isCommentModalVisible.value = true
   comment.value = { type: '', message: '', name: '', email: '' }
@@ -360,9 +422,7 @@ const openCommentModal = () => {
   isSubmitting.value = false
 }
 const closeCommentModal = () => (isCommentModalVisible.value = false)
-
 const validateEmail = (email) => !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase())
-
 const submitComment = async () => {
   emailError.value = ''
   if (!validateEmail(comment.value.email)) {
@@ -388,8 +448,6 @@ const submitComment = async () => {
     isSubmitting.value = false
   }
 }
-
-/* ------- Barra inferior ------- */
 const year = computed(() => new Date().getFullYear())
 const lang = ref('es')
 </script>
