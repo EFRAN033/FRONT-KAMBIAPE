@@ -117,7 +117,7 @@
 
       <div class="hidden md:grid grid-cols-12 gap-5">
         <div class="col-span-4">
-          <h3 class="text-sm font-bold text-[#d7037b]">KambiaPe</h3>
+          <h3 class="text-sm font-bold text-pink-400">KambiaPe</h3>
           <p class="mt-1 text-[13px] text-gray-400">
             Intercambia, dona y potencia el impacto social en tu comunidad.
           </p>
@@ -185,7 +185,7 @@
         </div>
 
         <div class="col-span-3">
-          <h3 class="text-sm font-bold text-[#d7037b] mb-2.5">Navegación</h3>
+          <h3 class="text-sm font-bold text-pink-400 mb-2.5">Navegación</h3>
           <ul class="space-y-1.5 text-gray-300 text-[13px]">
             <li><router-link to="/" class="hover:text-pink-300">Inicio</router-link></li>
             <li><router-link to="/como-funciona" class="hover:text-pink-300">Cómo funciona</router-link></li>
@@ -194,7 +194,7 @@
         </div>
 
         <div class="col-span-3">
-          <h3 class="text-sm font-bold text-[#d7037b] mb-2.5">Soporte</h3>
+          <h3 class="text-sm font-bold text-pink-400 mb-2.5">Soporte</h3>
           <ul class="space-y-1.5 text-gray-300 text-[13px]">
             <li><a href="mailto:kambiapex@gmail.com" class="hover:text-pink-300">kambiapex@gmail.com</a></li>
             <li><button @click="openCommentModal" class="hover:text-pink-300">Dejar un comentario</button></li>
@@ -202,7 +202,7 @@
         </div>
 
         <div class="col-span-2">
-          <h3 class="text-sm font-bold text-[#d7037b] mb-2.5">¿Quieres publicar?</h3>
+          <h3 class="text-sm font-bold text-pink-400 mb-2.5">¿Quieres publicar?</h3>
           <p class="text-gray-300 text-[13px] mb-2.5">Sube tus productos y dales una segunda vida.</p>
           <button
               @click="navigateToRegister"

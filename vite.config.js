@@ -12,12 +12,13 @@ export default defineConfig({
   },
   server: {
     historyApiFallback: true,
-    // --- INICIO: Añade esta sección de proxy ---
+    // --- INICIO: SECCIÓN CORREGIDA ---
     proxy: {
       '/api': { // Cuando una petición empiece con '/api'
         target: 'http://localhost:8000', // Reenvíala a tu backend de FastAPI
-        changeOrigin: true, // Cambia el origen de la petición a 'http://localhost:8000'
-        rewrite: (path) => path.replace(/^\/api/, '/api/v1'), // IMPORTANTE: Reemplaza '/api' por '/api/v1' para que coincida con tus rutas de FastAPI
+        changeOrigin: true, // Cambia el origen de la petición
+        // ✨ LÍNEA ELIMINADA: La siguiente línea causaba el error 404 ✨
+        // rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
       },
       // Si sirves imágenes u otros archivos estáticos desde tu backend, añade un proxy para ellos también
       '/uploads': { // Por ejemplo, si tus imágenes subidas están en /uploads
@@ -25,6 +26,6 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-    // --- FIN: Añade esta sección de proxy ---
+    // --- FIN: SECCIÓN CORREGIDA ---
   }
 })

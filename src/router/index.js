@@ -22,8 +22,9 @@ import ConfigurationView from '../views/Configuration.vue';
 // --- NUEVA IMPORTACIÓN PARA MyProducts.vue ---
 import MyProducts from '../views/MyProducts.vue';
 
-// --- ✨ NUEVA IMPORTACIÓN PARA FAQsView.vue ---
+// --- IMPORTACIONES PARA PÁGINAS INFORMATIVAS ---
 import FAQsView from '../views/FAQsView.vue';
+import CookiesView from '../views/Cookies.vue';
 
 const routes = [
   {
@@ -137,13 +138,21 @@ const routes = [
       requiresAuth: true
     }
   },
-  // --- ✨ NUEVA RUTA PARA FAQs ---
+  // --- NUEVAS RUTAS INFORMATIVAS ---
   {
     path: '/faqs',
     name: 'FAQs',
     component: FAQsView,
     meta: {
       title: 'Preguntas Frecuentes | KambiaPe'
+    }
+  },
+  {
+    path: '/cookies',
+    name: 'Cookies',
+    component: CookiesView,
+    meta: {
+      title: 'Política de Cookies | KambiaPe'
     }
   },
   // Catch-all route for unmatched paths
