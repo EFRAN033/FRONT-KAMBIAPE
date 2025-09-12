@@ -4,13 +4,6 @@
     <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
       <div class="flex items-center justify-between">
         
-        <!-- 
-          FLECHA MEJORADA PARA VUE:
-          - Ícono de flecha hacia la izquierda.
-          - Funcionalidad: @click="$router.back()" para usar el historial de Vue Router.
-          - Diseño: Mismas transiciones suaves y efecto de escala.
-          - Accesibilidad: aria-label actualizado a "Volver atrás".
-        -->
         <button 
           @click="$router.back()" 
           class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/25 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 ease-in-out"
@@ -21,9 +14,8 @@
           </svg>
         </button>
 
-        <!-- Navegación con router-link -->
         <nav class="hidden md:flex items-center space-x-7">
-          <router-link to="/about" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
+          <router-link to="/nosotros" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
             ¿Qué es KambiaPe?
           </router-link>
           <router-link to="/pricing" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
@@ -31,7 +23,6 @@
           </router-link>
         </nav>
 
-        <!-- Botones de acción con router-link -->
         <div class="flex items-center space-x-4">
           <router-link to="/login" class="text-sm font-medium text-white hover:text-gray-200 transition-colors">
             Iniciar sesión

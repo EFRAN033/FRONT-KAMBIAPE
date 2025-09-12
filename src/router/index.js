@@ -24,6 +24,11 @@ import ConfigurationView from '../views/Configuration.vue';
 import MyProducts from '../views/MyProducts.vue';
 // --- FIN NUEVA IMPORTACIÓN ---
 
+// --- ✨ NUEVA IMPORTACIÓN PARA WhatIs.vue ---
+import WhatIsView from '../views/WhatIs.vue';
+// --- ✨ FIN NUEVA IMPORTACIÓN ---
+
+
 const routes = [
   {
     path: '/',
@@ -75,6 +80,16 @@ const routes = [
       title: 'Nosotros | KambiaPe'
     }
   },
+  // --- ✨ NUEVA RUTA PARA WhatIs.vue ---
+  {
+    path: '/what-is',
+    name: 'WhatIs',
+    component: WhatIsView,
+    meta: {
+      title: '¿Qué es KambiaPe? | KambiaPe'
+    }
+  },
+  // --- ✨ FIN NUEVA RUTA ---
   {
     path: '/publicar', // Path for 'Publicar'
     name: 'publish',
