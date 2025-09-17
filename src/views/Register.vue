@@ -3,7 +3,6 @@
     <header class="bg-gradient-to-r from-[#d7037b] to-[#9e0154] shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
       <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
         <div class="flex items-center justify-between">
-          
           <button 
             @click="$router.back()" 
             class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/25 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 ease-in-out"
@@ -51,7 +50,6 @@
               beta
             </span>
           </router-link>
-
           <div class="hidden sm:flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
             <span class="inline-flex items-center gap-2">
               <span class="h-1 w-5 bg-[#d7037b] inline-block"></span> Registro seguro
@@ -62,26 +60,21 @@
 
       <section class="mx-auto max-w-7xl px-6 lg:px-8 py-10 sm:py-14 lg:py-18">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start lg:items-center lg:min-h-[78vh]">
-
           <aside class="lg:col-span-5 relative">
             <div class="absolute -inset-8 -z-10 opacity-15 dark:opacity-10">
               <div class="h-full w-full bg-[linear-gradient(90deg,rgba(215,3,123,0.18)_1px,transparent_1px),linear-gradient(0deg,rgba(215,3,123,0.10)_1px,transparent_1px)] bg-[size:22px_22px]"></div>
             </div>
-
             <div class="flex flex-col justify-start lg:justify-center h-full">
               <p class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#d7037b]">
                 Registro
                 <span class="h-[2px] w-6 bg-[#d7037b]/70"></span>
               </p>
-
               <h1 class="mt-3 text-[2.5rem] sm:text-[3rem] leading-[1.05] font-black tracking-tight text-gray-900 dark:text-white">
                 Crea tu cuenta en <span class="bg-clip-text text-transparent bg-[conic-gradient(from_180deg_at_50%_50%,#d7037b_0deg,#9e0154_150deg,#d7037b_360deg)]">KambiaPe</span>
               </h1>
-
               <p class="mt-5 max-w-prose text-[15px] leading-relaxed text-gray-700 dark:text-gray-300">
                 Tu acceso a KambiaPe: rápido, claro y seguro.
               </p>
-
               <ul class="mt-8 grid grid-cols-2 gap-4 text-sm">
                 <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <span class="h-1 w-6 bg-[#d7037b] inline-block"></span> Inicio ágil
@@ -114,19 +107,13 @@
             </div>
 
             <form @submit.prevent="handleRegister" class="space-y-10">
-
               <section>
                 <label for="name" class="mb-3 block text-[11px] font-semibold tracking-[0.22em] text-gray-600 dark:text-gray-400 uppercase">Nombre completo</label>
                 <div class="relative">
                   <input
-                    type="text"
-                    id="name"
-                    v-model="name"
-                    required
+                    type="text" id="name" v-model="name" required
                     class="peer w-full bg-transparent border-b-2 border-gray-300/80 dark:border-white/20 focus:outline-none focus:border-transparent transition-all px-0 py-2 placeholder-gray-400 dark:text-white"
-                    placeholder="Tu nombre"
-                    autocomplete="name"
-                  />
+                    placeholder="Tu nombre" autocomplete="name" />
                   <span class="pointer-events-none absolute left-0 -bottom-[2px] h-[2px] w-0 bg-gradient-to-r from-[#d7037b] via-[#b90266] to-[#9e0154] transition-[width] duration-500 ease-out peer-focus:w-full"></span>
                   <div class="absolute -bottom-6 right-0 text-gray-400 dark:text-gray-500">
                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"/></svg>
@@ -138,14 +125,9 @@
                 <label for="email" class="mb-3 block text-[11px] font-semibold tracking-[0.22em] text-gray-600 dark:text-gray-400 uppercase">Correo electrónico</label>
                 <div class="relative">
                   <input
-                    type="email"
-                    id="email"
-                    v-model="email"
-                    required
+                    type="email" id="email" v-model="email" required
                     class="peer w-full bg-transparent border-b-2 border-gray-300/80 dark:border-white/20 focus:outline-none focus:border-transparent transition-all px-0 py-2 placeholder-gray-400 dark:text-white"
-                    placeholder="tu@email.com"
-                    autocomplete="email"
-                  />
+                    placeholder="tu@email.com" autocomplete="email" />
                   <span class="pointer-events-none absolute left-0 -bottom-[2px] h-[2px] w-0 bg-gradient-to-r from-[#d7037b] via-[#b90266] to-[#9e0154] transition-[width] duration-500 ease-out peer-focus:w-full"></span>
                   <div class="absolute -bottom-6 right-0 text-gray-400 dark:text-gray-500">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l9 6 9-6v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/><path d="M21 6H3l9 6 9-6z"/></svg>
@@ -159,39 +141,21 @@
                 </div>
                 <div class="relative">
                   <input
-                    :type="showPassword ? 'text' : 'password'"
-                    id="password"
-                    v-model="password"
-                    required
-                    @input="validatePassword"
+                    :type="showPassword ? 'text' : 'password'" id="password" v-model="password" required @input="validatePassword"
                     class="peer w-full bg-transparent border-b-2 border-gray-300/80 dark:border-white/20 focus:outline-none focus:border-transparent transition-all px-0 py-2 placeholder-gray-400 dark:text-white"
-                    placeholder="••••••••"
-                    autocomplete="new-password"
-                  />
+                    placeholder="••••••••" autocomplete="new-password" />
                   <span class="pointer-events-none absolute left-0 -bottom-[2px] h-[2px] w-0 bg-gradient-to-r from-[#d7037b] via-[#b90266] to-[#9e0154] transition-[width] duration-500 ease-out peer-focus:w-full"></span>
-
-                  <button
-                    type="button"
-                    @click="showPassword = !showPassword"
-                    class="absolute inset-y-0 right-0 ml-2 rounded-sm p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100/70 dark:hover:bg-white/10 dark:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#d7037b]/30"
-                  >
+                  <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 ml-2 rounded-sm p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100/70 dark:hover:bg-white/10 dark:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#d7037b]/30">
                     <svg v-if="showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                   </button>
                 </div>
-
                 <div v-if="passwordStrength.visible" class="mt-4">
                   <div class="flex items-center gap-3">
                     <div class="flex-1 h-1.5 bg-gray-200/80 dark:bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        :class="passwordStrength.color"
-                        class="h-full rounded-full transition-[width] duration-500"
-                        :style="{width: passwordStrength.width}"
-                      ></div>
+                      <div :class="passwordStrength.color" class="h-full rounded-full transition-[width] duration-500" :style="{width: passwordStrength.width}"></div>
                     </div>
-                    <span class="text-xs font-semibold dark:text-gray-200" :class="passwordStrength.textColor">
-                      {{ passwordStrength.text }}
-                    </span>
+                    <span class="text-xs font-semibold dark:text-gray-200" :class="passwordStrength.textColor">{{ passwordStrength.text }}</span>
                   </div>
                 </div>
               </section>
@@ -199,22 +163,9 @@
               <section>
                 <label for="confirmPassword" class="mb-3 block text-[11px] font-semibold tracking-[0.22em] text-gray-600 dark:text-gray-400 uppercase">Confirmar contraseña</label>
                 <div class="relative">
-                  <input
-                    :type="showConfirmPassword ? 'text' : 'password'"
-                    id="confirmPassword"
-                    v-model="confirmPassword"
-                    required
-                    class="peer w-full bg-transparent border-b-2 border-gray-300/80 dark:border-white/20 focus:outline-none focus:border-transparent transition-all px-0 py-2 placeholder-gray-400 dark:text-white"
-                    placeholder="••••••••"
-                    autocomplete="new-password"
-                  />
+                  <input :type="showConfirmPassword ? 'text' : 'password'" id="confirmPassword" v-model="confirmPassword" required class="peer w-full bg-transparent border-b-2 border-gray-300/80 dark:border-white/20 focus:outline-none focus:border-transparent transition-all px-0 py-2 placeholder-gray-400 dark:text-white" placeholder="••••••••" autocomplete="new-password"/>
                   <span class="pointer-events-none absolute left-0 -bottom-[2px] h-[2px] w-0 bg-gradient-to-r from-[#d7037b] via-[#b90266] to-[#9e0154] transition-[width] duration-500 ease-out peer-focus:w-full"></span>
-
-                  <button
-                    type="button"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                    class="absolute inset-y-0 right-0 ml-2 rounded-sm p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100/70 dark:hover:bg-white/10 dark:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#d7037b]/30"
-                  >
+                  <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute inset-y-0 right-0 ml-2 rounded-sm p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100/70 dark:hover:bg-white/10 dark:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#d7037b]/30">
                     <svg v-if="showConfirmPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                   </button>
@@ -223,13 +174,7 @@
 
               <section class="flex items-start">
                 <div class="flex items-center h-5">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    v-model="termsAccepted"
-                    required
-                    class="h-4 w-4 text-[#d7037b] focus:ring-[#d7037b] border-gray-300 dark:border-white/20 rounded-sm"
-                  />
+                  <input id="terms" type="checkbox" v-model="termsAccepted" required class="h-4 w-4 text-[#d7037b] focus:ring-[#d7037b] border-gray-300 dark:border-white/20 rounded-sm"/>
                 </div>
                 <div class="ml-3 text-sm">
                   <label for="terms" class="font-medium text-gray-700 dark:text-gray-300">
@@ -252,10 +197,7 @@
                 <button
                   type="submit"
                   :disabled="isLoading"
-                  :class="{
-                    'opacity-75 cursor-not-allowed': isLoading,
-                    'hover:translate-y-[-1px]': !isLoading
-                  }"
+                  :class="{ 'opacity-75 cursor-not-allowed': isLoading, 'hover:-translate-y-px': !isLoading }"
                   class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 text-sm font-semibold text-white bg-[conic-gradient(from_180deg_at_50%_50%,#d7037b_0deg,#9e0154_160deg,#d7037b_360deg)] focus:outline-none focus:ring-4 focus:ring-[#d7037b]/30 active:scale-[0.98] transition-transform"
                 >
                   <span v-if="!isLoading">Crear cuenta</span>
@@ -274,14 +216,13 @@
         </div>
       </section>
     </main>
-
     <Footer />
   </div>
 </template>
 
 <script>
 import Footer from '@/views/Footer.vue';
-import axios from '@/axios'; // ✨ Importa tu instancia de axios
+import axios from '@/axios'; // ✨ Importa tu instancia de axios configurada
 
 export default {
   name: 'PremiumRegisterView',
@@ -301,7 +242,12 @@ export default {
   },
   computed: {
     passwordStrength() {
-      if (!this.password) return { visible: false, width: '0%', text: '', color: '', textColor: '' };
+      if (!this.password) return { visible: false };
+      let score = 0;
+      if (this.password.length >= 8) score++;
+      if (this.password.match(/[A-Z]/)) score++;
+      if (this.password.match(/[0-9]/)) score++;
+      if (this.password.match(/[^A-Za-z0-9]/)) score++;
       const strength = {
         0: { width: '20%', text: 'Débil', color: 'bg-red-500', textColor: 'text-red-500' },
         1: { width: '40%', text: 'Regular', color: 'bg-yellow-500', textColor: 'text-yellow-500' },
@@ -309,15 +255,7 @@ export default {
         3: { width: '80%', text: 'Fuerte', color: 'bg-green-400', textColor: 'text-green-500' },
         4: { width: '100%', text: 'Excelente', color: 'bg-green-500', textColor: 'text-green-600' }
       };
-      let score = 0;
-      if (this.password.length >= 8) score++;
-      if (this.password.match(/[A-Z]/)) score++;
-      if (this.password.match(/[0-9]/)) score++;
-      if (this.password.match(/[^A-Za-z0-9]/)) score++;
-      return {
-        visible: true,
-        ...strength[Math.min(score, 4)]
-      };
+      return { visible: true, ...strength[score] };
     }
   },
   methods: {
@@ -339,13 +277,14 @@ export default {
         return;
       }
       if (!this.termsAccepted) {
-        this.errorMessage = 'Debes aceptar los Términos de servicio.';
+        this.errorMessage = 'Debes aceptar los Términos de servicio y la Política de privacidad.';
         this.isLoading = false;
         return;
       }
 
       try {
         // La URL es relativa a la baseURL de axios, que ya usa el proxy.
+        // La llamada irá a /api/register, y el proxy la redirigirá a http://localhost:8000/register
         const response = await axios.post('/register', {
           full_name: this.name,
           email: this.email,
@@ -355,18 +294,22 @@ export default {
         });
         
         console.log('Registro exitoso:', response.data);
-        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+        alert('¡Registro exitoso! Serás redirigido para iniciar sesión.');
         this.$router.push('/login');
 
       } catch (error) {
         if (error.response) {
-          // El backend respondió con un error (ej. email ya existe)
-          this.errorMessage = error.response.data.detail || 'Error en el registro. Verifica tus datos.';
+          // El backend respondió con un error (ej. email ya existe, error de validación)
+          this.errorMessage = error.response.data.detail || 'Error en el registro. Verifica que tus datos sean correctos.';
           console.error('Error de registro desde el servidor:', error.response.data);
+        } else if (error.request) {
+            // No se recibió respuesta del servidor (puede estar caído o el proxy mal configurado)
+            this.errorMessage = 'No se pudo conectar al servidor. Por favor, inténtalo más tarde.';
+            console.error('No se recibió respuesta del servidor:', error.request);
         } else {
-          // Error de red o de configuración del proxy
-          this.errorMessage = 'No se pudo conectar al servidor. Inténtalo más tarde.';
-          console.error('Error de conexión o inesperado:', error);
+          // Otro tipo de error
+          this.errorMessage = 'Ocurrió un error inesperado al procesar tu solicitud.';
+          console.error('Error inesperado:', error.message);
         }
       } finally {
         this.isLoading = false;
@@ -377,20 +320,9 @@ export default {
 </script>
 
 <style scoped>
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .animate-spin { animation: spin 1s linear infinite; }
-
-* {
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, opacity 0.2s;
-}
-
-:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.3);
-}
-
+* { transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, opacity 0.2s; }
+:focus { outline: none; box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.3); }
 button:hover, .router-link:hover { transform: translateY(-1px); }
 </style>

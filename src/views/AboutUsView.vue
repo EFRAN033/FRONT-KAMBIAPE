@@ -629,7 +629,6 @@ const values = ref([
   { title: 'Sostenibilidad', description: 'Promovemos un consumo consciente, la reutilización y el respeto por nuestro planeta en cada intercambio.', icon: CubeTransparentIcon, color: '#d7037b' },
 ])
 
-/* >>>>>> FALTABA ESTO: Beneficios que usa el template <<<<<< */
 const benefits = ref([
   {
     title: 'Simplicidad & Rapidez',
