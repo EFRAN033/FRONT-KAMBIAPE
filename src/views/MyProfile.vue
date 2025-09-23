@@ -1,202 +1,173 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-pink-50 to-pink-100 flex flex-col items-center font-sans antialiased text-gray-800">
-    <header class="w-full bg-gradient-to-r from-pink-600 to-pink-700 shadow-md sticky top-0 z-50 transition-all duration-300 backdrop-blur-sm bg-opacity-90">
-      <div class="container mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
-        <button
-          @click="goBack"
-          class="p-2 rounded-full text-white/90 hover:bg-white/10 hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 active:scale-95 text-lg"
-          aria-label="Regresar"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+  <div class="min-h-screen font-sans antialiased bg-app text-ink">
+    <div aria-hidden="true" class="aurora -z-10"></div>
 
-        <h1 class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold text-white tracking-tight whitespace-nowrap">
-          <span class="inline-block transition-all duration-300 hover:scale-105 hover:drop-shadow-lg">KAMBIA<span class="font-black">PE</span></span>
-        </h1>
+    <header class="bg-gradient-to-r from-[#d7037b] to-[#9e0154] shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
+      <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
+        <div class="flex items-center justify-between">
+          <button
+            @click="$router.back()"
+            class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/25 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 ease-in-out"
+            aria-label="Volver atrás"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
 
-        <div class="w-6 h-6 sm:w-10 sm:h-10 invisible"></div>
+          <nav class="hidden md:flex items-center space-x-7">
+            <router-link to="/nosotros" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
+              ¿Qué es KambiaPe?
+            </router-link>
+            <router-link to="/pricing" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
+              Planes
+            </router-link>
+          </nav>
+
+          <div class="flex items-center space-x-4">
+            <router-link to="/login" class="text-sm font-medium text-white hover:text-gray-200 transition-colors">
+              Iniciar sesión
+            </router-link>
+            <router-link
+              to="/register"
+              class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all"
+            >
+              Regístrate gratis
+            </router-link>
+          </div>
+        </div>
       </div>
     </header>
 
-    <div class="max-w-4xl w-full bg-white rounded-xl shadow-lg overflow-hidden mt-6 mb-8 transition-all duration-300 hover:shadow-xl border border-pink-100">
-      <div class="relative bg-gradient-to-r from-pink-600 to-pink-700 h-40 sm:h-48 flex items-center justify-center p-4 overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-black/10"></div>
-        <div class="absolute inset-0 bg-pattern opacity-10" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0iI2ZmZiIgY3g9IjIwIiBjeT0iMjAiIHI9IjEuNSIvPjwvZz48L3N2Zz4=');"></div>
-        
-        <div class="relative z-10 flex flex-col items-center animate-fade-in-up">
-          <div class="relative group">
-            <div class="h-28 w-28 rounded-full border-3 border-white/90 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:border-white overflow-hidden ring-1 ring-pink-400/20">
-              <img
-                class="w-full h-full object-cover"
-                :src="userProfile.profilePicture || 'https://source.unsplash.com/300x300/?portrait,person'"
-                alt="Foto de perfil"
-                loading="lazy"
-              />
+    <div class="container mx-auto px-4 sm:px-6 py-8">
+      <div class="max-w-4xl mx-auto">
+
+        <section class="card animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
+          <div class="col-span-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-neutral-800/30 border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/10">
+            <div
+              class="avatar-shell group"
+              :class="[{ 'is-editing': editMode }, isDragOver && 'dragging']"
+              @dragover.prevent="onDragOver"
+              @dragleave.prevent="onDragLeave"
+              @drop.prevent="onDrop"
+            >
+              <div class="avatar-ring" aria-hidden="true"></div>
+              <img v-if="displayPhotoUrl || userProfile.profilePicture" class="avatar-img" :src="displayPhotoUrl || userProfile.profilePicture" alt="Foto de perfil" />
+              <div v-else class="avatar-placeholder"><span class="avatar-initials">{{ initials(userProfile.fullName) }}</span></div>
+
+              <div v-if="editMode" class="avatar-overlay">
+                <button type="button" class="btn-soft !px-3 !py-1.5" @click="changeProfilePicture">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586A1 1 0 0116 6v1a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 01.414-.805L4 5zm10-2a2 2 0 10-4 0h4z" /></svg>
+                  <span>Subir</span>
+                </button>
+                <p class="avatar-hint">o arrastra una imagen</p>
+                <input ref="fileInput" type="file" accept="image/jpeg,image/png" class="hidden" @change="onFileChange" />
+              </div>
             </div>
-            <div v-if="editMode" class="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 cursor-pointer" @click="changeProfilePicture">
-              <span class="text-white text-xs font-semibold bg-pink-600/80 px-2 py-1 rounded-full backdrop-blur-sm">CAMBIAR FOTO</span>
-            </div>
+            <p class="text-xs text-slate-500 dark:text-neutral-400 mt-3 text-center">Máx. {{ MAX_SIZE_MB }}MB</p>
           </div>
-          <h1 class="mt-4 text-2xl sm:text-3xl font-extrabold text-white text-center drop-shadow-md tracking-tight">
-            {{ capitalizeFirstLetter(userProfile.fullName) }}
-          </h1>
-          <p class="mt-1 text-base text-pink-100/90 text-center font-medium">{{ userProfile.email }}</p>
-        </div>
-      </div>
 
-      <div class="p-5 sm:p-7 md:p-8 space-y-8">
-        <section class="animate-fade-in-up" style="animation-delay: 100ms">
-          <div class="flex items-center mb-5 pb-3 border-b border-pink-100">
-            <div class="bg-pink-100 p-2 rounded-lg mr-3 shadow-inner">
-              <svg class="w-5 h-5 text-pink-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
+          <div class="col-span-1 md:col-span-2 p-6 flex flex-col">
+            <h1 class="title">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
+            <p class="muted -mt-1">{{ userProfile.email }}</p>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <span class="chip chip-dark">Miembro</span>
+              <span class="chip" :class="editMode ? 'chip-purple' : 'chip-pink'">{{ editMode ? 'Editando' : 'Activo' }}</span>
             </div>
-            <h2 class="text-xl font-bold text-pink-900 uppercase">Información Personal</h2>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-            <div class="space-y-1">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Nombre Completo</label>
-              <p v-if="!editMode" class="text-base font-semibold text-pink-900 leading-tight">{{ capitalizeFirstLetter(userProfile.fullName) }}</p>
-              <input v-else v-model="editableProfile.fullName" type="text" class="block w-full border border-pink-200 rounded-md py-2.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-300 transition-all duration-200 bg-pink-50/50 placeholder-pink-300/70">
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Correo Electrónico</label>
-              <p class="text-base font-semibold text-pink-900 leading-tight">{{ userProfile.email }}</p>
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Teléfono</label>
-              <p v-if="!editMode" class="text-base font-semibold text-pink-900 leading-tight">{{ userProfile.phone || 'No especificado' }}</p>
-              <input v-else v-model="editableProfile.phone" type="tel" class="block w-full border border-pink-200 rounded-md py-2.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-300 transition-all duration-200 bg-pink-50/50 placeholder-pink-300/70">
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Dirección</label>
-              <p v-if="!editMode" class="text-base font-semibold text-pink-900 leading-tight">{{ userProfile.address || 'No especificada' }}</p>
-              <input v-else v-model="editableProfile.address" type="text" class="block w-full border border-pink-200 rounded-md py-2.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-300 transition-all duration-200 bg-pink-50/50 placeholder-pink-300/70">
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Fecha de Nacimiento</label>
-              <p v-if="!editMode" class="text-base font-semibold text-pink-900 leading-tight">{{ userProfile.dateOfBirth || 'No especificada' }}</p>
-              <input v-else v-model="editableProfile.dateOfBirth" type="date" class="block w-full border border-pink-200 rounded-md py-2.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-300 transition-all duration-200 bg-pink-50/50 placeholder-pink-300/70 appearance-none">
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Género</label>
-              <p v-if="!editMode" class="text-base font-semibold text-pink-900 leading-tight">{{ userProfile.gender || 'No especificado' }}</p>
-              <select v-else v-model="editableProfile.gender" class="block w-full border border-pink-200 rounded-md py-2.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-300 transition-all duration-200 bg-pink-50/50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNlY2Q0OWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZxqvbWluPSJyb3VuZCI+PHBvbHlsaW5lIHBvaW50cz0iNiA5IDEyIDE1IDE4IDkiPjwvcG9seWxpbmU+PC9zdmc+')].bg-no-repeat bg-[right_0.75rem_center] bg-[length:1rem]">
-                <option value="">Selecciona</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Otro">Otro</option>
-                <option value="No especificar">Prefiero no especificar</option>
-              </select>
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Ocupación</label>
-              <p v-if="!editMode" class="text-base font-semibold text-pink-900 leading-tight">{{ userProfile.occupation || 'No especificada' }}</p>
-              <input v-else v-model="editableProfile.occupation" type="text" class="block w-full border border-pink-200 rounded-md py-2.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-300 transition-all duration-200 bg-pink-50/50 placeholder-pink-300/70">
-            </div>
-
-            <div class="space-y-1 md:col-span-2">
-              <label class="block text-xs font-medium text-pink-600/80 tracking-wide uppercase">Acerca de mí</label>
-              <p v-if="!editMode" class="text-sm text-pink-800/90 leading-relaxed">{{ userProfile.bio || 'No hay información adicional sobre ti.' }}</p>
-              <textarea v-else v-model="editableProfile.bio" rows="3" class="block w-full border border-pink-200 rounded-md py-2.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-300 transition-all duration-200 bg-pink-50/50 placeholder-pink-300/70"></textarea>
+            <div class="mt-auto pt-4 flex items-center gap-2">
+              <template v-if="!editMode">
+                <button @click="enterEditMode" class="btn-primary">Editar Perfil</button>
+                <button @click="logout" class="btn-outline">Salir</button>
+              </template>
+              <template v-else>
+                <button @click="saveProfile" :disabled="userStore.loading" class="btn-primary disabled:opacity-70 disabled:cursor-not-allowed">
+                  <svg v-if="userStore.loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  <span v-else>Guardar Cambios</span>
+                </button>
+                <button @click="cancelEdit" class="btn-outline">Cancelar</button>
+              </template>
             </div>
           </div>
         </section>
 
-        <section class="animate-fade-in-up" style="animation-delay: 200ms">
-          <div class="flex items-center mb-5 pb-3 border-b border-pink-100">
-            <div class="bg-pink-100 p-2 rounded-lg mr-3 shadow-inner">
-              <svg class="w-5 h-5 text-pink-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
+        <nav class="mt-6 animate-in-up" v-reveal>
+            <div class="card p-1.5 sm:p-2 overflow-hidden relative">
+              <div class="segmented" role="tablist" aria-label="Secciones de perfil">
+                <span class="seg-indicator" :style="indicatorStyle" aria-hidden="true"></span>
+                <button role="tab" :aria-selected="(activeTab==='perfil').toString()" class="seg-btn" :class="activeTab==='perfil' && 'is-active'" @click="setTab('perfil')">Perfil</button>
+                <button role="tab" :aria-selected="(activeTab==='seguridad').toString()" class="seg-btn" :class="activeTab==='seguridad' && 'is-active'" @click="setTab('seguridad')">Seguridad</button>
+              </div>
             </div>
-            <h2 class="text-xl font-bold text-pink-900 uppercase">Ajustes y Acciones</h2>
-          </div>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
-            <template v-if="!editMode">
-              <button
-                @click="enterEditMode"
-                class="col-span-1 flex items-center justify-center px-5 py-3 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-400 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group"
-              >
-                <svg class="w-4 h-4 mr-2 group-hover:animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-                EDITAR PERFIL
-              </button>
-            </template>
-            <template v-else>
-              <button
-                @click="saveProfile"
-                :disabled="userStore.loading"
-                class="col-span-1 flex items-center justify-center px-5 py-3 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-400 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                <svg v-if="userStore.loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <svg v-else class="w-4 h-4 mr-2 group-hover:animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                {{ userStore.loading ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
-              </button>
-              <button
-                @click="cancelEdit"
-                class="col-span-1 flex items-center justify-center px-5 py-3 border border-pink-300 text-sm font-bold rounded-lg text-pink-700 bg-white hover:bg-pink-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-200 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group"
-              >
-                <svg class="w-4 h-4 mr-2 group-hover:animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                CANCELAR
-              </button>
-            </template>
-            
-            <button
-              @click="changePassword"
-              class="col-span-1 flex items-center justify-center px-5 py-3 border border-pink-300 text-sm font-bold rounded-lg text-pink-700 bg-white hover:bg-pink-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-200 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group"
-            >
-              <svg class="w-4 h-4 mr-2 group-hover:animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-              </svg>
-              CAMBIAR CONTRASEÑA
-            </button>
-            <button
-              @click="logout"
-              class="col-span-1 flex items-center justify-center px-5 py-3 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-400 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 group"
-            >
-              <svg class="w-4 h-4 mr-2 group-hover:animate-bounce-x" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-              </svg>
-              CERRAR SESIÓN
-            </button>
-          </div>
-        </section>
+        </nav>
+
+        <main class="mt-6">
+          <section v-show="activeTab==='perfil'" class="card animate-in-up" v-reveal>
+            <header class="section-hd">
+              <h3 class="section-tt">Información Personal</h3>
+              <p class="section-ds">Mantén tus datos actualizados para una mejor experiencia.</p>
+            </header>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+              <div>
+                <label class="label">Nombre Completo</label>
+                <p v-if="!editMode" class="field-ro">{{ capitalizeFirstLetter(userProfile.fullName) || '-' }}</p>
+                <input v-else v-model="editableProfile.fullName" type="text" class="inp" placeholder="Tu nombre y apellido" />
+              </div>
+              <div>
+                <label class="label">DNI / Documento</label>
+                <p v-if="!editMode" class="field-ro">{{ userProfile.dni || '-' }}</p>
+                <input v-else v-model="editableProfile.dni" type="text" class="inp" placeholder="12345678" maxlength="8" />
+              </div>
+              <div>
+                <label class="label">Teléfono</label>
+                <p v-if="!editMode" class="field-ro">{{ userProfile.phone || '-' }}</p>
+                <input v-else v-model="editableProfile.phone" type="tel" class="inp" placeholder="+51 987 654 321" />
+              </div>
+              <div>
+                <label class="label">Fecha de Nacimiento</label>
+                <p v-if="!editMode" class="field-ro">{{ userProfile.dateOfBirth || '-' }}</p>
+                <input v-else v-model="editableProfile.dateOfBirth" type="date" class="inp" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="label">Acerca de Mí</label>
+                <p v-if="!editMode" class="field-ro min-h-[6rem] text-sm">{{ userProfile.bio || 'Aún no has añadido una biografía.' }}</p>
+                <textarea v-else v-model="editableProfile.bio" rows="3" class="inp" placeholder="Cuéntale a la comunidad sobre tus intereses..."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section v-show="activeTab==='seguridad'" class="card animate-in-up" v-reveal>
+            <header class="section-hd">
+              <h3 class="section-tt">Seguridad y Privacidad</h3>
+              <p class="section-ds">Gestiona el acceso y la seguridad de tu cuenta.</p>
+            </header>
+            <div class="p-6 space-y-5">
+              <div class="row">
+                <div>
+                  <h4 class="subtt">Contraseña</h4>
+                  <p class="muted text-sm">Se recomienda actualizar tu contraseña periódicamente.</p>
+                </div>
+                <button @click="changePassword" class="btn-primary btn-sm shrink-0">Cambiar Contraseña</button>
+              </div>
+              <hr class="sep" />
+              <div class="row">
+                <div>
+                  <h4 class="subtt">Cerrar Sesión</h4>
+                  <p class="muted text-sm">Finaliza tu sesión actual en este dispositivo.</p>
+                </div>
+                <button @click="logout" class="btn-danger btn-sm shrink-0">Cerrar Sesión</button>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
 
-    <transition name="slide-fade">
-      <div v-if="showToast" :class="['fixed bottom-4 right-4 px-5 py-3 rounded-xl shadow-lg flex items-center space-x-2 z-50 max-w-xs border-l-4', toastClasses]">
-        <svg v-if="toastType === 'success'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <svg v-else-if="toastType === 'error'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <svg v-else class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <span class="text-xs font-semibold">{{ toastMessage }}</span>
+    <transition name="toast-slide">
+      <div v-if="showToast" :class="['toast', toastClasses]" role="status" aria-live="polite">
+        <svg v-if="toastType === 'success'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+        <svg v-else-if="toastType === 'error'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+        <svg v-else class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+        <span class="text-sm font-semibold">{{ toastMessage }}</span>
       </div>
     </transition>
   </div>
@@ -209,237 +180,268 @@ import { ref, onMounted, watch, computed } from 'vue';
 
 export default {
   name: 'MyProfile',
+  directives: {
+    reveal: { // Animación de entrada al hacer scroll
+      mounted(el) {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        el.classList.add('reveal-initial');
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              el.classList.add('reveal-active');
+              observer.unobserve(el);
+            }
+          });
+        }, { threshold: 0.1 });
+        observer.observe(el);
+      }
+    }
+  },
   setup() {
     const userStore = useUserStore();
     const router = useRouter();
-    
-    // Reactive variables for Toast
+
+    // --- ESTADO LOCAL DEL COMPONENTE ---
+    const editMode = ref(false);
+    const editableProfile = ref({});
+    const activeTab = ref('perfil');
+    const darkMode = ref(false);
+
+    // --- ESTADO PARA NOTIFICACIONES (TOAST) ---
     const showToast = ref(false);
     const toastMessage = ref('');
     const toastType = ref('info'); // 'success', 'error', 'info'
 
-    // Computed property for toast classes
-    const toastClasses = computed(() => {
-      const base = 'bg-white';
-      switch(toastType.value) {
-        case 'success':
-          return `${base} text-pink-800 border-l-green-500`;
-        case 'error':
-          return `${base} text-pink-800 border-l-red-500`;
-        default:
-          return `${base} text-pink-800 border-l-blue-500`;
+    // --- ESTADO PARA LA FOTO DE PERFIL ---
+    const fileInput = ref(null);
+    const selectedPhotoFile = ref(null);
+    const selectedPhotoUrl = ref(null);
+    const isDragOver = ref(false);
+    const MAX_SIZE_MB = 2;
+
+    // --- PROPIEDADES COMPUTADAS ---
+    const userProfile = computed(() => userStore.getUserProfile);
+    const displayPhotoUrl = computed(() => selectedPhotoUrl.value || '');
+    const toastClasses = computed(() => ({
+      'toast-success': toastType.value === 'success',
+      'toast-error': toastType.value === 'error',
+      'toast-info': toastType.value === 'info',
+    }));
+    const indicatorStyle = computed(() => {
+        const index = activeTab.value === 'perfil' ? 0 : 1;
+        return { transform: `translateX(calc(${index} * 100%))` };
+    });
+
+    // --- MÉTODOS ---
+    const showNotification = (message, type = 'info', duration = 3000) => {
+      toastMessage.value = message;
+      toastType.value = type;
+      showToast.value = true;
+      setTimeout(() => showToast.value = false, duration);
+    };
+
+    const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    const initials = (name) => !name ? 'KP' : name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+    const goBack = () => router.back();
+    const setTab = (tab) => activeTab.value = tab;
+
+    const enterEditMode = () => {
+      editableProfile.value = { ...userProfile.value };
+      editMode.value = true;
+      showNotification('Modo de edición activado.', 'info');
+    };
+
+    const cancelEdit = () => {
+      editMode.value = false;
+      resetTempPhoto();
+      showNotification('Edición cancelada.', 'info');
+    };
+
+    const saveProfile = async () => {
+      if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
+      
+      showNotification('Guardando cambios...', 'info');
+
+      // Aquí iría la lógica para subir la imagen si se seleccionó una nueva
+      // if (selectedPhotoFile.value) { ... }
+
+      const success = await userStore.updateProfile(userStore.user.id, editableProfile.value);
+      if (success) {
+        editMode.value = false;
+        resetTempPhoto();
+        showNotification('Perfil actualizado con éxito.', 'success');
+      } else {
+        showNotification(userStore.error || 'No se pudo actualizar el perfil.', 'error');
+      }
+    };
+
+    const logout = async () => {
+      showNotification('Cerrando sesión...', 'info');
+      await new Promise(r => setTimeout(r, 1000));
+      userStore.clearUser();
+      router.push('/login');
+    };
+
+    const changePassword = () => showNotification('Función no implementada aún.', 'info');
+    
+    // --- MANEJO DE IMAGEN DE PERFIL ---
+    const changeProfilePicture = () => fileInput.value?.click();
+    const resetTempPhoto = () => {
+      if (selectedPhotoUrl.value) URL.revokeObjectURL(selectedPhotoUrl.value);
+      selectedPhotoFile.value = null;
+      selectedPhotoUrl.value = null;
+    };
+    const handleFile = (file) => {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) return showNotification('Solo se permiten archivos de imagen.', 'error');
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) return showNotification(`La imagen no debe superar ${MAX_SIZE_MB}MB.`, 'error');
+      
+      resetTempPhoto();
+      selectedPhotoFile.value = file;
+      selectedPhotoUrl.value = URL.createObjectURL(file);
+      if (!editMode.value) enterEditMode();
+    };
+    const onFileChange = (e) => handleFile(e.target.files?.[0]);
+    const onDragOver = (e) => { if (editMode.value) isDragOver.value = true; };
+    const onDragLeave = () => isDragOver.value = false;
+    const onDrop = (e) => {
+      isDragOver.value = false;
+      if (editMode.value) handleFile(e.dataTransfer?.files?.[0]);
+    };
+
+    // --- DARK MODE ---
+    const toggleTheme = () => {
+      darkMode.value = !darkMode.value;
+      document.documentElement.classList.toggle('dark', darkMode.value);
+      localStorage.setItem('theme', darkMode.value ? 'dark' : 'light');
+    };
+
+    // --- HOOKS DEL CICLO DE VIDA ---
+    onMounted(async () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        darkMode.value = true;
+        document.documentElement.classList.add('dark');
+      }
+
+      if (userStore.isLoggedIn && userStore.user?.id) {
+        await userStore.fetchUserProfile(userStore.user.id);
+      } else {
+        router.push('/login');
       }
     });
 
-    // Capitalize first letter function
-    const capitalizeFirstLetter = (str) => {
-      if (!str) return '';
-      return str.split(' ').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' ');
-    };
-
-    // Reactive variable for edit mode
-    const editMode = ref(false);
-
-    // Temporary object to hold changes while editing
-    const editableProfile = ref({});
-
-    // Get userProfile from the store (reactive)
-    const userProfile = userStore.getUserProfile;
-
-    // Watch for changes in userProfile
     watch(userProfile, (newProfile) => {
       if (!editMode.value) {
         editableProfile.value = { ...newProfile };
       }
     }, { immediate: true, deep: true });
 
-    // When the component is mounted, try to load the full profile
-    onMounted(async () => {
-      if (userStore.isLoggedIn && userStore.user?.id) {
-        await userStore.fetchUserProfile(userStore.user.id);
-      } else if (!userStore.isLoggedIn) {
-        router.push('/login');
-      }
-    });
-
-    // Function to show the Toast notification
-    const showNotification = (message, type = 'info') => {
-      toastMessage.value = message;
-      toastType.value = type;
-      showToast.value = true;
-      setTimeout(() => {
-        showToast.value = false;
-      }, 4000);
-    };
-
-    // Navigation back
-    const goBack = () => {
-      router.back();
-    };
-
-    // Enter edit mode
-    const enterEditMode = () => {
-      editableProfile.value = { ...userProfile };
-      editMode.value = true;
-      showNotification('Modo edición activado. Realiza tus cambios.', 'info');
-    };
-
-    // Cancel edit mode
-    const cancelEdit = () => {
-      editMode.value = false;
-      showNotification('Edición cancelada. Los cambios no se guardaron.', 'info');
-    };
-
-    // Save profile changes
-    const saveProfile = async () => {
-      if (!userStore.user?.id) {
-        showNotification('Error: No se pudo identificar al usuario para guardar el perfil.', 'error');
-        return;
-      }
-
-      // Basic validation
-      if (!editableProfile.value.fullName || !editableProfile.value.email) {
-        showNotification('El nombre completo y el correo electrónico son campos obligatorios.', 'error');
-        return;
-      }
-
-      showNotification('Guardando cambios...', 'info');
-      
-      const success = await userStore.updateProfile(userStore.user.id, editableProfile.value);
-
-      if (success) {
-        editMode.value = false;
-        showNotification('¡Perfil actualizado exitosamente!', 'success');
-      } else {
-        showNotification(userStore.error || 'Hubo un error al actualizar el perfil.', 'error');
-      }
-    };
-
-    // Function for changing profile picture
-    const changeProfilePicture = () => {
-      showNotification('Funcionalidad para cambiar foto de perfil aún no implementada.', 'info');
-    };
-
-    const changePassword = () => {
-      showNotification('Redirigiendo a la página de cambio de contraseña...', 'info');
-      setTimeout(() => {
-        router.push('/change-password');
-      }, 800);
-    };
-
-    const logout = async () => {
-      showNotification('Cerrando sesión...', 'info');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      userStore.clearUser();
-      router.push('/login');
-    };
-
     return {
-      userProfile,
-      editMode,
-      editableProfile,
-      goBack,
-      enterEditMode,
-      cancelEdit,
-      saveProfile,
-      changeProfilePicture,
-      changePassword,
-      logout,
-      showToast,
-      toastMessage,
-      toastType,
-      toastClasses,
-      capitalizeFirstLetter,
-      userStore
+      // Estado
+      userProfile, editMode, editableProfile, activeTab, darkMode, showToast, toastMessage, toastType, userStore,
+      // Computadas
+      toastClasses, indicatorStyle, displayPhotoUrl,
+      // Métodos
+      goBack, enterEditMode, cancelEdit, saveProfile, logout, changePassword, showNotification, setTab, toggleTheme,
+      // Utils
+      capitalizeFirstLetter, initials,
+      // Lógica de archivos
+      fileInput, MAX_SIZE_MB, isDragOver,
+      changeProfilePicture, onFileChange, onDragOver, onDragLeave, onDrop,
     };
   },
 };
 </script>
 
 <style scoped>
-/* Animaciones premium */
-.bg-pattern {
-  background-size: 50px 50px;
+/* ======= TEMA Y COLORES BASE ======= */
+:root {
+  --app-bg: #f9fafb; --ink: #111827; --muted: #6b7280; --card-bg: #ffffff; --border-color: #e5e7eb;
+  --brand-pink: #ec4899; --brand-purple: #a855f7; --brand-blue: #3b82f6;
+  --success: #16a34a; --danger: #dc2626; --info: #2563eb;
 }
+:root.dark {
+  --app-bg: #0f172a; --ink: #f1f5f9; --muted: #94a3b8; --card-bg: #1e293b; --border-color: #334155;
+}
+.bg-app { background-color: var(--app-bg); }
+.text-ink { color: var(--ink); }
+.muted { color: var(--muted); }
 
-/* Animación de aparición premium */
-.animate-fade-in-up {
-  animation: fadeInUp 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
+/* ======= COMPONENTES REUTILIZABLES ======= */
+.container { max-width: 1280px; }
+.card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 1.25rem; }
+.btn-ghost { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 0.75rem; transition: background-color 0.2s; }
+.btn-ghost:hover { background-color: rgba(127,127,127,0.1); }
+.btn-primary { display: inline-flex; align-items: center; justify-content: center; padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-weight: 600; color: white; background: var(--brand-pink); transition: transform 0.1s, filter 0.2s; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-primary:active { transform: scale(0.97); }
+.btn-outline { display: inline-flex; align-items: center; justify-content: center; padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-weight: 600; color: var(--ink); border: 1px solid var(--border-color); background-color: transparent; transition: background-color 0.2s; }
+.btn-outline:hover { background-color: rgba(127,127,127,0.05); }
+.btn-danger { background: var(--danger); }
+.btn-soft { background-color: rgba(236, 72, 153, 0.1); color: #be185d; }
+.dark .btn-soft { background-color: rgba(236, 72, 153, 0.15); color: #f9a8d4; }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+.label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-bottom: 0.375rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.inp, .field-ro { width: 100%; border-radius: 0.75rem; padding: 0.75rem 1rem; border: 1px solid var(--border-color); font-size: 0.95rem; }
+.inp { background-color: transparent; color: var(--ink); transition: box-shadow 0.2s, border-color 0.2s; }
+.inp:focus { outline: none; border-color: var(--brand-pink); box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2); }
+.field-ro { background-color: rgba(148, 163, 184, 0.08); font-weight: 500; }
+.dark .field-ro { background-color: rgba(148, 163, 184, 0.1); }
 
-/* Animación de rebote horizontal premium */
-.group:hover .group-hover\:animate-bounce-x {
-  animation: bounceX 0.8s cubic-bezier(0.5, 0, 0.5, 1.5) infinite;
-}
+.chip { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+.chip-dark { background-color: #334155; color: #f1f5f9; }
+.dark .chip-dark { background-color: #475569; color: #f1f5f9; }
+.chip-pink { background-color: #fce7f3; color: #be185d; }
+.dark .chip-pink { background-color: #581c87; color: #f0abfc; }
+.chip-purple { background-color: #f5f3ff; color: #7c3aed; }
+.dark .chip-purple { background-color: #3b0764; color: #d8b4fe; }
 
-@keyframes bounceX {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(5px);
-  }
-}
+/* ======= LAYOUT Y SECCIONES ======= */
+.aurora { position: fixed; inset: 0; filter: blur(60px); background: radial-gradient(circle at 10% 20%, rgba(236, 72, 153, 0.15), transparent 40%), radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.15), transparent 40%); animation: aurora-float 12s ease-in-out infinite; }
+@keyframes aurora-float { 50% { transform: translateY(-20px); } }
+.brand { font-size: 1.25rem; font-weight: 800; }
+.brand-core { color: var(--ink); }
+.brand-emph { color: var(--brand-pink); }
+.section-hd { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+.section-tt { font-weight: 700; font-size: 1.125rem; }
+.section-ds { font-size: 0.875rem; color: var(--muted); }
+.subtt { font-weight: 600; }
+.title { font-size: 1.5rem; font-weight: 700; }
+.row { display: flex; flex-direction: column; gap: 0.75rem; }
+@media (min-width: 768px) { .row { flex-direction: row; align-items: center; justify-content: space-between; } }
+.sep { border-color: var(--border-color); }
 
-/* Transición de toast premium */
-.slide-fade-enter-active {
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-.slide-fade-leave-active {
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(30px);
-  opacity: 0;
-}
+/* ======= AVATAR ======= */
+.avatar-shell { position: relative; width: 160px; height: 160px; }
+.avatar-ring { position: absolute; inset: 0; border-radius: 999px; padding: 5px; background: conic-gradient(from 180deg, var(--brand-pink), var(--brand-purple), var(--brand-blue), var(--brand-pink)); animation: spin 8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.avatar-img, .avatar-placeholder { width: 100%; height: 100%; border-radius: 999px; object-fit: cover; background-color: #e5e7eb; border: 3px solid var(--card-bg); display: grid; place-items: center; }
+.avatar-initials { font-size: 3rem; font-weight: 700; color: var(--muted); }
+.avatar-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; border-radius: 999px; background-color: rgba(0,0,0,0.5); border: 2px dashed rgba(255,255,255,0.7); opacity: 0; transition: opacity 0.2s; }
+.avatar-shell.is-editing .avatar-overlay { opacity: 1; }
+.avatar-shell.dragging .avatar-overlay { background-color: rgba(236, 72, 153, 0.5); }
+.avatar-hint { font-size: 0.7rem; color: white; text-align: center; }
 
-/* Mejoras en los inputs premium */
-input, select, textarea {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-}
+/* ======= TABS ======= */
+.segmented{ position: relative; display: grid; grid-template-columns: repeat(2, 1fr); background: rgba(148,163,184,.12); border: 1px solid rgba(148,163,184,.25); border-radius: 12px; padding: 5px; }
+.dark .segmented { background-color: rgba(148,163,184, .1); border-color: rgba(148,163,184, .2); }
+.seg-btn{ position: relative; z-index: 2; padding: .6rem .7rem; border-radius: 9px; font-weight: 600; color: var(--muted); transition: color .25s ease; }
+.seg-btn.is-active{ color: var(--ink); }
+.seg-indicator{ position: absolute; z-index: 1; width: calc(50% - 10px); height: calc(100% - 10px); left: 5px; top: 5px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 9px; box-shadow: 0 3px 8px -1px rgba(0,0,0,0.07); transition: transform .3s cubic-bezier(.25, .8, .5, 1); }
+.dark .seg-indicator { box-shadow: 0 3px 8px -1px rgba(0,0,0,0.2); }
 
-input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
-  border-color: rgba(236, 72, 153, 0.5);
-}
+/* ======= TOAST ======= */
+.toast { position: fixed; right: 1rem; bottom: 1rem; z-index: 50; display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; border-radius: 0.75rem; border: 1px solid var(--border-color); background-color: var(--card-bg); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+.toast-success { border-left: 4px solid var(--success); color: var(--success); }
+.toast-error { border-left: 4px solid var(--danger); color: var(--danger); }
+.toast-info { border-left: 4px solid var(--info); color: var(--info); }
+.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+.toast-slide-enter-from, .toast-slide-leave-to { transform: translateX(120%); opacity: 0; }
 
-/* Mejora en la imagen de perfil premium */
-img {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Efecto de hover en botones secundarios */
-button.border-pink-300:hover {
-  box-shadow: 0 2px 8px -1px rgba(236, 72, 153, 0.2);
-}
-
-/* Efecto de profundidad en la tarjeta principal */
-.shadow-xl {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.hover\:shadow-2xl:hover {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-}
-
-/* Mejora en el header sticky */
-.sticky {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
+/* ======= ANIMACIONES DE ENTRADA ======= */
+.animate-in-up { animation: animate-in-up 0.5s ease-out both; }
+.reveal-initial { opacity: 0; transform: translateY(10px); }
+.reveal-active { animation: animate-in-up 0.5s ease-out forwards; }
+@keyframes animate-in-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>

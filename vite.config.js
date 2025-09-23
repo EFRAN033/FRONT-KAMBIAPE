@@ -1,7 +1,7 @@
 // vite.config.js
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import path from 'path' // Asegúrate de que 'path' esté importado
+import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
@@ -12,19 +12,18 @@ export default defineConfig({
   },
   server: {
     historyApiFallback: true,
-
     proxy: {
-      '/api': { // Cuando una petición del frontend empiece con '/api'
-        target: 'http://localhost:8000', // Reenvíala a tu backend de FastAPI
-        changeOrigin: true, // Necesario para el proxy
-        // ✨ ESTA LÍNEA ES LA SOLUCIÓN: Reescribe la ruta para que coincida con el backend ✨
-        rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        // ✨ CORRECCIÓN CLAVE: Esta línea elimina '/api' de la ruta antes de enviarla al backend
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
-      '/uploads': { // El proxy para las imágenes está bien
+      // La configuración para las imágenes debe mantenerse igual
+      '/uploads': { 
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
     },
-    // --- FIN: SECCIÓN CORREGIDA ---
   }
 })
