@@ -1,9 +1,7 @@
 <template>
   <div class="min-h-screen font-sans antialiased bg-gray-50 text-gray-900 dark:bg-slate-900 dark:text-gray-100">
-    <!-- Glow sutil, menos saturado -->
     <div aria-hidden="true" class="aurora -z-10"></div>
 
-    <!-- HEADER (misma paleta) -->
     <header class="brand-header shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
       <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
         <div class="flex items-center justify-between">
@@ -23,7 +21,6 @@
     <div class="container mx-auto px-4 sm:px-6 py-8">
       <div class="max-w-4xl mx-auto">
 
-        <!-- CABECERA PERFIL -->
         <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
           <div class="col-span-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
             <div
@@ -61,11 +58,11 @@
 
             <div class="mt-auto pt-4 flex flex-wrap items-center gap-2">
               <template v-if="!editMode">
-                <button @click="enterEditMode" class="btn-brand text-white">Editar Perfil</button>
-                <button @click="logout" class="btn-ghost">Salir</button>
+                  <button @click="enterEditMode" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">Editar Perfil</button>
+                  <button @click="logout" class="btn-ghost">Salir</button>
               </template>
               <template v-else>
-                <button @click="saveProfile" :disabled="userStore.loading" class="btn-brand text-white disabled:opacity-70 disabled:cursor-not-allowed">
+                <button @click="saveProfile" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed">
                   <svg v-if="userStore.loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   <span v-else>Guardar Cambios</span>
                 </button>
@@ -75,7 +72,6 @@
           </div>
         </section>
 
-        <!-- TABS -->
         <nav class="mt-6 animate-in-up" v-reveal>
           <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-1.5 sm:p-2 overflow-hidden relative">
             <div class="segmented" role="tablist" aria-label="Secciones de perfil">
@@ -86,7 +82,6 @@
           </div>
         </nav>
 
-        <!-- CONTENIDO: PERFIL -->
         <main class="mt-6">
           <section v-show="activeTab==='perfil'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
             <header class="p-5 border-b border-gray-200 dark:border-slate-700">
@@ -122,7 +117,6 @@
             </div>
           </section>
 
-          <!-- CONTENIDO: SEGURIDAD -->
           <section v-show="activeTab==='seguridad'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
             <header class="p-5 border-b border-gray-200 dark:border-slate-700">
               <h3 class="text-lg font-bold">Seguridad y Privacidad</h3>
@@ -134,15 +128,30 @@
                   <h4 class="font-semibold text-gray-900 dark:text-white">Contraseña</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Se recomienda actualizar tu contraseña periódicamente.</p>
                 </div>
-                <button @click="changePassword" class="btn-brand btn-sm text-white">Cambiar Contraseña</button>
+                <button @click="changePassword" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">Cambiar Contraseña</button>
               </div>
+
               <hr class="border-gray-200 dark:border-slate-700" />
+
+              <!-- NUEVA OPCIÓN: Ver dispositivos actuales -->
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Cerrar Sesión</h4>
+                  <h4 class="font-semibold text-gray-900 dark:text-white">Dispositivos y sesiones</h4>
+                  <p class="text-sm text-gray-500 dark:text-slate-400">Revisa dónde tienes la sesión iniciada y gestiona el acceso.</p>
+                </div>
+                <button @click="openDevicesModal" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">
+                  Ver dispositivos actuales
+                </button>
+              </div>
+
+              <hr class="border-gray-200 dark:border-slate-700" />
+
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <h4 class="font-semibold text-red-600 dark:text-red-500">Cerrar Sesión</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Finaliza tu sesión actual en este dispositivo.</p>
                 </div>
-                <button @click="logout" class="btn-brand btn-danger btn-sm text-white">Cerrar Sesión</button>
+                <button @click="logout" class="rounded-md bg-red-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">Cerrar Sesión</button>
               </div>
             </div>
           </section>
@@ -150,7 +159,56 @@
       </div>
     </div>
 
-    <!-- TOAST -->
+    <!-- MODAL DISPOSITIVOS (no cambia el look & feel, sigue tu estética) -->
+    <transition name="toast-slide">
+      <div v-if="showDevices" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showDevices=false"></div>
+        <div class="relative w-full max-w-2xl rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl">
+          <header class="p-5 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+            <div>
+              <h4 class="text-lg font-bold">Dispositivos actuales</h4>
+              <p class="text-sm text-gray-500 dark:text-slate-400">Sesiones activas asociadas a tu cuenta.</p>
+            </div>
+            <button class="icon-btn" aria-label="Cerrar" @click="showDevices=false">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9.293l-4.146-4.147a1 1 0 10-1.414 1.415L8.586 10l-4.146 4.146a1 1 0 101.414 1.415L10 11.414l4.146 4.147a1 1 0 001.414-1.415L11.414 10l4.146-4.146a1 1 0 10-1.414-1.415L10 8.586z" clip-rule="evenodd"/></svg>
+            </button>
+          </header>
+
+          <div class="p-5">
+            <div v-if="devices.length === 0" class="text-sm text-gray-600 dark:text-slate-300">
+              No encontramos sesiones activas desde el servidor. <span class="text-gray-500 dark:text-slate-400">Si tu backend aún no expone sesiones, usa este bloque como vista de ejemplo.</span>
+            </div>
+
+            <ul v-else class="space-y-3">
+              <li v-for="(d, idx) in devices" :key="idx" class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg grid place-items-center bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-slate-700">
+                    <!-- icono simple segun tipo -->
+                    <svg v-if="(d.type||'').includes('Mobile')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 15a1 1 0 100-2 1 1 0 000 2z"/></svg>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2H4zm-1 9a3 3 0 003 3h8a3 3 0 003-3H3z"/></svg>
+                  </div>
+                  <div>
+                    <p class="font-semibold">{{ d.name || d.userAgent || 'Dispositivo' }}</p>
+                    <p class="text-xs text-gray-500 dark:text-slate-400">
+                      {{ d.location || 'Ubicación desconocida' }} · {{ d.lastActive ? formatDate(d.lastActive) : 'Actividad reciente no disponible' }}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span v-if="d.current" class="chip">Actual</span>
+                  <button v-if="d.canRevoke !== false" @click="revokeDevice(d)" class="btn-ghost btn-sm">Cerrar sesión</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <footer class="p-5 border-t border-gray-200 dark:border-slate-700 flex justify-end">
+            <button class="btn-ghost" @click="showDevices=false">Cerrar</button>
+          </footer>
+        </div>
+      </div>
+    </transition>
+
     <transition name="toast-slide">
       <div v-if="showToast" :class="[
         'fixed right-4 bottom-4 z-50 flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 shadow-lg bg-white dark:bg-slate-800',
@@ -196,6 +254,7 @@ export default {
     const router = useRouter();
     const editMode = ref(false);
     const editableProfile = ref({});
+    theActiveTabCheck();
     const activeTab = ref('perfil');
     const darkMode = ref(false);
     const showToast = ref(false);
@@ -206,6 +265,10 @@ export default {
     const selectedPhotoUrl = ref(null);
     const isDragOver = ref(false);
     const MAX_SIZE_MB = 2;
+
+    // MODAL dispositivos
+    const showDevices = ref(false);
+    const devices = ref([]);
 
     const userProfile = computed(() => userStore.getUserProfile);
     const displayPhotoUrl = computed(() => selectedPhotoUrl.value || '');
@@ -291,6 +354,56 @@ export default {
       if (editMode.value) handleFile(e.dataTransfer?.files?.[0]);
     };
 
+    // Abrir modal y cargar sesiones
+    const openDevicesModal = async () => {
+      showDevices.value = true;
+      // Intenta obtener sesiones desde el store si existe el método o propiedad:
+      try {
+        if (typeof userStore.fetchSessions === 'function') {
+          await userStore.fetchSessions();
+        }
+        const fromStore = userStore.getActiveSessions || userStore.sessions || [];
+        // Mapea a estructura esperada
+        devices.value = (fromStore || []).map(s => ({
+          name: s.name || s.device || s.userAgent || 'Dispositivo',
+          userAgent: s.userAgent,
+          type: s.type || (s.userAgent || '').match(/Android|iPhone|Mobile/i) ? 'Mobile' : 'Desktop',
+          location: s.location || s.ip || 'Ubicación desconocida',
+          lastActive: s.lastActive || s.updatedAt || s.createdAt || null,
+          current: !!s.current,
+          canRevoke: s.canRevoke !== false,
+          id: s.id
+        }));
+      } catch (e) {
+        devices.value = [];
+      }
+    };
+
+    const revokeDevice = async (d) => {
+      try {
+        if (typeof userStore.revokeSession === 'function' && d.id) {
+          const ok = await userStore.revokeSession(d.id);
+          if (ok) {
+            devices.value = devices.value.filter(x => x.id !== d.id);
+            showNotification('Sesión cerrada correctamente.', 'success');
+            return;
+          }
+        }
+        showNotification('No se pudo cerrar la sesión.', 'error');
+      } catch {
+        showNotification('No se pudo cerrar la sesión.', 'error');
+      }
+    };
+
+    const formatDate = (iso) => {
+      try {
+        const date = new Date(iso);
+        return isNaN(date.getTime()) ? 'Fecha no disponible' : date.toLocaleString();
+      } catch {
+        return 'Fecha no disponible';
+      }
+    };
+
     onMounted(async () => {
       if (localStorage.getItem('theme') === 'dark') {
         darkMode.value = true;
@@ -316,9 +429,14 @@ export default {
       capitalizeFirstLetter, initials,
       fileInput, MAX_SIZE_MB, isDragOver,
       changeProfilePicture, onFileChange, onDragOver, onDragLeave, onDrop,
+      // dispositivos
+      showDevices, devices, openDevicesModal, revokeDevice, formatDate
     };
   },
 };
+
+// Evita linter de var sin usar si la línea de arriba se mueve
+function theActiveTabCheck() { return true; }
 </script>
 
 <style scoped>
@@ -377,7 +495,7 @@ export default {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
   padding: .625rem 1.1rem; border-radius: .9rem;
   font-weight: 700; color: #fff;
-  background: linear-gradient(90deg, var(--brand-600), var(--brand-700));
+  background: linear-gradient(90deg, #b70668, #9e0154);
   transition: transform .12s ease, filter .2s ease;
   box-shadow: 0 6px 20px -8px rgba(157, 1, 84, .5);
 }
