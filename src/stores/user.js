@@ -14,6 +14,8 @@ const getRandomDefaultAvatar = () => {
 export const useUserStore = defineStore('user', {
   state: () => ({
     token: localStorage.getItem('access_token') || null,
+    // ✨ ESTADO AÑADIDO: Lee el tema desde localStorage al iniciar
+    isDarkMode: localStorage.getItem('theme') === 'dark',
     user: JSON.parse(localStorage.getItem('user')) || {
       id: null,
       fullName: '',
@@ -25,7 +27,7 @@ export const useUserStore = defineStore('user', {
       gender: null,
       occupation: null,
       bio: null,
-      dni: null, // <-- ✨ CORRECCIÓN AÑADIDA
+      dni: null, 
       agreed_terms: false,
       created_at: null,
     },
@@ -50,6 +52,15 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
+    // ✨ ACCIÓN NUEVA: Para cambiar y persistir el estado del modo oscuro
+    toggleDarkMode() {
+      this.isDarkMode = !this.isDarkMode;
+      // Guarda la preferencia en localStorage
+      localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
+      // Aplica o remueve la clase 'dark' del elemento <html>
+      document.documentElement.classList.toggle('dark', this.isDarkMode);
+    },
+
     _processUserData(data) {
       const processedData = {
         id: data.id || null,
@@ -63,7 +74,7 @@ export const useUserStore = defineStore('user', {
         gender: data.gender || null,
         occupation: data.occupation || null,
         bio: data.bio || null,
-        dni: data.dni || null, // Esta línea ya procesaba el DNI, lo cual es correcto
+        dni: data.dni || null,
         agreed_terms: data.agreed_terms || false,
         created_at: data.created_at || null,
       };
@@ -183,7 +194,7 @@ export const useUserStore = defineStore('user', {
         gender: null,
         occupation: null,
         bio: null,
-        dni: null, // <-- ✨ CORRECCIÓN AÑADIDA
+        dni: null,
         agreed_terms: false,
         created_at: null,
       };

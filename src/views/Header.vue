@@ -24,6 +24,7 @@
             }"
           >
             <span class="flex items-center">
+              <component :is="link.icon" class="h-4 w-4 mr-2 text-white/90" />
               {{ link.label }}
               <span
                 v-if="link.badge"
@@ -186,8 +187,7 @@
       leave-active-class="transition duration-150 ease-in"
       enter-from-class="transform -translate-y-4 opacity-0"
       enter-to-class="transform translate-y-0 opacity-100"
-      leave-from-class="transform translate-y-0 opacity-100"
-      leave-to-class="transform -translate-y-4 opacity-0"
+      leave-from-class="transform translate-y-0 opacity-0"
     >
       <div v-show="menuOpen" class="lg:hidden bg-white shadow-xl" @click.stop>
         <div class="container mx-auto px-4 py-4">
@@ -267,6 +267,7 @@ import { useUserStore } from '@/stores/user';
 
 // Importa los íconos necesarios de Heroicons
 import {
+  HomeIcon,                 // <-- agregado para el botón de Inicio
   UserGroupIcon as AboutIcon,
   PlusCircleIcon as PostIcon,
   InboxIcon as InboxIcon,
@@ -285,7 +286,13 @@ const userMenuOpen = ref(false);
 const searchQuery = ref('');
 
 // Definición de los enlaces de navegación (sin "Eventos")
+// Agregamos "Inicio" como primer item SIN borrar nada más
 const navLinks = [
+  {
+    path: '/',
+    label: 'Inicio',
+    icon: HomeIcon
+  },
   {
     path: '/nosotros',
     label: 'Nosotros',

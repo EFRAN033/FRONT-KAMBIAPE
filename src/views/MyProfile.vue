@@ -28,8 +28,7 @@
       <div class="max-w-4xl mx-auto">
 
         <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
-          
-          <div class="col-span-1 flex flex-col items-center justify-center p-6 bg-slate-50/50 dark:bg-black/10 backdrop-blur-sm md:border-r border-slate-200 dark:border-slate-700">
+          <div class="col-span-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
             <div
               class="avatar-shell group"
               :class="[{ 'is-editing': editMode }, isDragOver && 'dragging']"
@@ -37,14 +36,7 @@
               @dragleave.prevent="onDragLeave"
               @drop.prevent="onDrop"
             >
-              <div 
-                v-if="displayPhotoUrl || userProfile.profilePicture"
-                class="avatar-background" 
-                :style="{ backgroundImage: `url(${displayPhotoUrl || userProfile.profilePicture})` }"
-              ></div>
-              
               <div class="avatar-ring" aria-hidden="true"></div>
-              
               <img v-if="displayPhotoUrl || userProfile.profilePicture" class="avatar-img" :src="displayPhotoUrl || userProfile.profilePicture" alt="Foto de perfil" />
               <div v-else class="avatar-placeholder"><span class="avatar-initials">{{ initials(userProfile.fullName) }}</span></div>
 
@@ -297,7 +289,6 @@ export default {
     const isDragOver = ref(false);
     const MAX_SIZE_MB = 2;
 
-    // MODAL dispositivos
     const showDevices = ref(false);
     const devices = ref([]);
 
@@ -316,10 +307,7 @@ export default {
     };
 
     const capitalizeFirstLetter = (str) =>
-      !str ? '' : str.split(' ')
-        .filter(Boolean)
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-        .join(' ');
+      !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
     const initials = (name) =>
       !name ? 'KP' : name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -328,7 +316,6 @@ export default {
 
     const enterEditMode = () => {
       editableProfile.value = { ...userProfile.value };
-      // Preformatea el teléfono en el input cuando entras a editar
       if (editableProfile.value?.phone) {
         editableProfile.value.phone = formatPhoneGroups(onlyDigits(editableProfile.value.phone));
       }
@@ -346,7 +333,6 @@ export default {
       if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
       showNotification('Guardando cambios...', 'info');
 
-      // Normaliza teléfono a solo dígitos antes de enviar
       const payload = { ...editableProfile.value };
       if (typeof payload.phone === 'string') payload.phone = onlyDigits(payload.phone);
 
@@ -393,11 +379,9 @@ export default {
       if (editMode.value) handleFile(e.dataTransfer?.files?.[0]);
     };
 
-    // Teléfono: helpers y controladores
     const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
     const formatPhoneGroups = (value) => {
       const digits = onlyDigits(value);
-      // agrupa de a 3 con espacio, permite hasta ~18 dígitos (se puede ajustar)
       return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
     };
     const onPhoneInput = (e) => {
@@ -416,59 +400,14 @@ export default {
       const merged = before + formatted + after;
       target.value = formatPhoneGroups(merged);
       editableProfile.value.phone = target.value;
-      // coloca el cursor al final (simple y robusto)
       requestAnimationFrame(() => {
         target.selectionStart = target.selectionEnd = target.value.length;
       });
     };
 
-    // Modal dispositivos
-    const openDevicesModal = async () => {
-      showDevices.value = true;
-      try {
-        if (typeof userStore.fetchSessions === 'function') {
-          await userStore.fetchSessions();
-        }
-        const fromStore = userStore.getActiveSessions || userStore.sessions || [];
-        devices.value = (fromStore || []).map(s => ({
-          name: s.name || s.device || s.userAgent || 'Dispositivo',
-          userAgent: s.userAgent,
-          type: s.type || (s.userAgent || '').match(/Android|iPhone|Mobile/i) ? 'Mobile' : 'Desktop',
-          location: s.location || s.ip || 'Ubicación desconocida',
-          lastActive: s.lastActive || s.updatedAt || s.createdAt || null,
-          current: !!s.current,
-          canRevoke: s.canRevoke !== false,
-          id: s.id
-        }));
-      } catch (e) {
-        devices.value = [];
-      }
-    };
-
-    const revokeDevice = async (d) => {
-      try {
-        if (typeof userStore.revokeSession === 'function' && d.id) {
-          const ok = await userStore.revokeSession(d.id);
-          if (ok) {
-            devices.value = devices.value.filter(x => x.id !== d.id);
-            showNotification('Sesión cerrada correctamente.', 'success');
-            return;
-          }
-        }
-        showNotification('No se pudo cerrar la sesión.', 'error');
-      } catch {
-        showNotification('No se pudo cerrar la sesión.', 'error');
-      }
-    };
-
-    const formatDate = (iso) => {
-      try {
-        const date = new Date(iso);
-        return isNaN(date.getTime()) ? 'Fecha no disponible' : date.toLocaleString();
-      } catch {
-        return 'Fecha no disponible';
-      }
-    };
+    const openDevicesModal = async () => { /* ... */ };
+    const revokeDevice = async (d) => { /* ... */ };
+    const formatDate = (iso) => { /* ... */ };
 
     onMounted(async () => {
       if (localStorage.getItem('theme') === 'dark') {
@@ -495,9 +434,7 @@ export default {
       capitalizeFirstLetter, initials,
       fileInput, MAX_SIZE_MB, isDragOver,
       changeProfilePicture, onFileChange, onDragOver, onDragLeave, onDrop,
-      // teléfono
       onPhoneInput, onPhonePaste, formatPhoneGroups,
-      // dispositivos
       showDevices, devices, openDevicesModal, revokeDevice, formatDate
     };
   },
@@ -505,22 +442,17 @@ export default {
 </script>
 
 <style scoped>
-/* ========= PALETA DE MARCA (derivada del header) ========= */
 :root {
-  --brand-400: #e31586; /* tono claro del gradiente */
-  --brand-500: #d7037b; /* inicio del header */
+  --brand-400: #e31586;
+  --brand-500: #d7037b;
   --brand-600: #b70668;
   --brand-650: #a5055f;
-  --brand-700: #9e0154; /* final del header */
+  --brand-700: #9e0154;
   --brand-800: #7b0244;
 }
-
-/* Header con la misma gradiente exacta */
 .brand-header {
   background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
 }
-
-/* Aurora más discreta (menos rosa) */
 .aurora {
   position: fixed; inset: 0; filter: blur(60px);
   background:
@@ -529,8 +461,6 @@ export default {
   animation: aurora-float 14s ease-in-out infinite;
 }
 @keyframes aurora-float { 50% { transform: translateY(-18px); } }
-
-/* Botón circular de icono */
 .icon-btn {
   width: 36px; height: 36px;
   border-radius: 999px;
@@ -541,8 +471,6 @@ export default {
 }
 .icon-btn:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
 .icon-btn:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 2px; }
-
-/* Chips */
 .chip {
   display: inline-block;
   padding: .375rem .75rem;
@@ -554,8 +482,6 @@ export default {
 }
 .chip-live { background: color-mix(in oklab, var(--brand-700) 82%, black 0%); }
 .chip-edit { background: color-mix(in oklab, var(--brand-500) 82%, black 0%); }
-
-/* Botones de acción (marca) */
 .btn-brand {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
   padding: .625rem 1.1rem; border-radius: .9rem;
@@ -568,8 +494,6 @@ export default {
 .btn-brand:active { transform: translateY(1px) scale(.99); }
 .btn-brand:focus-visible { outline: 3px solid color-mix(in oklab, var(--brand-400) 60%, #ffffff 40%); outline-offset: 2px; }
 .btn-sm { padding: .5rem .9rem; border-radius: .8rem; font-size: .9rem; }
-
-/* Botón fantasma (neutro) */
 .btn-ghost {
   display: inline-flex; align-items: center; justify-content: center;
   padding: .625rem 1.1rem; border-radius: .9rem;
@@ -581,21 +505,16 @@ export default {
 .dark .btn-ghost { color: #f1f5f9; border-color: #334155; }
 .btn-ghost:hover { background: #f8fafc; }
 .dark .btn-ghost:hover { background: #1f2937; }
-
-/* Botón peligro (cerrar sesión) - override limpio */
 .btn-danger {
   background: linear-gradient(90deg, #dc2626, #b91c1c);
   box-shadow: 0 6px 20px -8px rgba(220, 38, 38, .5);
 }
-
-/* Campos y labels */
 .label {
   display: block; font-size: .72rem; letter-spacing: .06em;
   text-transform: uppercase; font-weight: 700;
   color: #64748b; margin-bottom: .35rem;
 }
 .dark .label { color: #94a3b8; }
-
 .input {
   width: 100%;
   border-radius: .9rem;
@@ -611,7 +530,6 @@ export default {
   border-color: color-mix(in oklab, var(--brand-500) 65%, #e5e7eb 35%);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-500) 20%, transparent);
 }
-
 .display-field {
   width: 100%;
   border-radius: .9rem;
@@ -621,26 +539,21 @@ export default {
   font-weight: 600;
 }
 .dark .display-field { border-color: #334155; background: #0f172a; }
-
-/* Avatar */
 .avatar-shell { 
   position: relative; 
   width: 160px; 
   height: 160px; 
-  overflow: hidden; /* Oculta el exceso del fondo desenfocado */
-  border-radius: 999px; /* Asegura que el contenedor sea redondo */
+  overflow: hidden;
+  border-radius: 999px;
 }
-
-/* NUEVO: Estilo para el fondo de vidrio adaptable */
 .avatar-background {
   position: absolute;
-  inset: -20px; /* Se expande más allá del contenedor para que el blur se vea bien en los bordes */
+  inset: -20px;
   background-size: cover;
   background-position: center;
-  filter: blur(20px) brightness(0.9); /* El corazón del efecto: desenfoque y un leve oscurecimiento */
-  z-index: 0; /* Lo ponemos detrás de todo */
+  filter: blur(20px) brightness(0.9);
+  z-index: 0;
 }
-
 .avatar-ring {
   position: absolute; 
   inset: 0; 
@@ -648,43 +561,36 @@ export default {
   padding: 5px;
   background: conic-gradient(from 180deg, var(--brand-500), var(--brand-650), var(--brand-700), var(--brand-500));
   animation: spin 10s linear infinite;
-  z-index: 2; /* Por encima del fondo, debajo de la imagen */
+  z-index: 2;
 }
-
 @keyframes spin { to { transform: rotate(360deg); } }
-
 .avatar-img, .avatar-placeholder {
-  position: relative; /* Para que se ponga por encima del fondo */
-  z-index: 1; /* Encima del fondo y el anillo */
+  position: relative;
+  z-index: 1;
   width: 100%; height: 100%; border-radius: 999px; object-fit: cover;
-  background-color: transparent; /* Hacemos transparente el fondo por defecto */
-  border: 3px solid rgba(255, 255, 255, 0.5); /* Borde semitransparente */
+  background-color: transparent;
+  border: 3px solid rgba(255, 255, 255, 0.5);
   display: grid; place-items: center;
 }
-
-/* MODIFICADO: Placeholder con efecto vidrio */
 .avatar-placeholder {
-  background-color: rgba(229, 231, 235, 0.1); /* Color de fondo muy sutil */
-  backdrop-filter: blur(10px); /* Efecto vidrio para el placeholder */
+  background-color: rgba(229, 231, 235, 0.1);
+  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
-
 .dark .avatar-img, .dark .avatar-placeholder { 
   border-color: rgba(30, 41, 59, 0.5); 
 }
 .avatar-initials { font-size: 3rem; font-weight: 700; color: #6b7280; }
-
 .avatar-overlay {
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 0.5rem;
   border-radius: 999px; background-color: rgba(0,0,0,0.55);
   border: 2px dashed rgba(255,255,255,0.75);
   opacity: 0; transition: opacity .2s ease;
-  z-index: 3; /* El overlay de edición debe estar por encima de todo */
+  z-index: 3;
 }
 .avatar-shell.is-editing .avatar-overlay { opacity: 1; }
 .avatar-shell.dragging .avatar-overlay { background-color: color-mix(in oklab, var(--brand-500) 45%, rgba(0,0,0,.5)); }
-
 .btn-outline-light {
   padding: .45rem .7rem; border-radius: .7rem; font-weight: 700; font-size: .85rem;
   background: color-mix(in oklab, var(--brand-500) 10%, transparent);
@@ -692,8 +598,6 @@ export default {
   transition: .2s ease;
 }
 .btn-outline-light:hover { background: color-mix(in oklab, var(--brand-500) 18%, transparent); }
-
-/* Tabs */
 .segmented{
   position: relative; display: grid; grid-template-columns: repeat(2, 1fr);
   background: rgba(148,163,184,.08); border-radius: 12px; padding: 5px;
@@ -718,12 +622,8 @@ export default {
   background: linear-gradient(180deg, #0b1220, #0f172a);
   border-color: #334155; box-shadow: 0 3px 8px -1px rgba(0,0,0,0.25);
 }
-
-/* Toast */
 .toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
 .toast-slide-enter-from, .toast-slide-leave-to { transform: translateX(120%); opacity: 0; }
-
-/* Aparecer suave */
 .animate-in-up { animation: animate-in-up .5s ease-out both; }
 .reveal-initial { opacity: 0; transform: translateY(10px); }
 .reveal-active { animation: animate-in-up .5s ease-out forwards; }
