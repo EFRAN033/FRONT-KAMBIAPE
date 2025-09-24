@@ -1,3 +1,4 @@
+// src/stores/user.js
 import { defineStore } from 'pinia';
 import axios from '@/axios';
 
@@ -24,6 +25,7 @@ export const useUserStore = defineStore('user', {
       gender: null,
       occupation: null,
       bio: null,
+      dni: null, // <-- ✨ CORRECCIÓN AÑADIDA
       agreed_terms: false,
       created_at: null,
     },
@@ -61,6 +63,7 @@ export const useUserStore = defineStore('user', {
         gender: data.gender || null,
         occupation: data.occupation || null,
         bio: data.bio || null,
+        dni: data.dni || null, // Esta línea ya procesaba el DNI, lo cual es correcto
         agreed_terms: data.agreed_terms || false,
         created_at: data.created_at || null,
       };
@@ -180,6 +183,7 @@ export const useUserStore = defineStore('user', {
         gender: null,
         occupation: null,
         bio: null,
+        dni: null, // <-- ✨ CORRECCIÓN AÑADIDA
         agreed_terms: false,
         created_at: null,
       };

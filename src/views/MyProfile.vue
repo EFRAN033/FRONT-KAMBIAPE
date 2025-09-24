@@ -4,7 +4,7 @@
 
     <header class="brand-header shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
       <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between relative">
           <button
             @click="$router.back()"
             class="icon-btn"
@@ -14,6 +14,12 @@
               <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
           </button>
+
+          <h2 class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base font-bold text-white whitespace-nowrap">
+            Perfil de Usuario
+          </h2>
+
+          <div class="w-9 h-9"></div>
         </div>
       </div>
     </header>
@@ -22,7 +28,8 @@
       <div class="max-w-4xl mx-auto">
 
         <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
-          <div class="col-span-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
+          
+          <div class="col-span-1 flex flex-col items-center justify-center p-6 bg-slate-50/50 dark:bg-black/10 backdrop-blur-sm md:border-r border-slate-200 dark:border-slate-700">
             <div
               class="avatar-shell group"
               :class="[{ 'is-editing': editMode }, isDragOver && 'dragging']"
@@ -30,7 +37,14 @@
               @dragleave.prevent="onDragLeave"
               @drop.prevent="onDrop"
             >
+              <div 
+                v-if="displayPhotoUrl || userProfile.profilePicture"
+                class="avatar-background" 
+                :style="{ backgroundImage: `url(${displayPhotoUrl || userProfile.profilePicture})` }"
+              ></div>
+              
               <div class="avatar-ring" aria-hidden="true"></div>
+              
               <img v-if="displayPhotoUrl || userProfile.profilePicture" class="avatar-img" :src="displayPhotoUrl || userProfile.profilePicture" alt="Foto de perfil" />
               <div v-else class="avatar-placeholder"><span class="avatar-initials">{{ initials(userProfile.fullName) }}</span></div>
 
@@ -609,22 +623,55 @@ export default {
 .dark .display-field { border-color: #334155; background: #0f172a; }
 
 /* Avatar */
-.avatar-shell { position: relative; width: 160px; height: 160px; }
+.avatar-shell { 
+  position: relative; 
+  width: 160px; 
+  height: 160px; 
+  overflow: hidden; /* Oculta el exceso del fondo desenfocado */
+  border-radius: 999px; /* Asegura que el contenedor sea redondo */
+}
+
+/* NUEVO: Estilo para el fondo de vidrio adaptable */
+.avatar-background {
+  position: absolute;
+  inset: -20px; /* Se expande más allá del contenedor para que el blur se vea bien en los bordes */
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px) brightness(0.9); /* El corazón del efecto: desenfoque y un leve oscurecimiento */
+  z-index: 0; /* Lo ponemos detrás de todo */
+}
+
 .avatar-ring {
-  position: absolute; inset: 0; border-radius: 999px; padding: 5px;
+  position: absolute; 
+  inset: 0; 
+  border-radius: 999px; 
+  padding: 5px;
   background: conic-gradient(from 180deg, var(--brand-500), var(--brand-650), var(--brand-700), var(--brand-500));
   animation: spin 10s linear infinite;
+  z-index: 2; /* Por encima del fondo, debajo de la imagen */
 }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .avatar-img, .avatar-placeholder {
+  position: relative; /* Para que se ponga por encima del fondo */
+  z-index: 1; /* Encima del fondo y el anillo */
   width: 100%; height: 100%; border-radius: 999px; object-fit: cover;
-  background-color: #e5e7eb;
-  border: 3px solid #fff;
+  background-color: transparent; /* Hacemos transparente el fondo por defecto */
+  border: 3px solid rgba(255, 255, 255, 0.5); /* Borde semitransparente */
   display: grid; place-items: center;
-  transform: scale(1.2); /* Zoom a la imagen */
 }
-.dark .avatar-img, .dark .avatar-placeholder { border-color: #1e293b; }
+
+/* MODIFICADO: Placeholder con efecto vidrio */
+.avatar-placeholder {
+  background-color: rgba(229, 231, 235, 0.1); /* Color de fondo muy sutil */
+  backdrop-filter: blur(10px); /* Efecto vidrio para el placeholder */
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dark .avatar-img, .dark .avatar-placeholder { 
+  border-color: rgba(30, 41, 59, 0.5); 
+}
 .avatar-initials { font-size: 3rem; font-weight: 700; color: #6b7280; }
 
 .avatar-overlay {
@@ -633,6 +680,7 @@ export default {
   border-radius: 999px; background-color: rgba(0,0,0,0.55);
   border: 2px dashed rgba(255,255,255,0.75);
   opacity: 0; transition: opacity .2s ease;
+  z-index: 3; /* El overlay de edición debe estar por encima de todo */
 }
 .avatar-shell.is-editing .avatar-overlay { opacity: 1; }
 .avatar-shell.dragging .avatar-overlay { background-color: color-mix(in oklab, var(--brand-500) 45%, rgba(0,0,0,.5)); }
