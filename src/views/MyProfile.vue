@@ -100,14 +100,11 @@
                 <input v-else v-model="editableProfile.dni" type="text" maxlength="12" inputmode="numeric" class="input" placeholder="12345678" />
               </div>
 
-              <!-- TELÉFONO con separación 3-3-3 -->
               <div>
                 <label class="label">Teléfono</label>
-                <!-- Modo lectura: se muestra formateado 3-3-3 -->
                 <p v-if="!editMode" class="display-field">
                   {{ formatPhoneGroups(userProfile.phone) || '-' }}
                 </p>
-                <!-- Modo edición: formatea mientras escribes -->
                 <input
                   v-else
                   class="input"
@@ -126,6 +123,13 @@
                 <p v-if="!editMode" class="display-field">{{ userProfile.dateOfBirth || '-' }}</p>
                 <input v-else v-model="editableProfile.dateOfBirth" type="date" class="input" />
               </div>
+
+              <div class="md:col-span-2">
+                <label class="label">Dirección de Casa</label>
+                <p v-if="!editMode" class="display-field">{{ userProfile.address || '-' }}</p>
+                <input v-else v-model="editableProfile.address" type="text" class="input" placeholder="Av. Principal 123, tu ciudad" />
+              </div>
+
               <div class="md:col-span-2">
                 <label class="label">Acerca de Mí</label>
                 <p v-if="!editMode" class="display-field min-h-[6rem] text-sm">{{ userProfile.bio || 'Aún no has añadido una biografía.' }}</p>
@@ -175,7 +179,6 @@
       </div>
     </div>
 
-    <!-- MODAL Dispositivos -->
     <transition name="toast-slide">
       <div v-if="showDevices" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showDevices=false"></div>
