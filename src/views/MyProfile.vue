@@ -133,7 +133,6 @@
 
               <hr class="border-gray-200 dark:border-slate-700" />
 
-              <!-- NUEVA OPCIÓN: Ver dispositivos actuales -->
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">Dispositivos y sesiones</h4>
@@ -159,7 +158,6 @@
       </div>
     </div>
 
-    <!-- MODAL DISPOSITIVOS (no cambia el look & feel, sigue tu estética) -->
     <transition name="toast-slide">
       <div v-if="showDevices" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showDevices=false"></div>
@@ -183,7 +181,6 @@
               <li v-for="(d, idx) in devices" :key="idx" class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-700">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-lg grid place-items-center bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-slate-700">
-                    <!-- icono simple segun tipo -->
                     <svg v-if="(d.type||'').includes('Mobile')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 15a1 1 0 100-2 1 1 0 000 2z"/></svg>
                     <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2H4zm-1 9a3 3 0 003 3h8a3 3 0 003-3H3z"/></svg>
                   </div>
@@ -254,7 +251,6 @@ export default {
     const router = useRouter();
     const editMode = ref(false);
     const editableProfile = ref({});
-    theActiveTabCheck();
     const activeTab = ref('perfil');
     const darkMode = ref(false);
     const showToast = ref(false);
@@ -571,6 +567,7 @@ function theActiveTabCheck() { return true; }
   background-color: #e5e7eb;
   border: 3px solid #fff;
   display: grid; place-items: center;
+  transform: scale(1.2); /* Zoom a la imagen */
 }
 .dark .avatar-img, .dark .avatar-placeholder { border-color: #1e293b; }
 .avatar-initials { font-size: 3rem; font-weight: 700; color: #6b7280; }
