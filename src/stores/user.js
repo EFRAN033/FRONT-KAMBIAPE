@@ -27,9 +27,10 @@ export const useUserStore = defineStore('user', {
       gender: null,
       occupation: null,
       bio: null,
-      dni: null, 
+      dni: null,
       agreed_terms: false,
       created_at: null,
+      interests: [], // <-- CORRECCIÓN: Campo de intereses añadido al estado inicial
     },
     loading: false,
     error: null,
@@ -77,6 +78,7 @@ export const useUserStore = defineStore('user', {
         dni: data.dni || null,
         agreed_terms: data.agreed_terms || false,
         created_at: data.created_at || null,
+        interests: data.interests || [], // <-- CORRECCIÓN: Procesar los intereses desde la API
       };
       return processedData;
     },
@@ -86,7 +88,7 @@ export const useUserStore = defineStore('user', {
       this.error = null;
       try {
         const response = await axios.post('/login', credentials);
-        
+
         const accessToken = response.data.access_token;
         this.token = accessToken;
         localStorage.setItem('access_token', accessToken);
@@ -101,7 +103,7 @@ export const useUserStore = defineStore('user', {
         }
 
         await this.fetchUserProfile(userId);
-        
+
         return true;
       } catch (err) {
         this.error = err.response?.data?.detail || 'Error en el inicio de sesión. Verifica tus credenciales.';
@@ -137,7 +139,7 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await axios.get(`/profile/${userId}`);
         const userData = this._processUserData(response.data);
-        
+
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(userData));
       } catch (err) {
@@ -166,7 +168,7 @@ export const useUserStore = defineStore('user', {
         }
         const response = await axios.put(`/profile/${userId}`, dataToSend);
         const updatedUserData = this._processUserData(response.data);
-        
+
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
 
@@ -197,6 +199,7 @@ export const useUserStore = defineStore('user', {
         dni: null,
         agreed_terms: false,
         created_at: null,
+        interests: [], // <-- CORRECCIÓN: Limpiar intereses al cerrar sesión
       };
       localStorage.removeItem('user');
       localStorage.removeItem('access_token');
