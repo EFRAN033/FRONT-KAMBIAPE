@@ -99,11 +99,28 @@
                 <p v-if="!editMode" class="display-field">{{ userProfile.dni || '-' }}</p>
                 <input v-else v-model="editableProfile.dni" type="text" maxlength="12" inputmode="numeric" class="input" placeholder="12345678" />
               </div>
+
+              <!-- TELÉFONO con separación 3-3-3 -->
               <div>
                 <label class="label">Teléfono</label>
-                <p v-if="!editMode" class="display-field">{{ userProfile.phone || '-' }}</p>
-                <input v-else v-model="editableProfile.phone" type="tel" class="input" placeholder="+51 987 654 321" />
+                <!-- Modo lectura: se muestra formateado 3-3-3 -->
+                <p v-if="!editMode" class="display-field">
+                  {{ formatPhoneGroups(userProfile.phone) || '-' }}
+                </p>
+                <!-- Modo edición: formatea mientras escribes -->
+                <input
+                  v-else
+                  class="input"
+                  type="tel"
+                  inputmode="tel"
+                  :value="editableProfile.phone"
+                  @input="onPhoneInput"
+                  @paste.prevent="onPhonePaste"
+                  placeholder="+51 999 999 999"
+                  maxlength="21"
+                />
               </div>
+
               <div>
                 <label class="label">Fecha de Nacimiento</label>
                 <p v-if="!editMode" class="display-field">{{ userProfile.dateOfBirth || '-' }}</p>
@@ -158,6 +175,7 @@
       </div>
     </div>
 
+    <!-- MODAL Dispositivos -->
     <transition name="toast-slide">
       <div v-if="showDevices" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showDevices=false"></div>
@@ -293,6 +311,10 @@ export default {
 
     const enterEditMode = () => {
       editableProfile.value = { ...userProfile.value };
+      // Preformatea el teléfono en el input cuando entras a editar
+      if (editableProfile.value?.phone) {
+        editableProfile.value.phone = formatPhoneGroups(onlyDigits(editableProfile.value.phone));
+      }
       editMode.value = true;
       showNotification('Modo de edición activado.', 'info');
     };
@@ -307,7 +329,11 @@ export default {
       if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
       showNotification('Guardando cambios...', 'info');
 
-      const success = await userStore.updateProfile(userStore.user.id, editableProfile.value);
+      // Normaliza teléfono a solo dígitos antes de enviar
+      const payload = { ...editableProfile.value };
+      if (typeof payload.phone === 'string') payload.phone = onlyDigits(payload.phone);
+
+      const success = await userStore.updateProfile(userStore.user.id, payload);
       if (success) {
         editMode.value = false;
         resetTempPhoto();
@@ -350,16 +376,43 @@ export default {
       if (editMode.value) handleFile(e.dataTransfer?.files?.[0]);
     };
 
-    // Abrir modal y cargar sesiones
+    // Teléfono: helpers y controladores
+    const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
+    const formatPhoneGroups = (value) => {
+      const digits = onlyDigits(value);
+      // agrupa de a 3 con espacio, permite hasta ~18 dígitos (se puede ajustar)
+      return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+    };
+    const onPhoneInput = (e) => {
+      const raw = e.target.value;
+      e.target.value = formatPhoneGroups(raw);
+      editableProfile.value.phone = e.target.value;
+    };
+    const onPhonePaste = (e) => {
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      const formatted = formatPhoneGroups(text);
+      const target = e.target;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+      const before = target.value.slice(0, start);
+      const after = target.value.slice(end);
+      const merged = before + formatted + after;
+      target.value = formatPhoneGroups(merged);
+      editableProfile.value.phone = target.value;
+      // coloca el cursor al final (simple y robusto)
+      requestAnimationFrame(() => {
+        target.selectionStart = target.selectionEnd = target.value.length;
+      });
+    };
+
+    // Modal dispositivos
     const openDevicesModal = async () => {
       showDevices.value = true;
-      // Intenta obtener sesiones desde el store si existe el método o propiedad:
       try {
         if (typeof userStore.fetchSessions === 'function') {
           await userStore.fetchSessions();
         }
         const fromStore = userStore.getActiveSessions || userStore.sessions || [];
-        // Mapea a estructura esperada
         devices.value = (fromStore || []).map(s => ({
           name: s.name || s.device || s.userAgent || 'Dispositivo',
           userAgent: s.userAgent,
@@ -425,14 +478,13 @@ export default {
       capitalizeFirstLetter, initials,
       fileInput, MAX_SIZE_MB, isDragOver,
       changeProfilePicture, onFileChange, onDragOver, onDragLeave, onDrop,
+      // teléfono
+      onPhoneInput, onPhonePaste, formatPhoneGroups,
       // dispositivos
       showDevices, devices, openDevicesModal, revokeDevice, formatDate
     };
   },
 };
-
-// Evita linter de var sin usar si la línea de arriba se mueve
-function theActiveTabCheck() { return true; }
 </script>
 
 <style scoped>
