@@ -41,12 +41,7 @@
               <div class="avatar-glow" aria-hidden="true"></div>
 
               <template v-if="displayPhotoUrl">
-                <img
-                  class="avatar-img"
-                  :src="displayPhotoUrl"
-                  alt="Foto de perfil"
-                  draggable="false"
-                />
+                <img class="avatar-img" :src="displayPhotoUrl" alt="Foto de perfil" draggable="false" />
               </template>
               <template v-else>
                 <div class="avatar-fallback">
@@ -72,22 +67,14 @@
 
               <span class="avatar-status" title="Activo" aria-label="Estado: activo"></span>
 
-              <button
-                type="button"
-                class="avatar-action"
-                aria-label="Cambiar foto de perfil"
-                @click="changeProfilePicture"
-              >
+              <button type="button" class="avatar-action" aria-label="Cambiar foto de perfil" @click="changeProfilePicture">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M4 5a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1l-.447-.894A2 2 0 0012.764 3H7.236a2 2 0 00-1.789 1.106L5 5H4zm6 9a4 4 0 110-8 4 4 0 010 8z"/>
                 </svg>
               </button>
 
               <div class="avatar-overlay" @click.stop="changeProfilePicture">
-                <p class="avatar-overlay-text">
-                  Suelta una imagen<br/>
-                  <span class="opacity-80">o haz clic</span>
-                </p>
+                <p class="avatar-overlay-text">Suelta una imagen<br/><span class="opacity-80">o haz clic</span></p>
                 <p class="text-[11px] text-white/75 mt-1">JPEG o PNG · máx. {{ MAX_SIZE_MB }}MB</p>
                 <input ref="fileInput" type="file" accept="image/jpeg,image/png" class="hidden" @change="onFileChange" />
               </div>
@@ -95,18 +82,35 @@
 
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-3 text-center">Máx. {{ MAX_SIZE_MB }}MB</p>
           </div>
+
           <div class="col-span-1 md:col-span-2 p-6 flex flex-col">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
-            <div class="mt-3 flex flex-wrap items-center gap-2">
-              <span class="chip">Miembro</span>
-              <span class="chip bg-brand-primary text-white">Activo</span>
+
+            <!-- ===== NUEVO: Línea de estado (Miembro / Activo) ===== -->
+            <div class="status-line mt-4" role="status" aria-label="Estado de cuenta">
+              <span class="flag-role" title="Rol"> 
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 -mt-[1px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z"/>
+                </svg>
+                <span class="flag-text">Miembro</span>
+              </span>
+
+              <span class="line-sep" aria-hidden="true"></span>
+
+              <span class="state-chip" title="Estado">
+                <span class="led" aria-hidden="true"></span>
+                <span class="sr-only">Estado:</span>
+                <span class="state-text">Activo</span>
+              </span>
             </div>
+            <!-- ===== /NUEVO ===== -->
 
             <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
               <h4 class="label">Intereses</h4>
-              <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-2">
-                <span v-for="interest in userProfile.interests" :key="interest" class="chip bg-brand-primary text-white">
+              <!-- SOLO LECTURA: micro-badges rectos -->
+              <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-1.5">
+                <span v-for="interest in userProfile.interests" :key="interest" class="badge-sq">
                   {{ interest }}
                 </span>
               </div>
@@ -145,6 +149,7 @@
               <h3 class="text-lg font-bold">Información Personal</h3>
               <p class="text-sm text-gray-500 dark:text-slate-400">Mantén tus datos actualizados para una mejor experiencia.</p>
             </header>
+
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               <div>
                 <label class="label">Nombre Completo</label>
@@ -195,34 +200,37 @@
 
               <div class="md:col-span-2">
                 <label class="label">Intereses</label>
-                
+
+                <!-- NO EDICIÓN -->
                 <div v-if="!editMode">
-                    <p v-if="!userProfile.interests || userProfile.interests.length === 0" class="text-sm text-gray-500 dark:text-slate-400 mt-2">
-                        Aún no has seleccionado intereses.
-                    </p>
-                    <div v-else class="flex flex-wrap gap-2">
-                        <span v-for="interest in userProfile.interests" :key="interest" class="chip bg-brand-primary text-white">
-                            {{ interest }}
-                        </span>
-                    </div>
+                  <p v-if="!userProfile.interests || userProfile.interests.length === 0" class="text-sm text-gray-500 dark:text-slate-400 mt-2">
+                    Aún no has seleccionado intereses.
+                  </p>
+                  <div v-else class="flex flex-wrap gap-1.5">
+                    <span v-for="interest in userProfile.interests" :key="interest" class="badge-sq">
+                      {{ interest }}
+                    </span>
+                  </div>
                 </div>
 
+                <!-- EDICIÓN -->
                 <div v-else>
-                  <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 min-h-[4rem]">
+                  <!-- Seleccionados -->
+                  <div class="p-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-[6px] bg-transparent">
                     <p v-if="editableInterests.size === 0" class="text-sm text-slate-500 dark:text-slate-400">
                       Selecciona tus intereses de la lista de abajo.
                     </p>
-                    <div v-else class="flex flex-wrap gap-2">
+                    <div v-else class="flex flex-wrap gap-1.5">
                       <span
                         v-for="interestName in editableInterests"
                         :key="`selected-${interestName}`"
-                        class="inline-flex items-center gap-2 chip bg-brand-primary text-white"
+                        class="badge-sq badge-sq--active"
                       >
                         {{ interestName }}
                         <button
                           @click="toggleInterest(interestName)"
                           type="button"
-                          class="w-4 h-4 rounded-full bg-white/20 text-white hover:bg-white/40 flex items-center justify-center"
+                          class="badge-remove"
                           :aria-label="`Quitar ${interestName}`"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -233,29 +241,37 @@
                     </div>
                   </div>
 
+                  <!-- Opciones -->
                   <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Añadir Intereses:</p>
-                    <div v-if="availableCategories.length > 0" class="flex flex-wrap gap-2">
-                        <button
-                            v-for="category in availableCategories"
-                            :key="category.id"
-                            @click="toggleInterest(category.name)"
-                            type="button"
-                            class="chip transition-colors duration-200 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-slate-600"
-                        >
-                            {{ category.name }}
-                        </button>
+                    <div v-if="availableCategories.length > 0" class="tile-list">
+                      <button
+                        v-for="category in availableCategories"
+                        :key="category.id"
+                        type="button"
+                        class="tile"
+                        :class="editableInterests.has(category.name) && 'is-selected'"
+                        :aria-pressed="editableInterests.has(category.name)"
+                        @click="toggleInterest(category.name)"
+                      >
+                        <span class="tile-check" aria-hidden="true">
+                          <svg v-if="editableInterests.has(category.name)" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 0 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                          </svg>
+                        </span>
+                        <span class="tile-text">{{ category.name }}</span>
+                      </button>
                     </div>
-                     <p v-else-if="allCategories.length > 0" class="text-sm text-slate-500 dark:text-slate-400">
-                        ¡Has seleccionado todos los intereses disponibles!
+                    <p v-else-if="allCategories.length > 0" class="text-sm text-slate-500 dark:text-slate-400">
+                      ¡Has seleccionado todos los intereses disponibles!
                     </p>
                     <p v-else class="text-sm text-slate-500 dark:text-slate-400">
-                        Cargando categorías...
+                      Cargando categorías...
                     </p>
                   </div>
                 </div>
               </div>
-              </div>
+            </div>
           </section>
 
           <section v-show="activeTab==='seguridad'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
@@ -279,9 +295,7 @@
                   <h4 class="font-semibold text-gray-900 dark:text-white">Dispositivos y sesiones</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Revisa dónde tienes la sesión iniciada y gestiona el acceso.</p>
                 </div>
-                <button @click="openDevicesModal" class="btn-brand">
-                  Ver dispositivos actuales
-                </button>
+                <button @click="openDevicesModal" class="btn-brand">Ver dispositivos actuales</button>
               </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
@@ -332,7 +346,7 @@ export default {
     const router = useRouter();
     const editMode = ref(false);
     const editableProfile = ref({});
-    const activeTab = ref('perfil');
+       const activeTab = ref('perfil');
     const darkMode = ref(false);
     const showToast = ref(false);
     const toastMessage = ref('');
@@ -356,8 +370,6 @@ export default {
 
     const userProfile = computed(() => userStore.getUserProfile);
     
-    // ===== NUEVA PROPIEDAD COMPUTADA =====
-    // Filtra las categorías que aún no han sido seleccionadas por el usuario.
     const availableCategories = computed(() => {
       return allCategories.value.filter(category => !editableInterests.value.has(category.name));
     });
@@ -542,9 +554,7 @@ export default {
       const merged = before + formatted + after;
       target.value = formatPhoneGroups(merged);
       editableProfile.value.phone = target.value;
-      requestAnimationFrame(() => {
-        target.selectionStart = target.selectionEnd = target.value.length;
-      });
+      requestAnimationFrame(() => { target.selectionStart = target.selectionEnd = target.value.length; });
     };
 
     const openDevicesModal = () => {
@@ -585,10 +595,7 @@ export default {
       onPhoneInput, onPhonePaste, formatPhoneGroups,
       showDevices, devices, openDevicesModal, revokeDevice, formatDate,
       showPasswordModal, passwordFields, openChangePasswordModal, handlePasswordChange,
-      allCategories,
-      editableInterests,
-      toggleInterest,
-      availableCategories, // <-- Exporta la nueva propiedad computada
+      allCategories, editableInterests, toggleInterest, availableCategories,
     };
   },
 };
@@ -606,21 +613,11 @@ export default {
 }
 @keyframes aurora-float { 50% { transform: translateY(-18px); } }
 
-/* ---------- Botones y chips ---------- */
-.icon-btn{
-  width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;transition:.25s ease;
-}
+/* ---------- Icono atrás & botones base ---------- */
+.icon-btn{ width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;transition:.25s; }
 .icon-btn:hover{ background:rgba(255,255,255,.22); transform:scale(1.08); }
 .icon-btn:focus-visible{ outline:2px solid rgba(255,255,255,.6); outline-offset:2px; }
 
-.chip{
-  display:inline-block;padding:.375rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;
-  background:#334155;color:#fff;
-}
-.dark .chip {
-    background: #475569; /* slate-600 */
-}
 .btn-brand{
   display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.625rem 1.1rem;border-radius:.9rem;
   font-weight:700;color:#fff;background-color:#d7037b;transition:transform .12s ease, filter .2s ease;
@@ -629,7 +626,6 @@ export default {
 .btn-brand:hover{ filter:brightness(1.03); }
 .btn-brand:active{ transform:translateY(1px) scale(.99); }
 .btn-brand:focus-visible{ outline:3px solid #fbc7cc; outline-offset:2px; }
-.btn-sm{ padding:.5rem .9rem;border-radius:.8rem;font-size:.9rem; }
 .btn-ghost{
   display:inline-flex;align-items:center;justify-content:center;padding:.625rem 1.1rem;border-radius:.9rem;font-weight:700;
   color:#0f172a;background:transparent;border:1px solid #e5e7eb;transition:background .2s ease,color .2s ease,border-color .2s ease;
@@ -637,37 +633,14 @@ export default {
 .dark .btn-ghost{ color:#f1f5f9;border-color:#334155; }
 .btn-ghost:hover{ background:#f8fafc; }
 .dark .btn-ghost:hover{ background:#1f2937; }
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.1rem;
-  border-radius: 0.9rem;
-  font-weight: 700;
-  color: white;
-  background-color: #ef4444; /* red-500 */
-  border: 1px solid #dc2626;
-  box-shadow: 0 4px 14px -4px rgba(239, 68, 68, 0.4);
-  transition: all 0.2s ease-in-out;
-}
-.btn-danger:hover {
-  background-color: #dc2626; /* red-600 */
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px -6px rgba(239, 68, 68, 0.5);
-}
-.btn-danger:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 8px -2px rgba(239, 68, 68, 0.4);
-}
+.btn-danger{ display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.625rem 1.1rem;border-radius:.9rem;font-weight:700;color:white;background:#ef4444;border:1px solid #dc2626;box-shadow:0 4px 14px -4px rgba(239,68,68,.4);transition:.2s; }
+.btn-danger:hover{ background:#dc2626; transform: translateY(-2px); box-shadow:0 8px 20px -6px rgba(239,68,68,.5); }
+.btn-danger:active{ transform: translateY(0) scale(.98); box-shadow:0 2px 8px -2px rgba(239,68,68,.4); }
 
 /* ---------- Labels, inputs ---------- */
 .label{ display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#64748b;margin-bottom:.35rem; }
 .dark .label{ color:#94a3b8; }
-.input{
-  width:100%;border-radius:.9rem;border:1px solid #e5e7eb;background:transparent;color:inherit;padding:.8rem 1rem;
-  transition:border-color .2s ease, box-shadow .2s ease;
-}
+.input{ width:100%;border-radius:.9rem;border:1px solid #e5e7eb;background:transparent;color:inherit;padding:.8rem 1rem; transition:border-color .2s ease, box-shadow .2s ease; }
 .dark .input{ border-color:#334155; }
 .input:focus{ outline:none;border-color:#d7037b;box-shadow:0 0 0 3px #fde9f2; }
 .dark .input:focus { box-shadow:0 0 0 3px rgba(215, 3, 123, 0.2); }
@@ -688,104 +661,100 @@ export default {
 }
 .dark .seg-indicator{ background:linear-gradient(180deg,#0b1220,#0f172a);border-color:#334155;box-shadow:0 3px 8px -1px rgba(0,0,0,.25); }
 
-/* ---------- Avatar nuevo ---------- */
-.avatar-shell{
-  --size: 168px;
-  --ring: 1px;
-  --gap: 6px;
-  --blur: 26px;
-
-  position:relative;width:var(--size);height:var(--size);
-  border-radius:999px;isolation:isolate;
-  transition: transform .2s ease;
-}
+/* ---------- Avatar ---------- */
+.avatar-shell{ --size:168px; --ring:1px; --gap:6px; --blur:26px; position:relative;width:var(--size);height:var(--size);border-radius:999px;isolation:isolate;transition: transform .2s ease; }
 .avatar-shell:hover{ transform: translateY(-2px); }
 .avatar-shell.dragging{ transform: scale(1.02); }
-
-.avatar-border{
-  position:absolute;inset:0;border-radius:999px;
-  background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
-  filter: saturate(1.1);
-  -webkit-mask:
-    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap)))
-    exclude,
-    radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
-          mask:
-    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap)))
-    exclude,
-    radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
-  z-index:0;
-}
-@keyframes spin-slow { to { transform: rotate(360deg); } }
-
-.avatar-glow{
-  position:absolute;inset:-12px;border-radius:inherit;z-index:-1;
-  background: radial-gradient(40% 40% at 60% 30%, rgba(215,3,123,.25), transparent 60%),
-              radial-gradient(40% 40% at 30% 70%, rgba(59,130,246,.22), transparent 60%);
-  filter: blur(var(--blur));
-  opacity:.7; pointer-events:none;
-}
-
-.avatar-img,
-.avatar-fallback{
-  position:absolute;inset:calc(var(--gap) + var(--ring));
-  width:auto;height:auto;border-radius:999px;overflow:hidden;
-  display:grid;place-items:center;background:
-    linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55));
-}
-.dark .avatar-img, .dark .avatar-fallback{
-  background: linear-gradient(180deg, rgba(2,6,23,.6), rgba(2,6,23,.4));
-}
-.avatar-img{
-  width:calc(100% - (var(--gap) + var(--ring))*2);
-  height:calc(100% - (var(--gap) + var(--ring))*2);
-  object-fit:cover; border:1px solid rgba(255,255,255,.5);
-}
+.avatar-border{ position:absolute;inset:0;border-radius:999px;background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);filter: saturate(1.1);
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap))) exclude,
+                radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
+          mask: radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap))) exclude,
+                radial-gradient(circle at 50% 50%, black 60%, transparent 61%); }
+.avatar-glow{ position:absolute;inset:-12px;border-radius:inherit;z-index:-1;background: radial-gradient(40% 40% at 60% 30%, rgba(215,3,123,.25), transparent 60%),
+              radial-gradient(40% 40% at 30% 70%, rgba(59,130,246,.22), transparent 60%);filter: blur(var(--blur));opacity:.7; pointer-events:none; }
+.avatar-img, .avatar-fallback{ position:absolute;inset:calc(var(--gap) + var(--ring));border-radius:999px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55)); }
+.dark .avatar-img, .dark .avatar-fallback{ background: linear-gradient(180deg, rgba(2,6,23,.6), rgba(2,6,23,.4)); }
+.avatar-img{ width:calc(100% - (var(--gap) + var(--ring))*2);height:calc(100% - (var(--gap) + var(--ring))*2);object-fit:cover; border:1px solid rgba(255,255,255,.5); }
 .dark .avatar-img{ border-color: rgba(30,41,59,.6); }
-
-.avatar-fallback{
-  color:#64748b; position:absolute;
-  width:calc(100% - (var(--gap) + var(--ring))*2);
-  height:calc(100% - (var(--gap) + var(--ring))*2);
-  border:1px solid rgba(148,163,184,.3);
-}
+.avatar-fallback{ color:#64748b; border:1px solid rgba(148,163,184,.3); }
 .dark .avatar-fallback{ border-color: rgba(51,65,85,.6); }
-
 .avatar-initials{ font-size:3rem; font-weight:800; letter-spacing:.02em; z-index:1; }
 .avatar-pattern{ position:absolute; inset:0; width:100%; height:100%; color:#64748b; }
-
-.avatar-status{
-  position:absolute; right:10px; bottom:10px; width:16px; height:16px; border-radius:999px;
-  background: radial-gradient(circle at 30% 30%, #ffffff 10%, #22c55e 12% 100%);
-  border:2px solid rgba(255,255,255,.9);
-  box-shadow: 0 2px 6px rgba(34,197,94,.45);
-  z-index:2;
-}
+.avatar-status{ position:absolute; right:10px; bottom:10px; width:16px; height:16px; border-radius:999px;background: radial-gradient(circle at 30% 30%, #ffffff 10%, #22c55e 12% 100%);border:2px solid rgba(255,255,255,.9);box-shadow: 0 2px 6px rgba(34,197,94,.45); z-index:2; }
 .dark .avatar-status{ border-color:#0f172a; }
-
-.avatar-action{
-  position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
-  display:inline-grid; place-items:center; width:34px; height:34px; border-radius:10px;
-  background: rgba(15,23,42,.9); color:white; border:1px solid rgba(148,163,184,.35);
-  box-shadow: 0 8px 24px -8px rgba(0,0,0,.45);
-  transition: transform .15s ease, filter .2s ease, background .2s ease;
-  z-index:3;
-}
+.avatar-action{ position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);display:inline-grid; place-items:center; width:34px; height:34px; border-radius:10px;background: rgba(15,23,42,.9); color:white; border:1px solid rgba(148,163,184,.35); box-shadow:0 8px 24px -8px rgba(0,0,0,.45); transition:.15s; z-index:3; }
 .avatar-shell:hover .avatar-action{ transform: translateX(-50%) translateY(-2px); }
 .avatar-action:hover{ filter: brightness(1.08); }
-
-.avatar-overlay{
-  position:absolute; inset:calc(var(--gap) + var(--ring)); border-radius:inherit;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;
-  background: rgba(0,0,0,.54); border:2px dashed rgba(255,255,255,.8);
-  opacity:0; transition: opacity .2s ease; z-index:4; text-align:center;
-  cursor: pointer;
-}
+.avatar-overlay{ position:absolute; inset:calc(var(--gap) + var(--ring)); border-radius:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;background: rgba(0,0,0,.54); border:2px dashed rgba(255,255,255,.8); opacity:0; transition: opacity .2s ease; z-index:4; text-align:center; cursor: pointer; }
 .avatar-shell:hover .avatar-overlay, .avatar-shell.dragging .avatar-overlay { opacity:1; }
 .avatar-shell.dragging .avatar-overlay{ background: rgba(215,3,123,.45); }
 .avatar-overlay-text{ color:white; font-weight:700; line-height:1.1; pointer-events: none; }
 
-/* ---------- Animaciones utilitarias ---------- */
+/* ---------- NUEVO: Línea de estado ---------- */
+.status-line{
+  display:flex; align-items:center; gap:.6rem;
+  padding:.4rem .6rem; border:1px solid #E2E8F0; background:#fff; border-radius:6px;
+  box-shadow:0 2px 10px -6px rgba(2,6,23,.18); width:max-content;
+}
+.dark .status-line{ background:#0b1220; border-color:#334155; box-shadow:0 2px 10px -6px rgba(0,0,0,.55); }
+
+.flag-role{
+  display:inline-flex; align-items:center; gap:.4rem;
+  padding:.22rem .45rem; border:1px solid #E2E8F0; background:#F8FAFC; color:#0f172a;
+  font-weight:800; font-size:.78rem; letter-spacing:.02em; border-radius:4px;
+}
+.dark .flag-role{ border-color:#475569; background:#0f172a; color:#e2e8f0; }
+.flag-text{ text-transform:none; }
+.line-sep{
+  width:1px; height:16px; background:linear-gradient(to bottom, transparent, #CBD5E1, transparent);
+}
+.dark .line-sep{ background:linear-gradient(to bottom, transparent, #475569, transparent); }
+
+.state-chip{
+  display:inline-flex; align-items:center; gap:.4rem;
+  padding:.22rem .45rem; border:1px solid #A7F3D0; background:#E6FBEF; color:#065F46;
+  font-weight:800; font-size:.78rem; border-radius:4px;
+}
+.dark .state-chip{ border-color:#0f5a44; background:#052e22; color:#91f0cc; }
+.led{
+  width:8px; height:8px; border-radius:2px; background:#22c55e; box-shadow:0 0 0 2px rgba(34,197,94,.25);
+  position:relative; display:inline-block;
+}
+.led::after{
+  content:""; position:absolute; inset:-4px; border-radius:4px; border:1px solid rgba(34,197,94,.45);
+  animation:pulse 1.4s ease-out infinite;
+}
+@keyframes pulse{ 0%{transform:scale(1); opacity:.8} 70%{transform:scale(1.7); opacity:0} 100%{opacity:0} }
+
+/* ---------- Badges & tiles Intereses (tu diseño actual) ---------- */
+.badge-sq{
+  display:inline-flex; align-items:center; gap:.35rem;
+  padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
+  border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
+}
+.dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
+.badge-sq--active{ background:#0f172a; color:#fff; border-color:#0f172a; }
+.dark .badge-sq--active{ background:#e2e8f0; color:#0f172a; border-color:#e2e8f0; }
+.badge-remove{ display:inline-grid; place-items:center; width:18px; height:18px; border-radius:3px; background:rgba(255,255,255,.14); border:1px solid rgba(148,163,184,.35); }
+.dark .badge-remove{ background:rgba(15,23,42,.4); border-color:#475569; }
+
+.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:.55rem; }
+.tile{
+  display:flex; align-items:center; gap:.6rem; padding:.65rem .7rem; border:1px solid #E2E8F0; background:#fff; color:#0f172a;
+  border-radius:6px; text-align:left; transition: border-color .18s ease, box-shadow .18s ease, transform .06s ease;
+}
+.tile:hover{ border-color:#94A3B8; box-shadow:0 4px 16px -10px rgba(2,6,23,.25); transform:translateY(-1px); }
+.dark .tile{ border-color:#334155; background:#0b1220; color:#e2e8f0; }
+.dark .tile:hover{ border-color:#475569; box-shadow:0 6px 20px -12px rgba(0,0,0,.5); }
+.tile.is-selected{ border-color:#0f172a; box-shadow: inset 0 0 0 1px #0f172a, 0 2px 10px -6px rgba(2,6,23,.25); }
+.dark .tile.is-selected{ border-color:#e2e8f0; box-shadow: inset 0 0 0 1px #e2e8f0, 0 2px 10px -6px rgba(0,0,0,.6); }
+.tile-check{ width:18px; height:18px; border-radius:3px; display:inline-grid; place-items:center; border:1px solid #CBD5E1; background:#F8FAFC; }
+.dark .tile-check{ border-color:#475569; background:#0f172a; }
+
+/* ---------- Misceláneo ---------- */
+.chip{ display:inline-block;padding:.375rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;background:#334155;color:#fff; }
+.dark .chip { background:#475569; }
+
 .toast-slide-enter-active, .toast-slide-leave-active{ transition: all .4s cubic-bezier(.68,-.55,.27,1.55); }
 .toast-slide-enter-from, .toast-slide-leave-to{ transform: translateX(120%); opacity:0; }
 .animate-in-up{ animation: animate-in-up .5s ease-out both; }
