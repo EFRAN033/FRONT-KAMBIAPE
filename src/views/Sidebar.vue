@@ -1,5 +1,4 @@
 <template>
-  <!-- SIDEBAR PILL (más grande y más transparente) -->
   <aside
     class="fixed left-4 top-1/2 -translate-y-1/2 z-40
            h-auto w-[92px] min-w-[92px]
@@ -10,8 +9,7 @@
            rounded-[26px] select-none"
     aria-label="Barra lateral"
   >
-    <!-- 1) Publicar -->
-    <router-link to="/publish-view" class="flex flex-col items-center gap-1" title="Publicar">
+    <router-link to="/publicar" class="flex flex-col items-center gap-1" title="Publicar">
       <div
         class="h-14 w-14 grid place-items-center rounded-2xl
                bg-gradient-to-br from-[#d7037b] to-[#b80268] text-white
@@ -26,8 +24,7 @@
       <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-none">Publicar</span>
     </router-link>
 
-    <!-- 2) Inventario -->
-    <router-link to="/inventory" class="flex flex-col items-center gap-1" title="Inventario">
+    <router-link to="/my-products" class="flex flex-col items-center gap-1" title="Inventario">
       <div
         class="h-14 w-14 grid place-items-center rounded-2xl
                bg-white/70 dark:bg-white/10
@@ -42,10 +39,8 @@
       <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-none">Inventario</span>
     </router-link>
 
-    <!-- Empuje -->
     <div class="flex-1"></div>
 
-    <!-- 3) Perfil -->
     <router-link to="/profile" class="flex flex-col items-center gap-1" title="Perfil">
       <div
         class="h-14 w-14 grid place-items-center rounded-2xl
@@ -75,8 +70,18 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const avatarUrl = computed(() => {
-  const name = encodeURIComponent(userStore.user?.username || 'User')
-  return `https://ui-avatars.com/api/?name=${name}&background=d7037b&color=fff`
+  // Se mantiene tu lógica para obtener el avatar
+  if (userStore.user && userStore.user.profilePicture) {
+    // Si la URL ya es absoluta (http, blob, data), la usa directamente.
+    if (userStore.user.profilePicture.startsWith('http') || userStore.user.profilePicture.startsWith('data:') || userStore.user.profilePicture.startsWith('blob:')) {
+      return userStore.user.profilePicture;
+    }
+    // Si no, construye la URL completa con la base de la API
+    return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${userStore.user.profilePicture}`;
+  }
+  // Fallback a un avatar genérico si no hay foto de perfil
+  const name = encodeURIComponent(userStore.user?.fullName || 'User')
+  return `https://ui-avatars.com/api/?name=${name}&background=d7037b&color=fff&rounded=true`
 })
 </script>
 
