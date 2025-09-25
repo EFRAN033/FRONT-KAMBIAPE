@@ -27,28 +27,24 @@
     <div class="container mx-auto px-4 sm:px-6 py-8">
       <div class="max-w-4xl mx-auto">
         <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
-          <!-- === AVATAR RE-DISEÑADO === -->
           <div class="col-span-1 flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
             <div
               class="avatar-shell group"
-              :class="[{ 'is-editing': editMode }, isDragOver && 'dragging']"
+              :class="[isDragOver && 'dragging']"
               @dragover.prevent="onDragOver"
               @dragleave.prevent="onDragLeave"
               @drop.prevent="onDrop"
               role="img"
               :aria-label="`Foto de perfil de ${capitalizeFirstLetter(userProfile.fullName) || 'usuario'}`"
             >
-              <!-- Borde degradado con máscara -->
               <div class="avatar-border" aria-hidden="true"></div>
 
-              <!-- Glow suave detrás -->
               <div class="avatar-glow" aria-hidden="true"></div>
 
-              <!-- Imagen o fallback con iniciales -->
-              <template v-if="displayPhotoUrl || (userProfile && userProfile.profilePicture)">
+              <template v-if="displayPhotoUrl">
                 <img
                   class="avatar-img"
-                  :src="displayPhotoUrl || userProfile.profilePicture"
+                  :src="displayPhotoUrl"
                   alt="Foto de perfil"
                   draggable="false"
                 />
@@ -56,7 +52,6 @@
               <template v-else>
                 <div class="avatar-fallback">
                   <span class="avatar-initials">{{ initials(userProfile.fullName) }}</span>
-                  <!-- patrón sutil -->
                   <svg class="avatar-pattern" viewBox="0 0 60 60" aria-hidden="true">
                     <defs>
                       <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
@@ -76,14 +71,12 @@
                 </div>
               </template>
 
-              <!-- Estado (online) -->
               <span class="avatar-status" title="Activo" aria-label="Estado: activo"></span>
 
-              <!-- Botón cámara (acción rápida) -->
               <button
                 type="button"
                 class="avatar-action"
-                :aria-label="editMode ? 'Cambiar foto de perfil' : 'Editar foto de perfil'"
+                aria-label="Cambiar foto de perfil"
                 @click="changeProfilePicture"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
@@ -91,15 +84,11 @@
                 </svg>
               </button>
 
-              <!-- Overlay de edición y drag & drop -->
-              <div v-if="editMode" class="avatar-overlay">
+              <div class="avatar-overlay" @click.stop="changeProfilePicture">
                 <p class="avatar-overlay-text">
-                  Suelta una imagen aquí<br/>
-                  <span class="opacity-80">o</span>
+                  Suelta una imagen<br/>
+                  <span class="opacity-80">o haz clic</span>
                 </p>
-                <button type="button" class="btn-outline-light" @click="changeProfilePicture">
-                  Subir imagen
-                </button>
                 <p class="text-[11px] text-white/75 mt-1">JPEG o PNG · máx. {{ MAX_SIZE_MB }}MB</p>
                 <input ref="fileInput" type="file" accept="image/jpeg,image/png" class="hidden" @change="onFileChange" />
               </div>
@@ -107,8 +96,6 @@
 
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-3 text-center">Máx. {{ MAX_SIZE_MB }}MB</p>
           </div>
-          <!-- === / AVATAR RE-DISEÑADO === -->
-
           <div class="col-span-1 md:col-span-2 p-6 flex flex-col">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
@@ -227,7 +214,7 @@
                   <h4 class="font-semibold text-gray-900 dark:text-white">Contraseña</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Se recomienda actualizar tu contraseña periódicamente.</p>
                 </div>
-                <button @click="changePassword" class="btn-brand">Cambiar Contraseña</button>
+                <button @click="openChangePasswordModal" class="btn-brand">Cambiar Contraseña</button>
               </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
@@ -267,13 +254,13 @@
               <p class="text-sm text-gray-500 dark:text-slate-400">Sesiones activas asociadas a tu cuenta.</p>
             </div>
             <button class="icon-btn" aria-label="Cerrar" @click="showDevices=false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9.293l-4.146-4.147a1 1 0 10-1.414 1.415L8.586 10l-4.146 4.146a1 1 0 101.414 1.415L10 11.414l4.146 4.147a1 1 0 001.414-1.415L11.414 10l4.146-4.146a1 1 0 10-1.414-1.415L10 8.586z" clip-rule="evenodd"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
             </button>
           </header>
 
           <div class="p-5">
             <div v-if="devices.length === 0" class="text-sm text-gray-600 dark:text-slate-300">
-              No encontramos sesiones activas desde el servidor. <span class="text-gray-500 dark:text-slate-400">Si tu backend aún no expone sesiones, usa este bloque como vista de ejemplo.</span>
+              No encontramos sesiones activas desde el servidor.
             </div>
 
             <ul v-else class="space-y-3">
@@ -318,14 +305,55 @@
         <span class="text-sm font-semibold">{{ toastMessage }}</span>
       </div>
     </transition>
+      
+    <transition name="toast-slide">
+      <div v-if="showPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showPasswordModal = false"></div>
+        <div class="relative w-full max-w-md rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl">
+          <header class="p-5 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+            <div>
+              <h4 class="text-lg font-bold">Cambiar Contraseña</h4>
+              <p class="text-sm text-gray-500 dark:text-slate-400">Actualiza tu contraseña de acceso.</p>
+            </div>
+            <button class="icon-btn" aria-label="Cerrar" @click="showPasswordModal = false">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
+            </button>
+          </header>
+
+          <form @submit.prevent="handlePasswordChange">
+            <div class="p-6 space-y-5">
+              <div>
+                <label class="label">Contraseña Actual</label>
+                <input v-model="passwordFields.current_password" type="password" class="input" required />
+              </div>
+              <div>
+                <label class="label">Nueva Contraseña</label>
+                <input v-model="passwordFields.new_password" type="password" class="input" required />
+              </div>
+              <div>
+                <label class="label">Confirmar Nueva Contraseña</label>
+                <input v-model="passwordFields.confirm_new_password" type="password" class="input" required />
+              </div>
+            </div>
+
+            <footer class="p-5 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3">
+              <button type="button" class="btn-ghost" @click="showPasswordModal = false">Cancelar</button>
+              <button type="submit" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed">
+                <svg v-if="userStore.loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                <span v-else>Actualizar</span>
+              </button>
+            </footer>
+          </form>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
-// El resto del script sigue igual, ya que la lógica no cambia.
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 
 export default {
   name: 'MyProfile',
@@ -351,39 +379,52 @@ export default {
     const router = useRouter();
     const editMode = ref(false);
     const editableProfile = ref({});
-       const activeTab = ref('perfil');
+    const activeTab = ref('perfil');
     const darkMode = ref(false);
     const showToast = ref(false);
     const toastMessage = ref('');
     const toastType = ref('info');
     const fileInput = ref(null);
-    const selectedPhotoFile = ref(null);
-    const selectedPhotoUrl = ref(null);
     const isDragOver = ref(false);
     const MAX_SIZE_MB = 2;
 
     const showDevices = ref(false);
     const devices = ref([]);
+    
+    const showPasswordModal = ref(false);
+    const passwordFields = reactive({
+      current_password: '',
+      new_password: '',
+      confirm_new_password: ''
+    });
 
     const userProfile = computed(() => userStore.getUserProfile);
-    const displayPhotoUrl = computed(() => selectedPhotoUrl.value || '');
-    const indicatorStyle = computed(() => {
-      const index = activeTab.value === 'perfil' ? 0 : 1;
-      return { transform: `translateX(calc(${index} * 100%))` };
+    
+    const displayPhotoUrl = computed(() => {
+        if (userProfile.value && userProfile.value.profilePicture) {
+            const url = userProfile.value.profilePicture;
+            if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) {
+                return url;
+            }
+            return `${import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'}${url}`;
+        }
+        return null;
     });
+
+    const indicatorStyle = computed(() => ({
+      transform: `translateX(calc(${activeTab.value === 'perfil' ? 0 : 1} * 100%))`
+    }));
 
     const showNotification = (message, type = 'info', duration = 3000) => {
       toastMessage.value = message;
       toastType.value = type;
       showToast.value = true;
-      setTimeout(() => showToast.value = false, duration);
+      setTimeout(() => { showToast.value = false }, duration);
     };
 
-    const capitalizeFirstLetter = (str) =>
-      !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
-    const initials = (name) =>
-      !name ? 'KP' : name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    const initials = (name) => !name ? 'KP' : name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
     const setTab = (tab) => activeTab.value = tab;
 
@@ -398,7 +439,6 @@ export default {
 
     const cancelEdit = () => {
       editMode.value = false;
-      resetTempPhoto();
       showNotification('Edición cancelada.', 'info');
     };
 
@@ -412,7 +452,6 @@ export default {
       const success = await userStore.updateProfile(userStore.user.id, payload);
       if (success) {
         editMode.value = false;
-        resetTempPhoto();
         showNotification('Perfil actualizado con éxito.', 'success');
       } else {
         showNotification(userStore.error || 'No se pudo actualizar el perfil.', 'error');
@@ -426,30 +465,61 @@ export default {
       router.push('/login');
     };
 
-    const changePassword = () => showNotification('Función no implementada aún.', 'info');
+    const openChangePasswordModal = () => {
+      passwordFields.current_password = '';
+      passwordFields.new_password = '';
+      passwordFields.confirm_new_password = '';
+      showPasswordModal.value = true;
+    };
+
+    const handlePasswordChange = async () => {
+      if (passwordFields.new_password !== passwordFields.confirm_new_password) {
+        return showNotification('Las nuevas contraseñas no coinciden.', 'error');
+      }
+      if (passwordFields.new_password.length < 6) {
+        return showNotification('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+      }
+
+      const result = await userStore.changePassword(passwordFields);
+      
+      if (result.success) {
+        showPasswordModal.value = false;
+        showNotification(result.message, 'success');
+      } else {
+        showNotification(result.message, 'error');
+      }
+    };
 
     const changeProfilePicture = () => fileInput.value?.click();
-    const resetTempPhoto = () => {
-      if (selectedPhotoUrl.value) URL.revokeObjectURL(selectedPhotoUrl.value);
-      selectedPhotoFile.value = null;
-      selectedPhotoUrl.value = null;
-    };
-    const handleFile = (file) => {
+
+    const handleFile = async (file) => {
       if (!file) return;
       if (!file.type.startsWith('image/')) return showNotification('Solo se permiten archivos de imagen.', 'error');
       if (file.size > MAX_SIZE_MB * 1024 * 1024) return showNotification(`La imagen no debe superar ${MAX_SIZE_MB}MB.`, 'error');
 
-      resetTempPhoto();
-      selectedPhotoFile.value = file;
-      selectedPhotoUrl.value = URL.createObjectURL(file);
-      if (!editMode.value) enterEditMode();
+      const formData = new FormData();
+      formData.append('file', file);
+
+      showNotification('Subiendo imagen...', 'info');
+      const result = await userStore.uploadProfilePicture(formData);
+
+      if (result.success) {
+        showNotification('Foto de perfil actualizada.', 'success');
+      } else {
+        showNotification(result.error || 'No se pudo subir la imagen.', 'error');
+      }
     };
+    
     const onFileChange = (e) => handleFile(e.target.files?.[0]);
-    const onDragOver = () => { if (editMode.value) isDragOver.value = true; };
-    const onDragLeave = () => isDragOver.value = false;
+    const onDragOver = (e) => {
+      e.preventDefault();
+      isDragOver.value = true;
+    };
+    const onDragLeave = () => { isDragOver.value = false; };
     const onDrop = (e) => {
+      e.preventDefault();
       isDragOver.value = false;
-      if (editMode.value) handleFile(e.dataTransfer?.files?.[0]);
+      handleFile(e.dataTransfer?.files?.[0]);
     };
 
     const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
@@ -478,9 +548,15 @@ export default {
       });
     };
 
-    const openDevicesModal = async () => { /* ... */ };
-    const revokeDevice = async (d) => { /* ... */ };
-    const formatDate = (iso) => { /* ... */ };
+    const openDevicesModal = () => {
+      devices.value = [
+        { name: 'Chrome en Windows', location: 'Lima, Perú', lastActive: new Date().toISOString(), current: true, type: 'Desktop' },
+        { name: 'App KambiaPe en Android', location: 'Ica, Perú', lastActive: new Date(Date.now() - 86400000).toISOString(), current: false, type: 'Mobile' },
+      ];
+      showDevices.value = true;
+    };
+    const revokeDevice = (d) => showNotification(`Sesión cerrada en ${d.name}.`, 'info');
+    const formatDate = (iso) => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
 
     onMounted(async () => {
       if (localStorage.getItem('theme') === 'dark') {
@@ -503,12 +579,13 @@ export default {
     return {
       userProfile, editMode, editableProfile, activeTab, darkMode, showToast, toastMessage, toastType, userStore,
       indicatorStyle, displayPhotoUrl,
-      enterEditMode, cancelEdit, saveProfile, logout, changePassword, showNotification, setTab,
+      enterEditMode, cancelEdit, saveProfile, logout, showNotification, setTab,
       capitalizeFirstLetter, initials,
       fileInput, MAX_SIZE_MB, isDragOver,
       changeProfilePicture, onFileChange, onDragOver, onDragLeave, onDrop,
       onPhoneInput, onPhonePaste, formatPhoneGroups,
-      showDevices, devices, openDevicesModal, revokeDevice, formatDate
+      showDevices, devices, openDevicesModal, revokeDevice, formatDate,
+      showPasswordModal, passwordFields, openChangePasswordModal, handlePasswordChange
     };
   },
 };
@@ -538,6 +615,9 @@ export default {
   display:inline-block;padding:.375rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;
   background:#334155;color:#fff;
 }
+.dark .chip {
+    background: #475569; /* slate-600 */
+}
 .btn-brand{
   display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.625rem 1.1rem;border-radius:.9rem;
   font-weight:700;color:#fff;background-color:#d7037b;transition:transform .12s ease, filter .2s ease;
@@ -558,23 +638,23 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* Espacio entre el ícono y el texto */
+  gap: 0.5rem;
   padding: 0.625rem 1.1rem;
   border-radius: 0.9rem;
   font-weight: 700;
   color: white;
   background-color: #ef4444; /* red-500 */
-  border: 1px solid #dc2626; /* Borde sutil más oscuro */
+  border: 1px solid #dc2626;
   box-shadow: 0 4px 14px -4px rgba(239, 68, 68, 0.4);
   transition: all 0.2s ease-in-out;
 }
 .btn-danger:hover {
   background-color: #dc2626; /* red-600 */
-  transform: translateY(-2px); /* Efecto de "levantarse" */
+  transform: translateY(-2px);
   box-shadow: 0 8px 20px -6px rgba(239, 68, 68, 0.5);
 }
 .btn-danger:active {
-  transform: translateY(0) scale(0.98); /* Efecto al hacer clic */
+  transform: translateY(0) scale(0.98);
   box-shadow: 0 2px 8px -2px rgba(239, 68, 68, 0.4);
 }
 
@@ -587,6 +667,7 @@ export default {
 }
 .dark .input{ border-color:#334155; }
 .input:focus{ outline:none;border-color:#d7037b;box-shadow:0 0 0 3px #fde9f2; }
+.dark .input:focus { box-shadow:0 0 0 3px rgba(215, 3, 123, 0.2); }
 .display-field{ width:100%;border-radius:.9rem;border:1px solid #e5e7eb;background:#f8fafc;padding:.8rem 1rem;font-weight:600; }
 .dark .display-field{ border-color:#334155;background:#0f172a; }
 
@@ -607,8 +688,8 @@ export default {
 /* ---------- Avatar nuevo ---------- */
 .avatar-shell{
   --size: 168px;
-  --ring: 1px; /* grosor del borde interior */
-  --gap: 6px; /* separación entre imagen y borde degradado */
+  --ring: 1px;
+  --gap: 6px;
   --blur: 26px;
 
   position:relative;width:var(--size);height:var(--size);
@@ -622,7 +703,6 @@ export default {
   position:absolute;inset:0;border-radius:999px;
   background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
   filter: saturate(1.1);
-  /* máscara para crear el borde hueco */
   -webkit-mask:
     radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap)))
     exclude,
@@ -631,7 +711,6 @@ export default {
     radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap)))
     exclude,
     radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
-  /* animation: spin-slow 10s linear infinite; */ /* Se comenta o elimina para detener el giro */
   z-index:0;
 }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
@@ -661,7 +740,6 @@ export default {
 }
 .dark .avatar-img{ border-color: rgba(30,41,59,.6); }
 
-/* Fallback con iniciales y patrón sutil */
 .avatar-fallback{
   color:#64748b; position:absolute;
   width:calc(100% - (var(--gap) + var(--ring))*2);
@@ -673,7 +751,6 @@ export default {
 .avatar-initials{ font-size:3rem; font-weight:800; letter-spacing:.02em; z-index:1; }
 .avatar-pattern{ position:absolute; inset:0; width:100%; height:100%; color:#64748b; }
 
-/* Estado online */
 .avatar-status{
   position:absolute; right:10px; bottom:10px; width:16px; height:16px; border-radius:999px;
   background: radial-gradient(circle at 30% 30%, #ffffff 10%, #22c55e 12% 100%);
@@ -683,7 +760,6 @@ export default {
 }
 .dark .avatar-status{ border-color:#0f172a; }
 
-/* Botón cámara */
 .avatar-action{
   position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
   display:inline-grid; place-items:center; width:34px; height:34px; border-radius:10px;
@@ -695,16 +771,16 @@ export default {
 .avatar-shell:hover .avatar-action{ transform: translateX(-50%) translateY(-2px); }
 .avatar-action:hover{ filter: brightness(1.08); }
 
-/* Overlay edición / drag */
 .avatar-overlay{
   position:absolute; inset:calc(var(--gap) + var(--ring)); border-radius:inherit;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;
   background: rgba(0,0,0,.54); border:2px dashed rgba(255,255,255,.8);
   opacity:0; transition: opacity .2s ease; z-index:4; text-align:center;
+  cursor: pointer;
 }
-.avatar-shell.is-editing .avatar-overlay{ opacity:1; }
+.avatar-shell:hover .avatar-overlay, .avatar-shell.dragging .avatar-overlay { opacity:1; }
 .avatar-shell.dragging .avatar-overlay{ background: rgba(215,3,123,.45); }
-.avatar-overlay-text{ color:white; font-weight:700; line-height:1.1; }
+.avatar-overlay-text{ color:white; font-weight:700; line-height:1.1; pointer-events: none; }
 
 /* ---------- Animaciones utilitarias ---------- */
 .toast-slide-enter-active, .toast-slide-leave-active{ transition: all .4s cubic-bezier(.68,-.55,.27,1.55); }

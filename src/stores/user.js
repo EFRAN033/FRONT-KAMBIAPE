@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia';
 import axios from '@/axios';
 
-// ✨ FUNCIÓN CORREGIDA PARA ENCONTRAR AVATARES EN SRC/ASSETS ✨
+// Función para encontrar un avatar por defecto en la carpeta de assets
 const getRandomDefaultAvatar = () => {
   const avatarCount = 14; 
   const randomAvatarNumber = Math.floor(Math.random() * avatarCount) + 1;
@@ -57,16 +57,16 @@ export const useUserStore = defineStore('user', {
       document.documentElement.classList.toggle('dark', this.isDarkMode);
     },
 
+    // Procesa los datos del usuario que vienen del backend de manera consistente
     _processUserData(data) {
       const processedData = {
         id: data.id || null,
         fullName: data.full_name || data.fullName || '',
         email: data.email || '',
-        // Si el usuario no tiene foto, asigna una aleatoria por defecto
         profilePicture: data.profile_picture || data.profilePicture || getRandomDefaultAvatar(),
         phone: data.phone || null,
         address: data.address || null,
-        dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString() : null,
+        dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES') : null,
         gender: data.gender || null,
         occupation: data.occupation || null,
         bio: data.bio || null,
@@ -83,7 +83,6 @@ export const useUserStore = defineStore('user', {
       this.error = null;
       try {
         const response = await axios.post('/login', credentials);
-
         const accessToken = response.data.access_token;
         this.token = accessToken;
         localStorage.setItem('access_token', accessToken);
@@ -98,7 +97,6 @@ export const useUserStore = defineStore('user', {
         }
 
         await this.fetchUserProfile(userId);
-
         return true;
       } catch (err) {
         this.error = err.response?.data?.detail || 'Error en el inicio de sesión. Verifica tus credenciales.';
@@ -110,31 +108,11 @@ export const useUserStore = defineStore('user', {
     },
 
     async fetchUserProfile(userId) {
-      if (!userId) {
-        if (this.token) {
-          try {
-            const base64Url = this.token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(window.atob(base64));
-            userId = payload.user_id;
-          } catch (e) {
-            this.error = "Token inválido para obtener ID de usuario.";
-            this.clearUser();
-            return;
-          }
-        }
-        if (!userId) {
-            this.error = 'No se proporcionó un ID de usuario válido para cargar el perfil.';
-            return;
-        }
-      }
-
       this.loading = true;
       this.error = null;
       try {
         const response = await axios.get(`/profile/${userId}`);
         const userData = this._processUserData(response.data);
-
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(userData));
       } catch (err) {
@@ -163,10 +141,8 @@ export const useUserStore = defineStore('user', {
         }
         const response = await axios.put(`/profile/${userId}`, dataToSend);
         const updatedUserData = this._processUserData(response.data);
-
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
-
         return true;
       } catch (err) {
         this.error = err.response?.data?.detail || 'Error al actualizar el perfil.';
@@ -179,12 +155,49 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async changePassword(passwordData) {
+      this.loading = true;
+      this.error = null;
+      try {
+        await axios.put('/users/change-password', passwordData);
+        return { success: true, message: 'Contraseña actualizada con éxito.' };
+      } catch (err) {
+        const errorMessage = err.response?.data?.detail || 'No se pudo cambiar la contraseña. Verifica tus datos.';
+        this.error = errorMessage;
+        return { success: false, message: errorMessage };
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // Acción para subir la foto de perfil
+    async uploadProfilePicture(formData) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.post('/profile/picture', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        const updatedUserData = this._processUserData(response.data);
+        this.user = updatedUserData;
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        
+        return { success: true, user: updatedUserData };
+      } catch (err) {
+        this.error = err.response?.data?.detail || 'No se pudo subir la imagen.';
+        return { success: false, error: this.error };
+      } finally {
+        this.loading = false;
+      }
+    },
+
     clearUser() {
       this.user = {
         id: null,
         fullName: '',
         email: '',
-        profilePicture: getRandomDefaultAvatar(), // Asigna un avatar aleatorio al cerrar sesión
+        profilePicture: getRandomDefaultAvatar(),
         phone: null,
         address: null,
         dateOfBirth: null,
@@ -201,21 +214,17 @@ export const useUserStore = defineStore('user', {
       this.token = null;
     },
 
+    // Acción para inicializar el estado del usuario desde localStorage
     async initializeUser() {
       const storedToken = localStorage.getItem('access_token');
-      const storedUser = localStorage.getItem('user');
-
-      if (storedToken && storedUser) {
+      if (storedToken) {
         this.token = storedToken;
-        this.user = JSON.parse(storedUser);
         try {
             const base64Url = storedToken.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const payload = JSON.parse(window.atob(base64));
-            const userId = payload.user_id;
-
-            if (userId) {
-                await this.fetchUserProfile(userId);
+            if (payload.user_id) {
+                await this.fetchUserProfile(payload.user_id);
             } else {
                 this.clearUser();
             }
