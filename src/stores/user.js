@@ -4,17 +4,17 @@ import axios from '@/axios';
 
 const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
-// Función para obtener una imagen de perfil por defecto de forma aleatoria
+// ✨ CORRECCIÓN: La función ahora apunta a la carpeta `public`
 const getRandomDefaultAvatar = () => {
-  const avatarCount = 14; // El número de avatares que tienes en la carpeta defaul (1.svg, 2.svg, etc.)
+  const avatarCount = 14; 
   const randomAvatarNumber = Math.floor(Math.random() * avatarCount) + 1;
-  return `/src/assets/imagenes/defaul/${randomAvatarNumber}.svg`;
+  // Esta ruta es accesible públicamente por el navegador
+  return `/imagenes/defaul/${randomAvatarNumber}.svg`; 
 };
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     token: localStorage.getItem('access_token') || null,
-    // ✨ ESTADO AÑADIDO: Lee el tema desde localStorage al iniciar
     isDarkMode: localStorage.getItem('theme') === 'dark',
     user: JSON.parse(localStorage.getItem('user')) || {
       id: null,
@@ -30,7 +30,7 @@ export const useUserStore = defineStore('user', {
       dni: null,
       agreed_terms: false,
       created_at: null,
-      interests: [], // <-- CORRECCIÓN: Campo de intereses añadido al estado inicial
+      interests: [],
     },
     loading: false,
     error: null,
@@ -53,12 +53,9 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    // ✨ ACCIÓN NUEVA: Para cambiar y persistir el estado del modo oscuro
     toggleDarkMode() {
       this.isDarkMode = !this.isDarkMode;
-      // Guarda la preferencia en localStorage
       localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
-      // Aplica o remueve la clase 'dark' del elemento <html>
       document.documentElement.classList.toggle('dark', this.isDarkMode);
     },
 
@@ -78,7 +75,7 @@ export const useUserStore = defineStore('user', {
         dni: data.dni || null,
         agreed_terms: data.agreed_terms || false,
         created_at: data.created_at || null,
-        interests: data.interests || [], // <-- CORRECCIÓN: Procesar los intereses desde la API
+        interests: data.interests || [],
       };
       return processedData;
     },
@@ -199,7 +196,7 @@ export const useUserStore = defineStore('user', {
         dni: null,
         agreed_terms: false,
         created_at: null,
-        interests: [], // <-- CORRECCIÓN: Limpiar intereses al cerrar sesión
+        interests: [],
       };
       localStorage.removeItem('user');
       localStorage.removeItem('access_token');
