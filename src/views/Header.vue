@@ -83,7 +83,13 @@
                 aria-label="Menú de usuario"
               >
                 <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
-                  <span class="text-sm font-medium text-white">{{ userStore.userInitials }}</span>
+                  <img 
+                    v-if="userStore.user.profilePicture"
+                    :src="userStore.user.profilePicture" 
+                    alt="Foto de perfil" 
+                    class="w-full h-full object-cover"
+                  >
+                  <span v-else class="text-sm font-medium text-white">{{ userStore.userInitials }}</span>
                 </div>
                 <span class="text-white text-sm font-medium hidden md:inline">{{ userStore.userFirstName }}</span>
               </button>
@@ -267,7 +273,7 @@ import { useUserStore } from '@/stores/user';
 
 // Importa los íconos necesarios de Heroicons
 import {
-  HomeIcon,                 // <-- agregado para el botón de Inicio
+  HomeIcon,
   UserGroupIcon as AboutIcon,
   PlusCircleIcon as PostIcon,
   InboxIcon as InboxIcon,
@@ -285,8 +291,7 @@ const searchOpen = ref(false);
 const userMenuOpen = ref(false);
 const searchQuery = ref('');
 
-// Definición de los enlaces de navegación (sin "Eventos")
-// Agregamos "Inicio" como primer item SIN borrar nada más
+// Definición de los enlaces de navegación
 const navLinks = [
   {
     path: '/',

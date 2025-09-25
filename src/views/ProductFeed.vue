@@ -96,10 +96,7 @@
       </div>
     </transition>
 
-<!-- Banner Principal con Parallax -->
-<!-- ============ HERO · BIENVENIDA + STACK DE CARTAS (mismo fondo) ============ -->
 <section class="relative overflow-hidden bg-slate-50 dark:bg-slate-900 rounded-3xl">
-  <!-- Fondo que pediste (halo + puntos) -->
   <div aria-hidden="true" class="pointer-events-none absolute inset-0">
     <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-[#d7037b]/12 to-[#9e0154]/12 blur-3xl"></div>
     <div class="absolute inset-0 opacity-[0.06] dark:opacity-[0.09] mix-blend-multiply"
@@ -110,7 +107,6 @@
   <div class="relative mx-auto max-w-7xl px-6 lg:px-8">
     <div class="grid items-center grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14 py-10 sm:py-12">
       
-      <!-- Izquierda · texto y CTAs (estilo del apartado que te gustó) -->
       <header class="lg:col-span-7">
         <div class="inline-flex items-center gap-2 rounded-full bg-white/70 dark:bg-white/5 ring-1 ring-slate-200/70 dark:ring-white/10 px-3 py-1">
           <span class="h-1.5 w-1.5 rounded-full bg-[#d7037b]"></span>
@@ -126,37 +122,33 @@
           Perfiles verificados, chat directo y reglas claras.
         </p>
 
-        <!-- Subrayado sutil (menos intenso y más delgado) -->
         <div class="mt-2 h-[2px] w-48 sm:w-56 bg-gradient-to-r from-[#d7037b]/22 to-[#9e0154]/22"></div>
 
-        <!-- CTAs -->
         <div class="mt-6 flex flex-col sm:flex-row items-stretch gap-3">
-          <a href="/publish"
+          <router-link to="/publicar"
               class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#d7037b] text-white font-semibold shadow-lg shadow-[#d7037b]/20 hover:brightness-[1.08] active:scale-95 transition">
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
             </svg>
             Publicar objeto
-          </a>
-
-          <a href="/explore"
+          </router-link>
+          <router-link to="/explore"
              class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/80 dark:bg-white/5 ring-1 ring-slate-200/70 dark:ring-white/10 text-[#9e0154] font-medium hover:bg-white transition">
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 5a7 7 0 1 0 4.9 12l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 5Z"/>
             </svg>
             Explorar intercambios
-          </a>
+          </router-link>
 
-          <a href="/inbox"
+          <router-link to="/buzon"
              class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/80 dark:bg-white/5 ring-1 ring-slate-200/70 dark:ring-white/10 text-slate-700 dark:text-slate-200 font-medium hover:bg-white transition">
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 3H5a2 2 0 0 0-2 2v12a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V5a2 2 0 0 0-2-2Zm0 10h-3.38a2 2 0 0 0-1.79 1.11l-.66 1.33a1 1 0 0 1-.9.56h-1.54a1 1 0 0 1-.9-.56l-.66-1.33A2 2 0 0 0 8.38 13H5V5h14v8Z"/>
             </svg>
             Mis mensajes
-          </a>
+          </router-link>
         </div>
 
-        <!-- Confianza (micro) -->
         <ul class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[12px] text-slate-600 dark:text-slate-400">
           <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Perfiles verificados</li>
           <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span> Mediación segura</li>
@@ -164,13 +156,11 @@
         </ul>
       </header>
 
-      <!-- Derecha · vuelve el stack de cartas (con tus mismas props/métodos) -->
       <aside class="lg:col-span-5">
         <div class="relative mx-auto w-full max-w-md group"
              @mouseenter="hovering = true"
              @mouseleave="hovering = false">
 
-          <!-- Orbe / ring corporativo -->
           <svg class="absolute -z-10 left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 opacity-55" viewBox="0 0 200 200" fill="none">
             <defs>
               <radialGradient id="kambiaRingX" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 100) rotate(90) scale(100)">
@@ -181,7 +171,6 @@
             <circle cx="100" cy="100" r="92" stroke="url(#kambiaRingX)" stroke-width="1.6"/>
           </svg>
 
-          <!-- Cartas apiladas -->
           <div class="relative h-[23rem] select-none">
             <div
               v-for="(card, i) in orderedCards"
@@ -196,12 +185,10 @@
             >
               <img :src="card.img" :alt="card.alt" class="h-full w-full object-cover" />
 
-              <!-- brillo diagonal -->
               <div class="pointer-events-none absolute inset-0 overflow-hidden">
                 <div class="absolute -left-1/3 top-0 h-full w-1/2 bg-gradient-to-r from-white/35 to-transparent opacity-0 group-hover:opacity-40 transition duration-700 translate-x-[-120%] group-hover:translate-x-[180%]"></div>
               </div>
 
-              <!-- contenido inferior -->
               <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                 <span class="text-white text-xs font-medium drop-shadow">{{ card.alt }}</span>
                 <span class="px-2 py-0.5 text-[10px] rounded-full bg-gradient-to-r from-[#d7037b] to-[#9e0154] text-white shadow">
@@ -209,7 +196,6 @@
                 </span>
               </div>
 
-              <!-- chip activo -->
               <div class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/10 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
                 Activo
                 <span v-if="i === frontIndex" class="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
@@ -217,7 +203,6 @@
             </div>
           </div>
 
-          <!-- Pasos mini -->
           <div class="mt-3 grid grid-cols-3 gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
             <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-[#d7037b]/70"></span> Publica</div>
             <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-[#9e0154]/70"></span> Propuestas</div>
@@ -231,9 +216,6 @@
 </section>
 
 
-<!--fin del banner principal-->
-
-<!-- filtros -->
 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md mb-8 p-4">
   <div class="container mx-auto px-2 sm:px-4">
     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -296,9 +278,7 @@
     </div>
   </div>
 </div>
-<!-- fin de los filstros -->
-
-    <div class="py-10 md:py-12 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-inner">
+<div class="py-10 md:py-12 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-inner">
       <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
         <div v-for="n in 12" :key="n" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 animate-pulse">
           <div class="w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700"></div>
@@ -327,7 +307,6 @@
   :key="product.id"
   class="relative isolate bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group border border-gray-100 dark:border-gray-700"
 >
-  <!-- Imagen -->
   <div class="relative overflow-hidden rounded-t-xl">
     <img
       :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
@@ -336,7 +315,6 @@
     />
   </div>
 
-  <!-- BADGE NUEVO (mejorado, sin bordes ni ring) -->
   <div
     class="absolute -top-3 right-3 z-10
            bg-brand-primary/95 text-white text-[11px] font-semibold
@@ -348,7 +326,6 @@
     {{ product.category_name }}
   </div>
 
-  <!-- Contenido de la tarjeta -->
   <div class="p-5">
     <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 truncate">
       {{ product.title }}
@@ -389,7 +366,6 @@
       </TransitionGroup>
     </div>
   </section>
-      <!-- ===== STRIP REDES KAMBIX ===== -->
       <section class="relative w-full overflow-hidden" aria-label="Redes sociales Kambix">
       <div class="absolute inset-0 bg-gradient-to-r from-[#d7037b] to-[#9e0154]">
         <div class="absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.4)_1px,transparent_1.5px)] bg-[length:18px_18px]"></div>

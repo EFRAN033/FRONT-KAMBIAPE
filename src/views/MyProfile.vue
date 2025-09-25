@@ -38,7 +38,6 @@
               :aria-label="`Foto de perfil de ${capitalizeFirstLetter(userProfile.fullName) || 'usuario'}`"
             >
               <div class="avatar-border" aria-hidden="true"></div>
-
               <div class="avatar-glow" aria-hidden="true"></div>
 
               <template v-if="displayPhotoUrl">
@@ -194,13 +193,40 @@
                 <textarea v-else v-model="editableProfile.bio" rows="3" class="input" placeholder="Cuéntale a la comunidad sobre tus intereses..."></textarea>
               </div>
 
-              <div v-if="editMode" class="md:col-span-2">
+              <div class="md:col-span-2">
                 <label class="label">Intereses</label>
-                <div>
-                  <p class="input text-sm text-gray-500">La edición de intereses no está implementada aún.</p>
+                <div v-if="!editMode">
+                    <p v-if="!userProfile.interests || userProfile.interests.length === 0" class="text-sm text-gray-500 dark:text-slate-400 mt-2">
+                        Aún no has seleccionado intereses.
+                    </p>
+                    <div v-else class="flex flex-wrap gap-2">
+                        <span v-for="interest in userProfile.interests" :key="interest" class="chip bg-brand-primary text-white">
+                            {{ interest }}
+                        </span>
+                    </div>
+                </div>
+                <div v-else>
+                    <div v-if="allCategories.length > 0" class="flex flex-wrap gap-2">
+                        <button
+                            v-for="category in allCategories"
+                            :key="category.id"
+                            @click="toggleInterest(category.name)"
+                            type="button"
+                            class="chip transition-colors duration-200"
+                            :class="{
+                                'bg-brand-primary text-white': editableInterests.has(category.name),
+                                'bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-slate-600': !editableInterests.has(category.name)
+                            }"
+                        >
+                            {{ category.name }}
+                        </button>
+                    </div>
+                    <p v-else class="text-sm text-gray-500 dark:text-slate-400 mt-2">
+                        Cargando categorías...
+                    </p>
                 </div>
               </div>
-            </div>
+              </div>
           </section>
 
           <section v-show="activeTab==='seguridad'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
@@ -244,116 +270,14 @@
       </div>
     </div>
 
-    <transition name="toast-slide">
-      <div v-if="showDevices" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40" @click="showDevices=false"></div>
-        <div class="relative w-full max-w-2xl rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl">
-          <header class="p-5 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
-            <div>
-              <h4 class="text-lg font-bold">Dispositivos actuales</h4>
-              <p class="text-sm text-gray-500 dark:text-slate-400">Sesiones activas asociadas a tu cuenta.</p>
-            </div>
-            <button class="icon-btn" aria-label="Cerrar" @click="showDevices=false">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
-            </button>
-          </header>
-
-          <div class="p-5">
-            <div v-if="devices.length === 0" class="text-sm text-gray-600 dark:text-slate-300">
-              No encontramos sesiones activas desde el servidor.
-            </div>
-
-            <ul v-else class="space-y-3">
-              <li v-for="(d, idx) in devices" :key="idx" class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-700">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-lg grid place-items-center bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-slate-700">
-                    <svg v-if="(d.type||'').includes('Mobile')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 15a1 1 0 100-2 1 1 0 000 2z"/></svg>
-                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2H4zm-1 9a3 3 0 003 3h8a3 3 0 003-3H3z"/></svg>
-                  </div>
-                  <div>
-                    <p class="font-semibold">{{ d.name || d.userAgent || 'Dispositivo' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-slate-400">
-                      {{ d.location || 'Ubicación desconocida' }} · {{ d.lastActive ? formatDate(d.lastActive) : 'Actividad reciente no disponible' }}
-                    </p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span v-if="d.current" class="chip">Actual</span>
-                  <button v-if="d.canRevoke !== false" @click="revokeDevice(d)" class="btn-ghost btn-sm">Cerrar sesión</button>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <footer class="p-5 border-t border-gray-200 dark:border-slate-700 flex justify-end">
-            <button class="btn-ghost" @click="showDevices=false">Cerrar</button>
-          </footer>
-        </div>
-      </div>
-    </transition>
-
-    <transition name="toast-slide">
-      <div v-if="showToast" :class="[
-        'fixed right-4 bottom-4 z-50 flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 shadow-lg bg-white dark:bg-slate-800',
-        toastType === 'success' ? 'border-green-500 text-green-700 dark:text-green-300' : '',
-        toastType === 'error' ? 'border-red-500 text-red-700 dark:text-red-400' : '',
-        toastType === 'info' ? 'border-brand-primary text-brand-primary' : ''
-      ]" role="status" aria-live="polite">
-        <svg v-if="toastType === 'success'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-        <svg v-else-if="toastType === 'error'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
-        <svg v-else class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-        <span class="text-sm font-semibold">{{ toastMessage }}</span>
-      </div>
-    </transition>
-      
-    <transition name="toast-slide">
-      <div v-if="showPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40" @click="showPasswordModal = false"></div>
-        <div class="relative w-full max-w-md rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl">
-          <header class="p-5 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
-            <div>
-              <h4 class="text-lg font-bold">Cambiar Contraseña</h4>
-              <p class="text-sm text-gray-500 dark:text-slate-400">Actualiza tu contraseña de acceso.</p>
-            </div>
-            <button class="icon-btn" aria-label="Cerrar" @click="showPasswordModal = false">
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
-            </button>
-          </header>
-
-          <form @submit.prevent="handlePasswordChange">
-            <div class="p-6 space-y-5">
-              <div>
-                <label class="label">Contraseña Actual</label>
-                <input v-model="passwordFields.current_password" type="password" class="input" required />
-              </div>
-              <div>
-                <label class="label">Nueva Contraseña</label>
-                <input v-model="passwordFields.new_password" type="password" class="input" required />
-              </div>
-              <div>
-                <label class="label">Confirmar Nueva Contraseña</label>
-                <input v-model="passwordFields.confirm_new_password" type="password" class="input" required />
-              </div>
-            </div>
-
-            <footer class="p-5 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3">
-              <button type="button" class="btn-ghost" @click="showPasswordModal = false">Cancelar</button>
-              <button type="submit" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed">
-                <svg v-if="userStore.loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                <span v-else>Actualizar</span>
-              </button>
-            </footer>
-          </form>
-        </div>
-      </div>
-    </transition>
-  </div>
+    </div>
 </template>
 
 <script>
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 import { ref, reactive, onMounted, watch, computed } from 'vue';
+import axios from '@/axios'; // Importa tu instancia de axios
 
 export default {
   name: 'MyProfile',
@@ -398,6 +322,10 @@ export default {
       confirm_new_password: ''
     });
 
+    // --- NUEVAS VARIABLES PARA INTERESES ---
+    const allCategories = ref([]);
+    const editableInterests = ref(new Set());
+
     const userProfile = computed(() => userStore.getUserProfile);
     
     const displayPhotoUrl = computed(() => {
@@ -406,10 +334,8 @@ export default {
             if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) {
                 return url;
             }
-            // --- INICIO DE LA CORRECCIÓN ---
-            // Usamos la nueva variable VITE_APP_PUBLIC_URL sin el '/api'
+            // Usa la variable de entorno para la URL pública
             return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${url}`;
-            // --- FIN DE LA CORRECCIÓN ---
         }
         return null;
     });
@@ -431,13 +357,42 @@ export default {
 
     const setTab = (tab) => activeTab.value = tab;
 
-    const enterEditMode = () => {
+    // --- NUEVA FUNCIÓN PARA OBTENER CATEGORÍAS ---
+    const fetchCategories = async () => {
+        try {
+            const response = await axios.get('/categories');
+            allCategories.value = response.data;
+        } catch (error) {
+            console.error("Error al cargar las categorías:", error);
+            showNotification('No se pudieron cargar las categorías de intereses.', 'error');
+        }
+    };
+
+    const enterEditMode = async () => {
       editableProfile.value = { ...userProfile.value };
+      
+      // Inicializa el set de intereses editables
+      editableInterests.value = new Set(userProfile.value.interests || []);
+
       if (editableProfile.value?.phone) {
         editableProfile.value.phone = formatPhoneGroups(onlyDigits(editableProfile.value.phone));
       }
       editMode.value = true;
       showNotification('Modo de edición activado.', 'info');
+      
+      // Carga las categorías solo si aún no se han cargado
+      if (allCategories.value.length === 0) {
+        await fetchCategories();
+      }
+    };
+    
+    // --- NUEVA FUNCIÓN PARA MANEJAR CLICS EN INTERESES ---
+    const toggleInterest = (interestName) => {
+        if (editableInterests.value.has(interestName)) {
+            editableInterests.value.delete(interestName);
+        } else {
+            editableInterests.value.add(interestName);
+        }
     };
 
     const cancelEdit = () => {
@@ -447,6 +402,10 @@ export default {
 
     const saveProfile = async () => {
       if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
+      
+      // Actualiza el payload con los intereses del Set
+      editableProfile.value.interests = Array.from(editableInterests.value);
+
       showNotification('Guardando cambios...', 'info');
 
       const payload = { ...editableProfile.value };
@@ -588,7 +547,11 @@ export default {
       changeProfilePicture, onFileChange, onDragOver, onDragLeave, onDrop,
       onPhoneInput, onPhonePaste, formatPhoneGroups,
       showDevices, devices, openDevicesModal, revokeDevice, formatDate,
-      showPasswordModal, passwordFields, openChangePasswordModal, handlePasswordChange
+      showPasswordModal, passwordFields, openChangePasswordModal, handlePasswordChange,
+      // --- Exporta las nuevas variables y funciones para intereses ---
+      allCategories,
+      editableInterests,
+      toggleInterest
     };
   },
 };
