@@ -63,7 +63,9 @@ export const useUserStore = defineStore('user', {
         id: data.id || null,
         fullName: data.full_name || data.fullName || '',
         email: data.email || '',
-        profilePicture: data.profile_picture || data.profilePicture || getRandomDefaultAvatar(),
+        profilePicture: data.profile_picture 
+            ? `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${data.profile_picture}` 
+            : data.profilePicture || getRandomDefaultAvatar(),
         phone: data.phone || null,
         address: data.address || null,
         dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES') : null,

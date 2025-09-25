@@ -406,7 +406,10 @@ export default {
             if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) {
                 return url;
             }
-            return `${import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'}${url}`;
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Usamos la nueva variable VITE_APP_PUBLIC_URL sin el '/api'
+            return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${url}`;
+            // --- FIN DE LA CORRECCIÓN ---
         }
         return null;
     });
