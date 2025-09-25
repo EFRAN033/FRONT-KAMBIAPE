@@ -554,7 +554,29 @@ export default {
 .dark .btn-ghost{ color:#f1f5f9;border-color:#334155; }
 .btn-ghost:hover{ background:#f8fafc; }
 .dark .btn-ghost:hover{ background:#1f2937; }
-.btn-danger{ background-color:#ef4444;color:white;box-shadow:0 6px 20px -8px rgba(220,38,38,.5); }
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem; /* Espacio entre el ícono y el texto */
+  padding: 0.625rem 1.1rem;
+  border-radius: 0.9rem;
+  font-weight: 700;
+  color: white;
+  background-color: #ef4444; /* red-500 */
+  border: 1px solid #dc2626; /* Borde sutil más oscuro */
+  box-shadow: 0 4px 14px -4px rgba(239, 68, 68, 0.4);
+  transition: all 0.2s ease-in-out;
+}
+.btn-danger:hover {
+  background-color: #dc2626; /* red-600 */
+  transform: translateY(-2px); /* Efecto de "levantarse" */
+  box-shadow: 0 8px 20px -6px rgba(239, 68, 68, 0.5);
+}
+.btn-danger:active {
+  transform: translateY(0) scale(0.98); /* Efecto al hacer clic */
+  box-shadow: 0 2px 8px -2px rgba(239, 68, 68, 0.4);
+}
 
 /* ---------- Labels, inputs ---------- */
 .label{ display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#64748b;margin-bottom:.35rem; }
@@ -585,7 +607,7 @@ export default {
 /* ---------- Avatar nuevo ---------- */
 .avatar-shell{
   --size: 168px;
-  --ring: 3px; /* grosor del borde interior */
+  --ring: 1px; /* grosor del borde interior */
   --gap: 6px; /* separación entre imagen y borde degradado */
   --blur: 26px;
 
@@ -598,18 +620,18 @@ export default {
 
 .avatar-border{
   position:absolute;inset:0;border-radius:999px;
-  background: conic-gradient(from 220deg, #d7037b, #a0045a 28%, #6d28d9 55%, #3b82f6 82%, #d7037b 100%);
+  background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
   filter: saturate(1.1);
   /* máscara para crear el borde hueco */
-  -webkit-mask: 
-    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap))) 
-    exclude, 
+  -webkit-mask:
+    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap)))
+    exclude,
     radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
-          mask: 
-    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap))) 
-    exclude, 
+          mask:
+    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap)))
+    exclude,
     radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
-  animation: spin-slow 10s linear infinite;
+  /* animation: spin-slow 10s linear infinite; */ /* Se comenta o elimina para detener el giro */
   z-index:0;
 }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
