@@ -141,6 +141,13 @@ export const useUserStore = defineStore('user', {
             dataToSend.date_of_birth = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             delete dataToSend.dateOfBirth;
         }
+        
+        // --- CORRECCIÓN (BUENA PRÁCTICA) ---
+        // Aseguramos que el campo `interests` (con los nombres) no se envíe al backend,
+        // ya que el frontend ahora envía `interest_ids` en su lugar.
+        delete dataToSend.interests;
+        // --- FIN DE LA CORRECCIÓN ---
+
         const response = await axios.put(`/profile/${userId}`, dataToSend);
         const updatedUserData = this._processUserData(response.data);
         this.user = updatedUserData;

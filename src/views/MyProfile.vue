@@ -195,6 +195,7 @@
 
               <div class="md:col-span-2">
                 <label class="label">Intereses</label>
+                
                 <div v-if="!editMode">
                     <p v-if="!userProfile.interests || userProfile.interests.length === 0" class="text-sm text-gray-500 dark:text-slate-400 mt-2">
                         Aún no has seleccionado intereses.
@@ -205,25 +206,53 @@
                         </span>
                     </div>
                 </div>
+
                 <div v-else>
-                    <div v-if="allCategories.length > 0" class="flex flex-wrap gap-2">
+                  <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 min-h-[4rem]">
+                    <p v-if="editableInterests.size === 0" class="text-sm text-slate-500 dark:text-slate-400">
+                      Selecciona tus intereses de la lista de abajo.
+                    </p>
+                    <div v-else class="flex flex-wrap gap-2">
+                      <span
+                        v-for="interestName in editableInterests"
+                        :key="`selected-${interestName}`"
+                        class="inline-flex items-center gap-2 chip bg-brand-primary text-white"
+                      >
+                        {{ interestName }}
                         <button
-                            v-for="category in allCategories"
+                          @click="toggleInterest(interestName)"
+                          type="button"
+                          class="w-4 h-4 rounded-full bg-white/20 text-white hover:bg-white/40 flex items-center justify-center"
+                          :aria-label="`Quitar ${interestName}`"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Añadir Intereses:</p>
+                    <div v-if="availableCategories.length > 0" class="flex flex-wrap gap-2">
+                        <button
+                            v-for="category in availableCategories"
                             :key="category.id"
                             @click="toggleInterest(category.name)"
                             type="button"
-                            class="chip transition-colors duration-200"
-                            :class="{
-                                'bg-brand-primary text-white': editableInterests.has(category.name),
-                                'bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-slate-600': !editableInterests.has(category.name)
-                            }"
+                            class="chip transition-colors duration-200 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-slate-600"
                         >
                             {{ category.name }}
                         </button>
                     </div>
-                    <p v-else class="text-sm text-gray-500 dark:text-slate-400 mt-2">
+                     <p v-else-if="allCategories.length > 0" class="text-sm text-slate-500 dark:text-slate-400">
+                        ¡Has seleccionado todos los intereses disponibles!
+                    </p>
+                    <p v-else class="text-sm text-slate-500 dark:text-slate-400">
                         Cargando categorías...
                     </p>
+                  </div>
                 </div>
               </div>
               </div>
@@ -277,7 +306,7 @@
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 import { ref, reactive, onMounted, watch, computed } from 'vue';
-import axios from '@/axios'; // Importa tu instancia de axios
+import axios from '@/axios'; 
 
 export default {
   name: 'MyProfile',
@@ -322,19 +351,23 @@ export default {
       confirm_new_password: ''
     });
 
-    // --- NUEVAS VARIABLES PARA INTERESES ---
     const allCategories = ref([]);
     const editableInterests = ref(new Set());
 
     const userProfile = computed(() => userStore.getUserProfile);
     
+    // ===== NUEVA PROPIEDAD COMPUTADA =====
+    // Filtra las categorías que aún no han sido seleccionadas por el usuario.
+    const availableCategories = computed(() => {
+      return allCategories.value.filter(category => !editableInterests.value.has(category.name));
+    });
+
     const displayPhotoUrl = computed(() => {
         if (userProfile.value && userProfile.value.profilePicture) {
             const url = userProfile.value.profilePicture;
             if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) {
                 return url;
             }
-            // Usa la variable de entorno para la URL pública
             return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${url}`;
         }
         return null;
@@ -357,7 +390,6 @@ export default {
 
     const setTab = (tab) => activeTab.value = tab;
 
-    // --- NUEVA FUNCIÓN PARA OBTENER CATEGORÍAS ---
     const fetchCategories = async () => {
         try {
             const response = await axios.get('/categories');
@@ -370,8 +402,6 @@ export default {
 
     const enterEditMode = async () => {
       editableProfile.value = { ...userProfile.value };
-      
-      // Inicializa el set de intereses editables
       editableInterests.value = new Set(userProfile.value.interests || []);
 
       if (editableProfile.value?.phone) {
@@ -380,13 +410,11 @@ export default {
       editMode.value = true;
       showNotification('Modo de edición activado.', 'info');
       
-      // Carga las categorías solo si aún no se han cargado
       if (allCategories.value.length === 0) {
         await fetchCategories();
       }
     };
     
-    // --- NUEVA FUNCIÓN PARA MANEJAR CLICS EN INTERESES ---
     const toggleInterest = (interestName) => {
         if (editableInterests.value.has(interestName)) {
             editableInterests.value.delete(interestName);
@@ -403,12 +431,21 @@ export default {
     const saveProfile = async () => {
       if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
       
-      // Actualiza el payload con los intereses del Set
-      editableProfile.value.interests = Array.from(editableInterests.value);
-
       showNotification('Guardando cambios...', 'info');
 
-      const payload = { ...editableProfile.value };
+      const selectedInterestIds = Array.from(editableInterests.value)
+        .map(interestName => {
+          const category = allCategories.value.find(cat => cat.name === interestName);
+          return category ? category.id : null;
+        })
+        .filter(id => id !== null);
+
+      const payload = {
+        ...editableProfile.value,
+        interest_ids: selectedInterestIds,
+      };
+      delete payload.interests; 
+
       if (typeof payload.phone === 'string') payload.phone = onlyDigits(payload.phone);
 
       const success = await userStore.updateProfile(userStore.user.id, payload);
@@ -548,10 +585,10 @@ export default {
       onPhoneInput, onPhonePaste, formatPhoneGroups,
       showDevices, devices, openDevicesModal, revokeDevice, formatDate,
       showPasswordModal, passwordFields, openChangePasswordModal, handlePasswordChange,
-      // --- Exporta las nuevas variables y funciones para intereses ---
       allCategories,
       editableInterests,
-      toggleInterest
+      toggleInterest,
+      availableCategories, // <-- Exporta la nueva propiedad computada
     };
   },
 };
