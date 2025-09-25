@@ -2,14 +2,12 @@
 import { defineStore } from 'pinia';
 import axios from '@/axios';
 
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-
-// ✨ CORRECCIÓN: La función ahora apunta a la carpeta `public`
+// ✨ FUNCIÓN CORREGIDA PARA ENCONTRAR AVATARES EN SRC/ASSETS ✨
 const getRandomDefaultAvatar = () => {
   const avatarCount = 14; 
   const randomAvatarNumber = Math.floor(Math.random() * avatarCount) + 1;
-  // Esta ruta es accesible públicamente por el navegador
-  return `/imagenes/defaul/${randomAvatarNumber}.svg`; 
+  // Este método le pide a Vite que construya la URL correcta para la imagen
+  return new URL(`../assets/imagenes/defaul/${randomAvatarNumber}.svg`, import.meta.url).href;
 };
 
 export const useUserStore = defineStore('user', {
