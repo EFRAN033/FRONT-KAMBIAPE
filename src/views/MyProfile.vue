@@ -26,57 +26,111 @@
 
     <div class="container mx-auto px-4 sm:px-6 py-8">
       <div class="max-w-4xl mx-auto">
-
         <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
-          <div class="col-span-1 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
+          <!-- === AVATAR RE-DISEÑADO === -->
+          <div class="col-span-1 flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
             <div
               class="avatar-shell group"
               :class="[{ 'is-editing': editMode }, isDragOver && 'dragging']"
               @dragover.prevent="onDragOver"
               @dragleave.prevent="onDragLeave"
               @drop.prevent="onDrop"
+              role="img"
+              :aria-label="`Foto de perfil de ${capitalizeFirstLetter(userProfile.fullName) || 'usuario'}`"
             >
-              <div class="avatar-ring" aria-hidden="true"></div>
-              <img v-if="displayPhotoUrl || userProfile.profilePicture" class="avatar-img" :src="displayPhotoUrl || userProfile.profilePicture" alt="Foto de perfil" />
-              <div v-else class="avatar-placeholder"><span class="avatar-initials">{{ initials(userProfile.fullName) }}</span></div>
+              <!-- Borde degradado con máscara -->
+              <div class="avatar-border" aria-hidden="true"></div>
 
+              <!-- Glow suave detrás -->
+              <div class="avatar-glow" aria-hidden="true"></div>
+
+              <!-- Imagen o fallback con iniciales -->
+              <template v-if="displayPhotoUrl || (userProfile && userProfile.profilePicture)">
+                <img
+                  class="avatar-img"
+                  :src="displayPhotoUrl || userProfile.profilePicture"
+                  alt="Foto de perfil"
+                  draggable="false"
+                />
+              </template>
+              <template v-else>
+                <div class="avatar-fallback">
+                  <span class="avatar-initials">{{ initials(userProfile.fullName) }}</span>
+                  <!-- patrón sutil -->
+                  <svg class="avatar-pattern" viewBox="0 0 60 60" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+                        <stop offset="0" stop-color="currentColor" stop-opacity="0.16"/>
+                        <stop offset="1" stop-color="currentColor" stop-opacity="0.0"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="60" height="60" fill="url(#g)"/>
+                    <g opacity=".18">
+                      <circle cx="10" cy="10" r="1"></circle>
+                      <circle cx="30" cy="20" r="1"></circle>
+                      <circle cx="45" cy="35" r="1"></circle>
+                      <circle cx="15" cy="40" r="1"></circle>
+                      <circle cx="50" cy="12" r="1"></circle>
+                    </g>
+                  </svg>
+                </div>
+              </template>
+
+              <!-- Estado (online) -->
+              <span class="avatar-status" title="Activo" aria-label="Estado: activo"></span>
+
+              <!-- Botón cámara (acción rápida) -->
+              <button
+                type="button"
+                class="avatar-action"
+                :aria-label="editMode ? 'Cambiar foto de perfil' : 'Editar foto de perfil'"
+                @click="changeProfilePicture"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M4 5a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1l-.447-.894A2 2 0 0012.764 3H7.236a2 2 0 00-1.789 1.106L5 5H4zm6 9a4 4 0 110-8 4 4 0 010 8z"/>
+                </svg>
+              </button>
+
+              <!-- Overlay de edición y drag & drop -->
               <div v-if="editMode" class="avatar-overlay">
+                <p class="avatar-overlay-text">
+                  Suelta una imagen aquí<br/>
+                  <span class="opacity-80">o</span>
+                </p>
                 <button type="button" class="btn-outline-light" @click="changeProfilePicture">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586A1 1 0 0116 6v1a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 01.414-.805L4 5zm10-2a2 2 0 10-4 0h4z" /></svg>
-                  <span>Subir</span>
+                  Subir imagen
                 </button>
-                <p class="text-xs text-white/80 mt-1">o arrastra una imagen</p>
+                <p class="text-[11px] text-white/75 mt-1">JPEG o PNG · máx. {{ MAX_SIZE_MB }}MB</p>
                 <input ref="fileInput" type="file" accept="image/jpeg,image/png" class="hidden" @change="onFileChange" />
               </div>
             </div>
+
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-3 text-center">Máx. {{ MAX_SIZE_MB }}MB</p>
           </div>
+          <!-- === / AVATAR RE-DISEÑADO === -->
 
           <div class="col-span-1 md:col-span-2 p-6 flex flex-col">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
             <div class="mt-3 flex flex-wrap items-center gap-2">
               <span class="chip">Miembro</span>
-              <span class="chip bg-brand-primary text-white">
-                Activo
-              </span>
+              <span class="chip bg-brand-primary text-white">Activo</span>
             </div>
 
             <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <h4 class="label">Intereses</h4>
-                <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-2">
-                    <span v-for="interest in userProfile.interests" :key="interest" class="chip bg-brand-primary text-white">
-                    {{ interest }}
-                    </span>
-                </div>
-                <p v-else class="text-sm text-gray-500 dark:text-slate-400">No has añadido intereses todavía.</p>
+              <h4 class="label">Intereses</h4>
+              <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-2">
+                <span v-for="interest in userProfile.interests" :key="interest" class="chip bg-brand-primary text-white">
+                  {{ interest }}
+                </span>
+              </div>
+              <p v-else class="text-sm text-gray-500 dark:text-slate-400">No has añadido intereses todavía.</p>
             </div>
-
 
             <div class="mt-auto pt-4 flex flex-wrap items-center gap-2">
               <template v-if="!editMode">
-                  <button @click="enterEditMode" class="btn-brand">Editar Perfil</button>
-                  <button @click="logout" class="btn-ghost">Salir</button>
+                <button @click="enterEditMode" class="btn-brand">Editar Perfil</button>
+                <button @click="logout" class="btn-ghost">Salir</button>
               </template>
               <template v-else>
                 <button @click="saveProfile" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed">
@@ -152,14 +206,14 @@
                 <p v-if="!editMode" class="display-field min-h-[6rem] text-sm">{{ userProfile.bio || 'Aún no has añadido una biografía.' }}</p>
                 <textarea v-else v-model="editableProfile.bio" rows="3" class="input" placeholder="Cuéntale a la comunidad sobre tus intereses..."></textarea>
               </div>
-              
+
               <div v-if="editMode" class="md:col-span-2">
                 <label class="label">Intereses</label>
                 <div>
                   <p class="input text-sm text-gray-500">La edición de intereses no está implementada aún.</p>
                 </div>
               </div>
-              </div>
+            </div>
           </section>
 
           <section v-show="activeTab==='seguridad'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
@@ -268,6 +322,7 @@
 </template>
 
 <script>
+// El resto del script sigue igual, ya que la lógica no cambia.
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 import { ref, onMounted, watch, computed } from 'vue';
@@ -296,7 +351,7 @@ export default {
     const router = useRouter();
     const editMode = ref(false);
     const editableProfile = ref({});
-    const activeTab = ref('perfil');
+       const activeTab = ref('perfil');
     const darkMode = ref(false);
     const showToast = ref(false);
     const toastMessage = ref('');
@@ -460,9 +515,8 @@ export default {
 </script>
 
 <style scoped>
-.brand-header {
-  background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
-}
+/* ---------- Branding ---------- */
+.brand-header { background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%); }
 .aurora {
   position: fixed; inset: 0; filter: blur(60px);
   background:
@@ -471,170 +525,170 @@ export default {
   animation: aurora-float 14s ease-in-out infinite;
 }
 @keyframes aurora-float { 50% { transform: translateY(-18px); } }
-.icon-btn {
-  width: 36px; height: 36px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.2);
-  display: grid; place-items: center;
-  transition: .25s ease;
+
+/* ---------- Botones y chips ---------- */
+.icon-btn{
+  width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;transition:.25s ease;
 }
-.icon-btn:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
-.icon-btn:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 2px; }
-.chip {
-  display: inline-block;
-  padding: .375rem .75rem;
-  border-radius: 999px;
-  font-size: .75rem;
-  font-weight: 700;
-  background: #334155;
-  color: #fff;
+.icon-btn:hover{ background:rgba(255,255,255,.22); transform:scale(1.08); }
+.icon-btn:focus-visible{ outline:2px solid rgba(255,255,255,.6); outline-offset:2px; }
+
+.chip{
+  display:inline-block;padding:.375rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;
+  background:#334155;color:#fff;
 }
-.btn-brand {
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  padding: .625rem 1.1rem; border-radius: .9rem;
-  font-weight: 700; color: #fff;
-  background-color: #d7037b;
-  transition: transform .12s ease, filter .2s ease;
-  box-shadow: 0 6px 20px -8px rgba(215, 3, 123, .5);
+.btn-brand{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.625rem 1.1rem;border-radius:.9rem;
+  font-weight:700;color:#fff;background-color:#d7037b;transition:transform .12s ease, filter .2s ease;
+  box-shadow:0 6px 20px -8px rgba(215,3,123,.5);
 }
-.btn-brand:hover { filter: brightness(1.03); }
-.btn-brand:active { transform: translateY(1px) scale(.99); }
-.btn-brand:focus-visible { outline: 3px solid #fbc7cc; outline-offset: 2px; }
-.btn-sm { padding: .5rem .9rem; border-radius: .8rem; font-size: .9rem; }
-.btn-ghost {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: .625rem 1.1rem; border-radius: .9rem;
-  font-weight: 700;
-  color: #0f172a;
-  background: transparent; border: 1px solid #e5e7eb;
-  transition: background .2s ease, color .2s ease, border-color .2s ease;
+.btn-brand:hover{ filter:brightness(1.03); }
+.btn-brand:active{ transform:translateY(1px) scale(.99); }
+.btn-brand:focus-visible{ outline:3px solid #fbc7cc; outline-offset:2px; }
+.btn-sm{ padding:.5rem .9rem;border-radius:.8rem;font-size:.9rem; }
+.btn-ghost{
+  display:inline-flex;align-items:center;justify-content:center;padding:.625rem 1.1rem;border-radius:.9rem;font-weight:700;
+  color:#0f172a;background:transparent;border:1px solid #e5e7eb;transition:background .2s ease,color .2s ease,border-color .2s ease;
 }
-.dark .btn-ghost { color: #f1f5f9; border-color: #334155; }
-.btn-ghost:hover { background: #f8fafc; }
-.dark .btn-ghost:hover { background: #1f2937; }
-.btn-danger {
-    background-color: #ef4444;
-    color: white;
-    box-shadow: 0 6px 20px -8px rgba(220, 38, 38, .5);
+.dark .btn-ghost{ color:#f1f5f9;border-color:#334155; }
+.btn-ghost:hover{ background:#f8fafc; }
+.dark .btn-ghost:hover{ background:#1f2937; }
+.btn-danger{ background-color:#ef4444;color:white;box-shadow:0 6px 20px -8px rgba(220,38,38,.5); }
+
+/* ---------- Labels, inputs ---------- */
+.label{ display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#64748b;margin-bottom:.35rem; }
+.dark .label{ color:#94a3b8; }
+.input{
+  width:100%;border-radius:.9rem;border:1px solid #e5e7eb;background:transparent;color:inherit;padding:.8rem 1rem;
+  transition:border-color .2s ease, box-shadow .2s ease;
 }
-.label {
-  display: block; font-size: .72rem; letter-spacing: .06em;
-  text-transform: uppercase; font-weight: 700;
-  color: #64748b; margin-bottom: .35rem;
-}
-.dark .label { color: #94a3b8; }
-.input {
-  width: 100%;
-  border-radius: .9rem;
-  border: 1px solid #e5e7eb;
-  background: transparent;
-  color: inherit;
-  padding: .8rem 1rem;
-  transition: border-color .2s ease, box-shadow .2s ease;
-}
-.dark .input { border-color: #334155; }
-.input:focus {
-  outline: none;
-  border-color: #d7037b;
-  box-shadow: 0 0 0 3px #fde9f2;
-}
-.display-field {
-  width: 100%;
-  border-radius: .9rem;
-  border: 1px solid #e5e7eb;
-  background: #f8fafc;
-  padding: .8rem 1rem;
-  font-weight: 600;
-}
-.dark .display-field { border-color: #334155; background: #0f172a; }
-.avatar-shell { 
-  position: relative; 
-  width: 160px; 
-  height: 160px; 
-  overflow: hidden;
-  border-radius: 999px;
-}
-.avatar-background {
-  position: absolute;
-  inset: -20px;
-  background-size: cover;
-  background-position: center;
-  filter: blur(20px) brightness(0.9);
-  z-index: 0;
-}
-.avatar-ring {
-  position: absolute; 
-  inset: 0; 
-  border-radius: 999px; 
-  padding: 5px;
-  background: conic-gradient(from 180deg, #d7037b, #a6045d, #d7037b);
-  animation: spin 10s linear infinite;
-  z-index: 2;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.avatar-img, .avatar-placeholder {
-  position: relative;
-  z-index: 1;
-  width: 100%; height: 100%; border-radius: 999px; object-fit: cover;
-  background-color: transparent;
-  border: 3px solid rgba(255, 255, 255, 0.5);
-  display: grid; place-items: center;
-}
-.avatar-placeholder {
-  background-color: rgba(229, 231, 235, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.dark .avatar-img, .dark .avatar-placeholder { 
-  border-color: rgba(30, 41, 59, 0.5); 
-}
-.avatar-initials { font-size: 3rem; font-weight: 700; color: #6b7280; }
-.avatar-overlay {
-  position: absolute; inset: 0; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 0.5rem;
-  border-radius: 999px; background-color: rgba(0,0,0,0.55);
-  border: 2px dashed rgba(255,255,255,0.75);
-  opacity: 0; transition: opacity .2s ease;
-  z-index: 3;
-}
-.avatar-shell.is-editing .avatar-overlay { opacity: 1; }
-.avatar-shell.dragging .avatar-overlay { background-color: rgba(215, 3, 123, 0.45); }
-.btn-outline-light {
-  padding: .45rem .7rem; border-radius: .7rem; font-weight: 700; font-size: .85rem;
-  background: rgba(215, 3, 123, 0.1);
-  color: #fce7f3; border: 1px solid rgba(255,255,255,.6);
-  transition: .2s ease;
-}
-.btn-outline-light:hover { background: rgba(215, 3, 123, 0.18); }
-.segmented{
-  position: relative; display: grid; grid-template-columns: repeat(2, 1fr);
-  background: rgba(148,163,184,.08); border-radius: 12px; padding: 5px;
-}
-.dark .segmented { background-color: rgba(148,163,184, .1); }
-.seg-btn{
-  position: relative; z-index: 2; padding: .6rem .7rem; border-radius: 9px;
-  font-weight: 700; color: #64748b; transition: color .25s ease;
-}
-.dark .seg-btn { color: #94a3b8; }
-.seg-btn.is-active{ color: #0f172a; }
-.dark .seg-btn.is-active { color: #f1f5f9; }
+.dark .input{ border-color:#334155; }
+.input:focus{ outline:none;border-color:#d7037b;box-shadow:0 0 0 3px #fde9f2; }
+.display-field{ width:100%;border-radius:.9rem;border:1px solid #e5e7eb;background:#f8fafc;padding:.8rem 1rem;font-weight:600; }
+.dark .display-field{ border-color:#334155;background:#0f172a; }
+
+/* ---------- Segmented control ---------- */
+.segmented{ position:relative;display:grid;grid-template-columns:repeat(2,1fr);background:rgba(148,163,184,.08);border-radius:12px;padding:5px; }
+.dark .segmented{ background-color:rgba(148,163,184,.1); }
+.seg-btn{ position:relative;z-index:2;padding:.6rem .7rem;border-radius:9px;font-weight:700;color:#64748b;transition:color .25s ease; }
+.dark .seg-btn{ color:#94a3b8; }
+.seg-btn.is-active{ color:#0f172a; }
+.dark .seg-btn.is-active{ color:#f1f5f9; }
 .seg-indicator{
-  position: absolute; z-index: 1; width: calc(50% - 10px); height: calc(100% - 10px);
-  left: 5px; top: 5px;
-  background: linear-gradient(180deg, #ffffff, #f8fafc);
-  border: 1px solid #e5e7eb; border-radius: 9px;
-  box-shadow: 0 3px 8px -1px rgba(0,0,0,0.07);
-  transition: transform .3s cubic-bezier(.25, .8, .5, 1);
+  position:absolute;z-index:1;width:calc(50% - 10px);height:calc(100% - 10px);left:5px;top:5px;
+  background:linear-gradient(180deg,#ffffff,#f8fafc);border:1px solid #e5e7eb;border-radius:9px;box-shadow:0 3px 8px -1px rgba(0,0,0,.07);
+  transition:transform .3s cubic-bezier(.25,.8,.5,1);
 }
-.dark .seg-indicator {
-  background: linear-gradient(180deg, #0b1220, #0f172a);
-  border-color: #334155; box-shadow: 0 3px 8px -1px rgba(0,0,0,0.25);
+.dark .seg-indicator{ background:linear-gradient(180deg,#0b1220,#0f172a);border-color:#334155;box-shadow:0 3px 8px -1px rgba(0,0,0,.25); }
+
+/* ---------- Avatar nuevo ---------- */
+.avatar-shell{
+  --size: 168px;
+  --ring: 3px; /* grosor del borde interior */
+  --gap: 6px; /* separación entre imagen y borde degradado */
+  --blur: 26px;
+
+  position:relative;width:var(--size);height:var(--size);
+  border-radius:999px;isolation:isolate;
+  transition: transform .2s ease;
 }
-.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-.toast-slide-enter-from, .toast-slide-leave-to { transform: translateX(120%); opacity: 0; }
-.animate-in-up { animation: animate-in-up .5s ease-out both; }
-.reveal-initial { opacity: 0; transform: translateY(10px); }
-.reveal-active { animation: animate-in-up .5s ease-out forwards; }
-@keyframes animate-in-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.avatar-shell:hover{ transform: translateY(-2px); }
+.avatar-shell.dragging{ transform: scale(1.02); }
+
+.avatar-border{
+  position:absolute;inset:0;border-radius:999px;
+  background: conic-gradient(from 220deg, #d7037b, #a0045a 28%, #6d28d9 55%, #3b82f6 82%, #d7037b 100%);
+  filter: saturate(1.1);
+  /* máscara para crear el borde hueco */
+  -webkit-mask: 
+    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap))) 
+    exclude, 
+    radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
+          mask: 
+    radial-gradient(circle at 50% 50%, transparent calc(50% - var(--gap) - var(--ring)), black calc(50% - var(--gap))) 
+    exclude, 
+    radial-gradient(circle at 50% 50%, black 60%, transparent 61%);
+  animation: spin-slow 10s linear infinite;
+  z-index:0;
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+.avatar-glow{
+  position:absolute;inset:-12px;border-radius:inherit;z-index:-1;
+  background: radial-gradient(40% 40% at 60% 30%, rgba(215,3,123,.25), transparent 60%),
+              radial-gradient(40% 40% at 30% 70%, rgba(59,130,246,.22), transparent 60%);
+  filter: blur(var(--blur));
+  opacity:.7; pointer-events:none;
+}
+
+.avatar-img,
+.avatar-fallback{
+  position:absolute;inset:calc(var(--gap) + var(--ring));
+  width:auto;height:auto;border-radius:999px;overflow:hidden;
+  display:grid;place-items:center;background:
+    linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55));
+}
+.dark .avatar-img, .dark .avatar-fallback{
+  background: linear-gradient(180deg, rgba(2,6,23,.6), rgba(2,6,23,.4));
+}
+.avatar-img{
+  width:calc(100% - (var(--gap) + var(--ring))*2);
+  height:calc(100% - (var(--gap) + var(--ring))*2);
+  object-fit:cover; border:1px solid rgba(255,255,255,.5);
+}
+.dark .avatar-img{ border-color: rgba(30,41,59,.6); }
+
+/* Fallback con iniciales y patrón sutil */
+.avatar-fallback{
+  color:#64748b; position:absolute;
+  width:calc(100% - (var(--gap) + var(--ring))*2);
+  height:calc(100% - (var(--gap) + var(--ring))*2);
+  border:1px solid rgba(148,163,184,.3);
+}
+.dark .avatar-fallback{ border-color: rgba(51,65,85,.6); }
+
+.avatar-initials{ font-size:3rem; font-weight:800; letter-spacing:.02em; z-index:1; }
+.avatar-pattern{ position:absolute; inset:0; width:100%; height:100%; color:#64748b; }
+
+/* Estado online */
+.avatar-status{
+  position:absolute; right:10px; bottom:10px; width:16px; height:16px; border-radius:999px;
+  background: radial-gradient(circle at 30% 30%, #ffffff 10%, #22c55e 12% 100%);
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow: 0 2px 6px rgba(34,197,94,.45);
+  z-index:2;
+}
+.dark .avatar-status{ border-color:#0f172a; }
+
+/* Botón cámara */
+.avatar-action{
+  position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
+  display:inline-grid; place-items:center; width:34px; height:34px; border-radius:10px;
+  background: rgba(15,23,42,.9); color:white; border:1px solid rgba(148,163,184,.35);
+  box-shadow: 0 8px 24px -8px rgba(0,0,0,.45);
+  transition: transform .15s ease, filter .2s ease, background .2s ease;
+  z-index:3;
+}
+.avatar-shell:hover .avatar-action{ transform: translateX(-50%) translateY(-2px); }
+.avatar-action:hover{ filter: brightness(1.08); }
+
+/* Overlay edición / drag */
+.avatar-overlay{
+  position:absolute; inset:calc(var(--gap) + var(--ring)); border-radius:inherit;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;
+  background: rgba(0,0,0,.54); border:2px dashed rgba(255,255,255,.8);
+  opacity:0; transition: opacity .2s ease; z-index:4; text-align:center;
+}
+.avatar-shell.is-editing .avatar-overlay{ opacity:1; }
+.avatar-shell.dragging .avatar-overlay{ background: rgba(215,3,123,.45); }
+.avatar-overlay-text{ color:white; font-weight:700; line-height:1.1; }
+
+/* ---------- Animaciones utilitarias ---------- */
+.toast-slide-enter-active, .toast-slide-leave-active{ transition: all .4s cubic-bezier(.68,-.55,.27,1.55); }
+.toast-slide-enter-from, .toast-slide-leave-to{ transform: translateX(120%); opacity:0; }
+.animate-in-up{ animation: animate-in-up .5s ease-out both; }
+.reveal-initial{ opacity:0; transform: translateY(10px); }
+.reveal-active{ animation: animate-in-up .5s ease-out forwards; }
+@keyframes animate-in-up{ from{ opacity:0; transform: translateY(10px); } to{ opacity:1; transform: translateY(0); } }
 </style>
