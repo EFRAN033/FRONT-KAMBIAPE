@@ -57,14 +57,25 @@
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
             <div class="mt-3 flex flex-wrap items-center gap-2">
               <span class="chip">Miembro</span>
-              <span class="chip" :class="editMode ? 'chip-edit' : 'chip-live'">
-                {{ editMode ? 'Editando' : 'Activo' }}
+              <span class="chip bg-brand-primary text-white">
+                Activo
               </span>
             </div>
 
+            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <h4 class="label">Intereses</h4>
+                <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-2">
+                    <span v-for="interest in userProfile.interests" :key="interest" class="chip bg-brand-primary text-white">
+                    {{ interest }}
+                    </span>
+                </div>
+                <p v-else class="text-sm text-gray-500 dark:text-slate-400">No has añadido intereses todavía.</p>
+            </div>
+
+
             <div class="mt-auto pt-4 flex flex-wrap items-center gap-2">
               <template v-if="!editMode">
-                  <button @click="enterEditMode" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">Editar Perfil</button>
+                  <button @click="enterEditMode" class="btn-brand">Editar Perfil</button>
                   <button @click="logout" class="btn-ghost">Salir</button>
               </template>
               <template v-else>
@@ -142,17 +153,9 @@
                 <textarea v-else v-model="editableProfile.bio" rows="3" class="input" placeholder="Cuéntale a la comunidad sobre tus intereses..."></textarea>
               </div>
               
-              <div class="md:col-span-2">
+              <div v-if="editMode" class="md:col-span-2">
                 <label class="label">Intereses</label>
-                <div v-if="!editMode">
-                  <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-2">
-                    <span v-for="interest in userProfile.interests" :key="interest" class="chip chip-live">
-                      {{ interest }}
-                    </span>
-                  </div>
-                  <p v-else class="display-field text-sm">No has añadido intereses todavía.</p>
-                </div>
-                <div v-else>
+                <div>
                   <p class="input text-sm text-gray-500">La edición de intereses no está implementada aún.</p>
                 </div>
               </div>
@@ -170,7 +173,7 @@
                   <h4 class="font-semibold text-gray-900 dark:text-white">Contraseña</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Se recomienda actualizar tu contraseña periódicamente.</p>
                 </div>
-                <button @click="changePassword" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">Cambiar Contraseña</button>
+                <button @click="changePassword" class="btn-brand">Cambiar Contraseña</button>
               </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
@@ -180,7 +183,7 @@
                   <h4 class="font-semibold text-gray-900 dark:text-white">Dispositivos y sesiones</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Revisa dónde tienes la sesión iniciada y gestiona el acceso.</p>
                 </div>
-                <button @click="openDevicesModal" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">
+                <button @click="openDevicesModal" class="btn-brand">
                   Ver dispositivos actuales
                 </button>
               </div>
@@ -192,7 +195,7 @@
                   <h4 class="font-semibold text-red-600 dark:text-red-500">Cerrar Sesión</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Finaliza tu sesión actual en este dispositivo.</p>
                 </div>
-                <button @click="logout" class="rounded-md bg-red-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110">Cerrar Sesión</button>
+                <button @click="logout" class="btn-danger">Cerrar Sesión</button>
               </div>
             </div>
           </section>
@@ -253,7 +256,7 @@
         'fixed right-4 bottom-4 z-50 flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 shadow-lg bg-white dark:bg-slate-800',
         toastType === 'success' ? 'border-green-500 text-green-700 dark:text-green-300' : '',
         toastType === 'error' ? 'border-red-500 text-red-700 dark:text-red-400' : '',
-        toastType === 'info' ? 'border-[var(--brand-500)] text-[var(--brand-400)] dark:text-[var(--brand-400)]' : ''
+        toastType === 'info' ? 'border-brand-primary text-brand-primary' : ''
       ]" role="status" aria-live="polite">
         <svg v-if="toastType === 'success'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
         <svg v-else-if="toastType === 'error'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
@@ -457,14 +460,6 @@ export default {
 </script>
 
 <style scoped>
-:root {
-  --brand-400: #e31586;
-  --brand-500: #d7037b;
-  --brand-600: #b70668;
-  --brand-650: #a5055f;
-  --brand-700: #9e0154;
-  --brand-800: #7b0244;
-}
 .brand-header {
   background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
 }
@@ -495,19 +490,17 @@ export default {
   background: #334155;
   color: #fff;
 }
-.chip-live { background: color-mix(in oklab, var(--brand-700) 82%, black 0%); }
-.chip-edit { background: color-mix(in oklab, var(--brand-500) 82%, black 0%); }
 .btn-brand {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
   padding: .625rem 1.1rem; border-radius: .9rem;
   font-weight: 700; color: #fff;
-  background: linear-gradient(90deg, #b70668, #9e0154);
+  background-color: #d7037b;
   transition: transform .12s ease, filter .2s ease;
-  box-shadow: 0 6px 20px -8px rgba(157, 1, 84, .5);
+  box-shadow: 0 6px 20px -8px rgba(215, 3, 123, .5);
 }
 .btn-brand:hover { filter: brightness(1.03); }
 .btn-brand:active { transform: translateY(1px) scale(.99); }
-.btn-brand:focus-visible { outline: 3px solid color-mix(in oklab, var(--brand-400) 60%, #ffffff 40%); outline-offset: 2px; }
+.btn-brand:focus-visible { outline: 3px solid #fbc7cc; outline-offset: 2px; }
 .btn-sm { padding: .5rem .9rem; border-radius: .8rem; font-size: .9rem; }
 .btn-ghost {
   display: inline-flex; align-items: center; justify-content: center;
@@ -521,8 +514,9 @@ export default {
 .btn-ghost:hover { background: #f8fafc; }
 .dark .btn-ghost:hover { background: #1f2937; }
 .btn-danger {
-  background: linear-gradient(90deg, #dc2626, #b91c1c);
-  box-shadow: 0 6px 20px -8px rgba(220, 38, 38, .5);
+    background-color: #ef4444;
+    color: white;
+    box-shadow: 0 6px 20px -8px rgba(220, 38, 38, .5);
 }
 .label {
   display: block; font-size: .72rem; letter-spacing: .06em;
@@ -542,8 +536,8 @@ export default {
 .dark .input { border-color: #334155; }
 .input:focus {
   outline: none;
-  border-color: color-mix(in oklab, var(--brand-500) 65%, #e5e7eb 35%);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-500) 20%, transparent);
+  border-color: #d7037b;
+  box-shadow: 0 0 0 3px #fde9f2;
 }
 .display-field {
   width: 100%;
@@ -574,7 +568,7 @@ export default {
   inset: 0; 
   border-radius: 999px; 
   padding: 5px;
-  background: conic-gradient(from 180deg, var(--brand-500), var(--brand-650), var(--brand-700), var(--brand-500));
+  background: conic-gradient(from 180deg, #d7037b, #a6045d, #d7037b);
   animation: spin 10s linear infinite;
   z-index: 2;
 }
@@ -605,14 +599,14 @@ export default {
   z-index: 3;
 }
 .avatar-shell.is-editing .avatar-overlay { opacity: 1; }
-.avatar-shell.dragging .avatar-overlay { background-color: color-mix(in oklab, var(--brand-500) 45%, rgba(0,0,0,.5)); }
+.avatar-shell.dragging .avatar-overlay { background-color: rgba(215, 3, 123, 0.45); }
 .btn-outline-light {
   padding: .45rem .7rem; border-radius: .7rem; font-weight: 700; font-size: .85rem;
-  background: color-mix(in oklab, var(--brand-500) 10%, transparent);
+  background: rgba(215, 3, 123, 0.1);
   color: #fce7f3; border: 1px solid rgba(255,255,255,.6);
   transition: .2s ease;
 }
-.btn-outline-light:hover { background: color-mix(in oklab, var(--brand-500) 18%, transparent); }
+.btn-outline-light:hover { background: rgba(215, 3, 123, 0.18); }
 .segmented{
   position: relative; display: grid; grid-template-columns: repeat(2, 1fr);
   background: rgba(148,163,184,.08); border-radius: 12px; padding: 5px;
