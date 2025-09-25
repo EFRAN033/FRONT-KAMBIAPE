@@ -141,7 +141,22 @@
                 <p v-if="!editMode" class="display-field min-h-[6rem] text-sm">{{ userProfile.bio || 'Aún no has añadido una biografía.' }}</p>
                 <textarea v-else v-model="editableProfile.bio" rows="3" class="input" placeholder="Cuéntale a la comunidad sobre tus intereses..."></textarea>
               </div>
-            </div>
+              
+              <div class="md:col-span-2">
+                <label class="label">Intereses</label>
+                <div v-if="!editMode">
+                  <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-2">
+                    <span v-for="interest in userProfile.interests" :key="interest" class="chip chip-live">
+                      {{ interest }}
+                    </span>
+                  </div>
+                  <p v-else class="display-field text-sm">No has añadido intereses todavía.</p>
+                </div>
+                <div v-else>
+                  <p class="input text-sm text-gray-500">La edición de intereses no está implementada aún.</p>
+                </div>
+              </div>
+              </div>
           </section>
 
           <section v-show="activeTab==='seguridad'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
