@@ -9,6 +9,7 @@
            rounded-[26px] select-none"
     aria-label="Barra lateral"
   >
+    <!-- Publicar -->
     <router-link to="/publicar" class="flex flex-col items-center gap-1" title="Publicar">
       <div
         class="h-14 w-14 grid place-items-center rounded-2xl
@@ -24,6 +25,7 @@
       <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-none">Publicar</span>
     </router-link>
 
+    <!-- Inventario -->
     <router-link to="/my-products" class="flex flex-col items-center gap-1" title="Inventario">
       <div
         class="h-14 w-14 grid place-items-center rounded-2xl
@@ -41,6 +43,7 @@
 
     <div class="flex-1"></div>
 
+    <!-- Perfil -->
     <router-link to="/profile" class="flex flex-col items-center gap-1" title="Perfil">
       <div
         class="h-14 w-14 grid place-items-center rounded-2xl
@@ -70,16 +73,12 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const avatarUrl = computed(() => {
-  // Se mantiene tu lógica para obtener el avatar
   if (userStore.user && userStore.user.profilePicture) {
-    // Si la URL ya es absoluta (http, blob, data), la usa directamente.
     if (userStore.user.profilePicture.startsWith('http') || userStore.user.profilePicture.startsWith('data:') || userStore.user.profilePicture.startsWith('blob:')) {
-      return userStore.user.profilePicture;
+      return userStore.user.profilePicture
     }
-    // Si no, construye la URL completa con la base de la API
-    return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${userStore.user.profilePicture}`;
+    return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${userStore.user.profilePicture}`
   }
-  // Fallback a un avatar genérico si no hay foto de perfil
   const name = encodeURIComponent(userStore.user?.fullName || 'User')
   return `https://ui-avatars.com/api/?name=${name}&background=d7037b&color=fff&rounded=true`
 })
@@ -88,6 +87,7 @@ const avatarUrl = computed(() => {
 <style scoped>
 /* Estado activo */
 .router-link-exact-active > div {
+  color: #d7037b !important; /* ícono rosa en activo */
   background:
     linear-gradient(#fff, #fff) padding-box,
     linear-gradient(125deg, #d7037b, #b80268) border-box !important;
@@ -95,7 +95,12 @@ const avatarUrl = computed(() => {
   box-shadow: 0 16px 36px rgba(215,3,123,.22) !important;
 }
 :global(.dark) .router-link-exact-active > div {
+  color: #d7037b !important; /* ícono rosa también en dark mode */
   border-color: transparent !important;
   box-shadow: 0 18px 40px rgba(215,3,123,.28) !important;
+}
+/* Texto activo */
+.router-link-exact-active span {
+  color: #d7037b !important;
 }
 </style>
