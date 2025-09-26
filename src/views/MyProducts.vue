@@ -1,23 +1,18 @@
 <template>
   <div class="brand-scope min-h-screen flex flex-col bg-gray-50 text-gray-900">
-    <!-- HEADER / SIDEBAR (base intacta) -->
     <Header />
     <div class="flex flex-1">
       <Sidebar />
 
-      <!-- MAIN -->
       <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto pl-[120px]">
         <div class="max-w-7xl mx-auto">
-          <!-- Título -->
           <header class="mb-6">
             <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Mis Productos Publicados</h1>
             <p class="text-slate-600 mt-1">Administra y organiza tus publicaciones de trueque.</p>
           </header>
 
-          <!-- Herramientas: filtros / búsqueda / orden -->
           <section class="mb-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <!-- Filtros por estado -->
               <div class="inline-flex bg-white border border-slate-200 rounded-lg p-1 shadow-sm overflow-hidden w-max">
                 <button class="tool-tab" :class="statusFilter==='all' && 'is-active'" @click="statusFilter='all'">
                   Todos <span class="count">{{ products.length }}</span>
@@ -33,7 +28,6 @@
                 </button>
               </div>
 
-              <!-- Búsqueda + Orden + CTA -->
               <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end w-full sm:w-auto">
                 <div class="relative flex-1 min-w-[240px]">
                   <svg
@@ -71,7 +65,6 @@
             </div>
           </section>
 
-          <!-- Loading -->
           <div v-if="loading" class="py-8" aria-live="polite">
             <div class="flex items-center gap-3 mb-4">
               <div class="spinner h-6 w-6 border-2 border-[#d7037b] border-r-transparent rounded-full"></div>
@@ -85,7 +78,6 @@
             </div>
           </div>
 
-          <!-- Error -->
           <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-800 px-6 py-5 rounded-lg" role="alert">
             <div class="flex items-start gap-3">
               <svg class="h-6 w-6 mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"/></svg>
@@ -96,7 +88,6 @@
             </div>
           </div>
 
-          <!-- Vacío de cuenta -->
           <div v-else-if="products.length === 0" class="text-center py-14 bg-white rounded-lg border border-dashed border-slate-300">
             <svg class="mx-auto h-14 w-14 text-slate-300 mb-3" viewBox="0 0 24 24" fill="currentColor"><path d="M4 7a2 2 0 012-2h2l1-1h6l1 1h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7z"/></svg>
             <p class="text-xl mb-1 font-semibold text-slate-800">¡Aún no tienes productos!</p>
@@ -104,7 +95,6 @@
             <router-link to="/publicar" class="btn-brand inline-flex">Publica tu primer producto</router-link>
           </div>
 
-          <!-- Sin resultados -->
           <div v-else-if="filteredProducts.length === 0" class="bg-white border border-slate-200 rounded-lg p-8 text-center">
             <p class="text-lg font-semibold text-slate-800 mb-1">No hay resultados</p>
             <p class="text-slate-600">Prueba cambiar los filtros o limpiar la búsqueda.</p>
@@ -113,7 +103,6 @@
             </div>
           </div>
 
-          <!-- TABLA -->
           <div v-else class="overflow-auto rounded-lg border border-slate-200 bg-white">
             <table class="data-table">
               <thead>
@@ -183,7 +172,6 @@
       </main>
     </div>
 
-    <!-- MODAL EDITAR (DISEÑO) -->
     <div
       v-if="isEditModalOpen"
       class="edit-backdrop"
@@ -193,7 +181,6 @@
       @keydown.esc="closeEdit"
     >
       <div class="edit-card">
-        <!-- HEADER -->
         <div class="edit-header">
           <div class="header-bg" aria-hidden="true"></div>
           <div class="flex items-center justify-between relative z-10">
@@ -215,7 +202,6 @@
               </div>
             </div>
 
-            <!-- BOTÓN CERRAR (X) ARREGLADO -->
             <button
               type="button"
               class="icon-btn close-btn border-white/30 bg-white/10 text-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
@@ -228,13 +214,10 @@
                 <path d="M6 6L18 18M6 18L18 6"/>
               </svg>
             </button>
-            <!-- /BOTÓN CERRAR -->
-          </div>
+            </div>
         </div>
 
-        <!-- BODY -->
         <form class="edit-body" @submit.prevent="handleUpdateProduct">
-          <!-- Columna izquierda: campos -->
           <div class="space-y-4">
             <div>
               <label class="label">Título <span class="muted">(máx. {{ TITLE_MAX }} caracteres)</span></label>
@@ -309,7 +292,6 @@
             </div>
           </div>
 
-          <!-- Columna derecha: vista previa -->
           <aside class="preview">
             <div class="preview-frame">
               <div class="preview-img">
@@ -332,7 +314,6 @@
             </div>
           </aside>
 
-          <!-- FOOTER -->
           <div class="edit-footer">
             <div class="left tiny text-slate-500">
               <span v-if="!isDirty">Sin cambios</span>
@@ -364,7 +345,6 @@
       </div>
     </div>
 
-    <!-- MODAL ELIMINAR -->
     <div v-if="isDeleteModalOpen" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Eliminar producto">
       <div class="modal-card w-full max-w-md">
         <div class="text-center">
@@ -412,14 +392,16 @@ const sortBy = ref('recent');    // recent | title_asc | title_desc | category_a
 const TITLE_MAX = 80;
 const DESC_MAX = 500;
 
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+// ✨ CORRECCIÓN CLAVE: Usar la variable correcta para la URL pública
+const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
 const FALLBACK_IMG =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="16" text-anchor="middle" fill="#94a3b8">Sin imagen</text></svg>`);
 
 const imageUrl = (path) => {
   if (!path) return FALLBACK_IMG;
-  if (String(path).startsWith('http')) return path;
+  if (String(path).startsWith('http') || String(path).startsWith('data:')) return path;
+  // Ahora construye la URL correcta: http://localhost:8000/uploaded_images/...
   return `${API_BASE_URL}${path}`;
 };
 const onImgError = (e) => { e.target.src = FALLBACK_IMG; };
