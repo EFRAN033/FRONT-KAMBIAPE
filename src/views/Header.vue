@@ -7,14 +7,14 @@
           class="flex items-center group focus-visible:outline-none focus-visible:ring-0"
           aria-label="KambiaPe - Inicio"
         >
-        <span class="text-2xl font-bold text-white font-lobster">
+          <span class="text-2xl font-bold text-white font-lobster">
             Kambia<span class="font-extrabold">Pe</span>
           </span>
         </router-link>
 
         <nav class="hidden lg:flex items-center space-x-1">
           <router-link
-            v-for="link in navLinks"
+            v-for="link in navLinks.filter(l => l.path !== '/buzon')"
             :key="link.path"
             :to="link.path"
             class="px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 relative group"
@@ -26,13 +26,6 @@
             <span class="flex items-center">
               <component :is="link.icon" class="h-4 w-4 mr-2 text-white/90" />
               {{ link.label }}
-              <span
-                v-if="link.badge"
-                :class="link.badge.class"
-                class="ml-1.5 px-1.5 py-0.5 text-xs font-bold rounded-full"
-              >
-                {{ link.badge.text }}
-              </span>
             </span>
             <span
               class="absolute left-1/2 -bottom-1 h-0.5 bg-white transition-all duration-300"
@@ -42,7 +35,34 @@
               }"
             ></span>
           </router-link>
-        </nav>
+
+          <router-link
+            to="/buzon"
+            class="px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 relative group"
+            :class="{
+              'text-white bg-white/10': $route.path === '/buzon',
+              'text-white/90 hover:text-white hover:bg-white/10': $route.path !== '/buzon'
+            }"
+          >
+            <span class="flex items-center">
+              <InboxIcon class="h-4 w-4 mr-2 text-white/90" />
+              Buzón
+              <span
+                v-if="inboxStore.hasUnreadMessages"
+                class="ml-1.5 px-1.5 py-0.5 text-xs font-bold rounded-full bg-white text-[#d7037b] animate-pulse"
+              >
+                {{ inboxStore.unreadCount }}
+              </span>
+            </span>
+            <span
+              class="absolute left-1/2 -bottom-1 h-0.5 bg-white transition-all duration-300"
+              :class="{
+                'w-4/5 left-[10%]': $route.path === '/buzon',
+                'w-0 group-hover:w-4/5 group-hover:left-[10%]': $route.path !== '/buzon'
+              }"
+            ></span>
+          </router-link>
+          </nav>
 
         <div class="hidden lg:flex items-center space-x-4">
           <div class="relative">
@@ -83,10 +103,10 @@
                 aria-label="Menú de usuario"
               >
                 <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
-                  <img 
+                  <img
                     v-if="userStore.user.profilePicture"
-                    :src="userStore.user.profilePicture" 
-                    alt="Foto de perfil" 
+                    :src="userStore.user.profilePicture"
+                    alt="Foto de perfil"
                     class="w-full h-full object-cover"
                   >
                   <span v-else class="text-sm font-medium text-white">{{ userStore.userInitials }}</span>
@@ -209,11 +229,10 @@
               <component :is="link.icon" class="h-5 w-5 mr-3 text-[#d7037b]" />
               {{ link.label }}
               <span
-                v-if="link.badge"
-                :class="link.badge.class"
-                class="ml-auto px-2 py-0.5 text-xs font-bold rounded-full"
+                v-if="link.path === '/buzon' && inboxStore.hasUnreadMessages"
+                class="ml-auto px-2 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white"
               >
-                {{ link.badge.text }}
+                {{ inboxStore.unreadCount }}
               </span>
             </router-link>
           </nav>
@@ -267,86 +286,46 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
+// === ✨ 1. IMPORTAMOS EL NUEVO STORE DEL BUZÓN ✨ ===
+import { useInboxStore } from '@/stores/inbox';
 
-// Importa los íconos necesarios de Heroicons
 import {
   HomeIcon,
   UserGroupIcon as AboutIcon,
   PlusCircleIcon as PostIcon,
-  InboxIcon as InboxIcon,
+  InboxIcon,
   UserIcon,
   PowerIcon,
   Cog6ToothIcon
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
-const route = useRoute();
 const userStore = useUserStore();
+// === ✨ 2. CREAMOS UNA INSTANCIA DEL STORE DEL BUZÓN ✨ ===
+const inboxStore = useInboxStore();
 
 const menuOpen = ref(false);
 const searchOpen = ref(false);
 const userMenuOpen = ref(false);
 const searchQuery = ref('');
 
-// Definición de los enlaces de navegación
+// Definición de los enlaces de navegación (Buzón se maneja por separado ahora)
 const navLinks = [
-  {
-    path: '/',
-    label: 'Inicio',
-    icon: HomeIcon
-  },
-  {
-    path: '/nosotros',
-    label: 'Nosotros',
-    icon: AboutIcon
-  },
-  {
-    path: '/publicar',
-    label: 'Publicar',
-    icon: PostIcon
-  },
-  {
-    path: '/buzon',
-    label: 'Buzón',
-    icon: InboxIcon,
-    badge: {
-      text: '3',
-      class: 'bg-white text-[#d7037b]'
-    }
-  }
+  { path: '/', label: 'Inicio', icon: HomeIcon },
+  { path: '/nosotros', label: 'Nosotros', icon: AboutIcon },
+  { path: '/publicar', label: 'Publicar', icon: PostIcon },
+  { path: '/buzon', label: 'Buzón', icon: InboxIcon }, // Se mantiene para el menú móvil
 ];
 
-// Propiedad computada para las iniciales del usuario (usa el getter del store)
 const userInitials = computed(() => userStore.userInitials);
 const userFirstName = computed(() => userStore.userFirstName);
 
-// Métodos para alternar la visibilidad de los menús
-const toggleMenu = () => {
-  menuOpen.value = !menuOpen.value;
-  if (menuOpen.value) {
-    searchOpen.value = false;
-    userMenuOpen.value = false;
-  }
-};
-
-const toggleSearch = () => {
-  searchOpen.value = !searchOpen.value;
-  if (searchOpen.value) {
-    menuOpen.value = false;
-    userMenuOpen.value = false;
-  }
-};
-
-const toggleUserMenu = () => {
-  userMenuOpen.value = !userMenuOpen.value;
-  if (userMenuOpen.value) {
-    menuOpen.value = false;
-    searchOpen.value = false;
-  }
-};
+const toggleMenu = () => { menuOpen.value = !menuOpen.value; };
+const toggleSearch = () => { searchOpen.value = !searchOpen.value; };
+const toggleUserMenu = () => { userMenuOpen.value = !userMenuOpen.value; };
 
 const performSearch = () => {
   if (searchQuery.value.trim()) {
@@ -357,14 +336,14 @@ const performSearch = () => {
 };
 
 const logout = () => {
-  console.log('Cerrando sesión...');
   userStore.clearUser();
+  // Limpiamos el contador de mensajes al cerrar sesión
+  inboxStore.clearUnreadCount();
   menuOpen.value = false;
   userMenuOpen.value = false;
   router.push('/login');
 };
 
-// Lógica para cerrar menús al hacer clic fuera de la cabecera
 const handleClickOutside = (event) => {
   const headerElement = document.querySelector('header');
   if (headerElement && !headerElement.contains(event.target)) {
@@ -381,6 +360,18 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
+
+// === ✨ 3. OBSERVAMOS CAMBIOS EN EL LOGIN PARA ACTUALIZAR MENSAJES ✨ ===
+watch(() => userStore.isLoggedIn, (isLoggedIn) => {
+  if (isLoggedIn) {
+    // Si el usuario acaba de iniciar sesión, buscamos sus mensajes.
+    inboxStore.fetchUnreadCount();
+  } else {
+    // Si el usuario cierra sesión, limpiamos el contador.
+    inboxStore.clearUnreadCount();
+  }
+}, { immediate: true }); // 'immediate: true' ejecuta la función al cargar el componente.
+
 </script>
 
 <style scoped>
@@ -393,41 +384,5 @@ button, a, .router-link {
 :focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.5);
   outline-offset: 2px;
-}
-
-/* ANULACIÓN ESPECÍFICA PARA EL LOGO KAMBIAPE */
-.router-link[aria-label="KambiaPe - Inicio"].router-link-active,
-.router-link[aria-label="KambiaPe - Inicio"].router-link-exact-active {
-    background-color: transparent !important;
-    color: white !important;
-}
-
-.router-link[aria-label="KambiaPe - Inicio"] .text-white {
-    color: white !important;
-}
-
-/* Estilos para los enlaces de navegación (NO el logo) cuando están activos */
-.px-4.py-2.5.text-sm.font-medium.rounded-lg.router-link-active {
-    @apply text-white bg-white/10;
-}
-
-/* Estilos para los enlaces del menú móvil (NO el logo) cuando están activos */
-.px-4.py-3.text-base.font-medium.text-gray-800.router-link-active {
-    @apply bg-[#fce4ec] text-[#d7037b];
-}
-
-/* Animación para el botón del menú móvil (hamburguesa) */
-.hamburger-line {
-  transition: all 0.3s ease;
-}
-
-/* Mejores efectos hover para la navegación de escritorio (aplicados a los NavLinks, no al logo) */
-.router-link:hover {
-  transform: translateY(-1px);
-}
-
-/* Sombra del menú desplegable de usuario */
-.user-menu {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 </style>
