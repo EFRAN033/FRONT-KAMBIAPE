@@ -391,69 +391,56 @@
       <!-- Lista -->
       <TransitionGroup name="product-list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
         <article
-          v-for="product in visibleProducts"
-          :key="product.id"
-          class="relative isolate bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 group border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-brand-primary outline-none"
-          tabindex="0"
-          @keydown.enter.prevent="openProposalModal(product)"
-        >
-          <div class="relative overflow-hidden rounded-t-xl">
-            <img
-              :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
-              :alt="product.title"
-              class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-              loading="lazy"
-            />
-            <!-- Quick actions -->
-            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-            <div class="absolute top-2 right-2 flex gap-2">
-              <button @click.stop="toggleWish(product)" :aria-pressed="isWished(product)" class="rounded-full bg-white/90 p-2 shadow hover:bg-white transition">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path :class="isWished(product) ? 'fill-brand-primary' : 'fill-gray-400'" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4 8.04 4 9.54 4.81 10.35 6.09 11.16 4.81 12.66 4 14.2 4 16.7 4 18.7 6 18.7 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
-              </button>
-              <router-link
-                :to="`/product/${product.id}`"
-                class="rounded-full bg-white/90 p-2 shadow hover:bg-white transition"
-                aria-label="Ver detalle"
-              >
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 12a5 5 0 1 1 5-5 5 5 0 0 1-5 5Z"/></svg>
-              </router-link>
-            </div>
-          </div>
+  v-for="product in visibleProducts"
+  :key="product.id"
+  class="relative isolate bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 group border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-brand-primary outline-none"
+  tabindex="0"
+  @keydown.enter.prevent="openProposalModal(product)"
+>
+  <div class="relative overflow-hidden rounded-t-xl">
+    <img
+      :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
+      :alt="product.title"
+      class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+      loading="lazy"
+    />
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+  </div>
 
-          <div class="absolute -top-3 right-3 z-10 bg-brand-primary text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg shadow-brand-primary/30">
-            {{ product.category_name }}
-          </div>
+  <div class="absolute -top-3 right-3 z-10 bg-brand-primary text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg shadow-brand-primary/30">
+    {{ product.category_name }}
+  </div>
 
-          <div class="p-5">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ product.title }}</h3>
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
+  <div class="p-5">
+    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ product.title }}</h3>
+    
+    <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+      Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ product.user_username || 'Usuario' }}</span>
+    </div>
+    
+    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
 
-            <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
-              <div class="inline-flex items-center">
-                <svg class="w-4 h-4 mr-1 text-brand-primary" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
-                </svg>
-                <span class="truncate">{{ product.condition }}</span>
-              </div>
-              <span aria-hidden="true">•</span>
-              <span class="truncate">Hace {{ calculateAgeDays(product.created_at) }} días</span>
-            </div>
+    <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
+      <div class="inline-flex items-center">
+        <svg class="w-4 h-4 mr-1 text-brand-primary" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
+        </svg>
+        <span class="truncate">{{ product.condition }}</span>
+      </div>
+      <span aria-hidden="true">•</span>
+      <span class="truncate">Hace {{ calculateAgeDays(product.created_at) }} días</span>
+    </div>
 
-            <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
-              <span class="text-[13px] px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                #{{ product.id }}
-              </span>
-              <button
-                @click="openProposalModal(product)"
-                class="bg-brand-primary text-white px-4 py-2 rounded-full text-sm font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
-              >
-                Intercambiar
-              </button>
-            </div>
-          </div>
-        </article>
+    <div class="flex justify-end items-center pt-4 border-t border-gray-100 dark:border-gray-700">
+      <button
+        @click="openProposalModal(product)"
+        class="bg-brand-primary text-white px-4 py-2 rounded-full text-sm font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+      >
+        Intercambiar
+      </button>
+    </div>
+  </div>
+</article>
       </TransitionGroup>
 
       <!-- Infinite scroll sentinel -->
