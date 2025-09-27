@@ -117,7 +117,7 @@
 
       <div class="hidden md:grid grid-cols-12 gap-5">
         <div class="col-span-4">
-          <h3 class="text-sm font-bold text-pink-400">KambiaPe</h3>
+          <h3 class="text-sm font-bold text-pink-400 font-lobster">KambiaPe</h3>
           <p class="mt-1 text-[13px] text-gray-400">
             Intercambia, dona y potencia el impacto social en tu comunidad.
           </p>
@@ -215,7 +215,7 @@
 
       <div class="mt-6 sm:mt-8 border-t border-white/10 pt-3.5 sm:pt-4 text-center text-[13px] text-gray-400">
         <div class="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-          <p class="text-[12px] sm:text-[13px]">© {{ year }} KambiaPe. Todos los derechos reservados.</p>
+           <p class="text-[12px] sm:text-[13px]">© {{ year }} <span class="font-lobster">KambiaPe</span>. Todos los derechos reservados.</p>
           <div class="flex items-center gap-3 sm:gap-4">
             <router-link to="/terminos" class="text-[12px] sm:text-[13px] hover:text-white">Términos</router-link>
             <router-link to="/privacidad" class="text-[12px] sm:text-[13px] hover:text-white">Privacidad</router-link>

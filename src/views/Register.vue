@@ -43,7 +43,7 @@
       <header class="mx-auto max-w-7xl px-6 lg:px-8 pt-6 sm:pt-8">
         <div class="flex items-center justify-between">
           <router-link to="/" class="group inline-flex items-center gap-2" aria-label="Inicio">
-            <span class="text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+            <span class="text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white font-lobster">
               Kambia<span class="text-transparent bg-clip-text bg-[conic-gradient(from_180deg_at_50%_50%,#d7037b_0deg,#9e0154_150deg,#d7037b_360deg)]">Pe</span>
             </span>
             <span class="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9e0154] bg-[#d7037b]/10 ring-1 ring-[#d7037b]/20">

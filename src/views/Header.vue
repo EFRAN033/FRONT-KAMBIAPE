@@ -7,7 +7,7 @@
           class="flex items-center group focus-visible:outline-none focus-visible:ring-0"
           aria-label="KambiaPe - Inicio"
         >
-          <span class="text-2xl font-bold text-white">
+        <span class="text-2xl font-bold text-white font-lobster">
             Kambia<span class="font-extrabold">Pe</span>
           </span>
         </router-link>

@@ -7,6 +7,12 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      // === ✨ SE AÑADIÓ LA FUENTE LOBSTER AQUÍ ✨ ===
+      fontFamily: {
+        lobster: ['Lobster', 'cursive'],
+      },
+      // ===============================================
+
       // Tus colores personalizados se mantienen intactos
       colors: {
         brand: {

@@ -193,7 +193,7 @@
     <aside class="col-span-12 lg:col-span-4">
       <div class="lg:sticky lg:top-24">
         <!-- Wordmark tenue -->
-        <div aria-hidden="true" class="text-[12vw] lg:text-[5vw] font-black tracking-[-0.03em] text-slate-900/5 leading-none -ml-1">
+        <div aria-hidden="true" class="font-lobster text-[12vw] lg:text-[5vw] font-black tracking-[-0.03em] text-slate-900/5 leading-none -ml-1">
           KAMBIA•PE
         </div>
 
@@ -389,9 +389,7 @@
       <div class="flex items-end justify-between gap-10">
         <div class="min-w-0">
           <div class="text-[10px] tracking-[0.28em] uppercase text-[#9e0154]">Brand & Propósito</div>
-          <h2 class="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
-            Por qué <span class="text-[#9e0154]">KambiaPe</span> · Valores en acción
-          </h2>
+          <h2 class="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-slate-900"> Por qué <span class="font-lobster text-[#9e0154]">KambiaPe</span> · Valores en acción </h2>
           <p class="mt-3 text-base sm:text-lg text-slate-700/90">
             Lo esencial primero. Detalles solo si los necesitas.
           </p>
