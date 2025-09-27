@@ -25,6 +25,9 @@ import MyProducts from '../views/MyProducts.vue';
 // --- IMPORTACIONES PARA PÁGINAS INFORMATIVAS ---
 import FAQsView from '../views/FAQsView.vue';
 import CookiesView from '../views/Cookies.vue';
+// === ✨ Importación para la nueva página de Términos ✨ ===
+import TermsView from '../views/TermsView.vue';
+
 
 const routes = [
   {
@@ -153,6 +156,15 @@ const routes = [
     component: CookiesView,
     meta: {
       title: 'Política de Cookies | KambiaPe'
+    }
+  },
+  // === ✨ Nueva ruta para Términos y Condiciones ✨ ===
+  {
+    path: '/terminos',
+    name: 'Terms',
+    component: TermsView,
+    meta: {
+      title: 'Términos y Condiciones | KambiaPe'
     }
   },
   // Catch-all route for unmatched paths
