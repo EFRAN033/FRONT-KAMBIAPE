@@ -393,7 +393,7 @@
         <article
   v-for="product in visibleProducts"
   :key="product.id"
-  class="relative isolate bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 group border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-brand-primary outline-none"
+  class="relative isolate flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 group border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-brand-primary outline-none"
   tabindex="0"
   @keydown.enter.prevent="openProposalModal(product)"
 >
@@ -411,14 +411,14 @@
     {{ product.category_name }}
   </div>
 
-  <div class="p-5">
+  <div class="flex flex-col flex-grow p-5">
     <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ product.title }}</h3>
     
     <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
       Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ product.user_username || 'Usuario' }}</span>
     </div>
     
-    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
+    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 flex-grow">{{ product.description }}</p>
 
     <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
       <div class="inline-flex items-center">
@@ -431,12 +431,17 @@
       <span class="truncate">Hace {{ calculateAgeDays(product.created_at) }} días</span>
     </div>
 
-    <div class="flex justify-end items-center pt-4 border-t border-gray-100 dark:border-gray-700">
+    <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
       <button
         @click="openProposalModal(product)"
         class="bg-brand-primary text-white px-4 py-2 rounded-full text-sm font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
       >
         Intercambiar
+      </button>
+      <button
+        class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium transition hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500/60"
+      >
+        Comprar
       </button>
     </div>
   </div>
