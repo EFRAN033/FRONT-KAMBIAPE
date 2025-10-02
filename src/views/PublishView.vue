@@ -102,7 +102,7 @@
                        :class="{'border-rose-500': step2Errors.photos}"
                        @click="triggerFileInput" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
                     <input type="file" ref="fileInput" @change="handleFileChange" multiple accept="image/*" class="hidden" />
-                    <svg class="mx-auto h-10 w-10 text-slate-400 group-hover:scale-105 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <svg class="mx-auto h-10 w-10 text-slate-400 group-hover:scale-105 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3-3a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <p class="mt-2 text-sm text-slate-600">Arrastra y suelta imágenes aquí, o haz clic para seleccionar</p>
                     <p class="text-xs text-slate-500">(Máximo 4 imágenes, JPG/PNG)</p>
                   </div>
@@ -139,8 +139,8 @@
                 <article class="product-card bg-white rounded-2xl overflow-hidden shadow-lg group flex flex-col transition-transform duration-300">
                   <div class="relative">
                     <img
-                      :src="previewProduct.photos[0]?.url || 'https://assets.placehold.co/600x400/F8F9FA/BDBDBD/png?text=Tu+Foto+Aquí'"
-                      :alt="`Imagen de ${previewProduct.title}`"
+                      :src="previewProduct.photos[0]?.url || 'https://assets.placehold.co/600x400/F8F9FA/E0E0E0/png'"
+                      :alt="product.name.trim()"
                       class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div
