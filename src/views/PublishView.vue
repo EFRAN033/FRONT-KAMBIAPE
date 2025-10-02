@@ -134,44 +134,48 @@
             </section>
 
             <aside class="sticky top-24 hidden lg:block">
-              <div class="font-sans text-base">
-                <p class="mb-2 text-sm font-semibold text-slate-600">Previsualización en vivo</p>
-                <article class="product-card bg-white rounded-2xl overflow-hidden shadow-lg group flex flex-col transition-transform duration-300">
-                  <div class="relative">
-                    <img
-                      :src="previewProduct.photos[0]?.url || 'https://assets.placehold.co/600x400/F8F9FA/E0E0E0/png'"
-                      :alt="product.name.trim()"
-                      class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div
-                      v-if="previewProduct.category_name"
-                      class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-slate-700"
-                    >
-                      {{ previewProduct.category_name }}
+              <p class="mb-2 text-sm font-semibold text-slate-600">Previsualización en vivo</p>
+              <article class="relative isolate flex flex-col bg-white rounded-xl shadow-lg group border border-gray-100">
+                <div class="relative overflow-hidden rounded-t-xl">
+                  <img
+                    v-if="imagePreviews.length > 0"
+                    :src="previewProduct.photos[0]?.url"
+                    :alt="previewProduct.title"
+                    class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
+                  <div v-else class="w-full h-48 bg-slate-100"></div>
+                </div>
+
+                <div v-if="previewProduct.category_name !== 'Categoría'" class="absolute -top-3 right-3 z-10 bg-rose-600 text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg shadow-rose-600/30">
+                  {{ previewProduct.category_name }}
+                </div>
+
+                <div class="flex flex-col flex-grow p-5">
+                  <h3 class="text-lg font-bold text-gray-900 mb-1 truncate h-7">{{ previewProduct.title }}</h3>
+                  
+                  <p class="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow min-h-[40px]">{{ previewProduct.description }}</p>
+
+                  <div class="flex items-center text-gray-500 text-sm mb-4 gap-3">
+                    <div class="inline-flex items-center" v-if="previewProduct.condition !== 'Estado'">
+                      <svg class="w-4 h-4 mr-1 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
+                      </svg>
+                      <span class="truncate">{{ previewProduct.condition }}</span>
                     </div>
                   </div>
-                  <div class="p-4 flex flex-col flex-grow">
-                    <h3 class="font-bold text-lg text-slate-800 truncate">
-                      {{ previewProduct.title }}
-                    </h3>
-                    <p class="text-sm text-slate-500 mt-1 flex-grow line-clamp-2 min-h-[40px]">
-                      {{ previewProduct.description }}
-                    </p>
-                    <div class="mt-4 flex items-center justify-between">
-                      <span class="text-sm font-semibold text-slate-600">{{ previewProduct.condition }}</span>
-                      <button
-                        type="button"
-                        disabled
-                        class="px-4 py-2 text-sm font-semibold text-white bg-rose-500 rounded-full hover:bg-rose-600 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-opacity-75 disabled:bg-rose-400/80 disabled:cursor-not-allowed"
-                      >
-                        Trocar
-                      </button>
-                    </div>
+
+                  <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 mt-auto">
+                    <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">
+                      Intercambiar
+                    </button>
+                    <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">
+                      Comprar
+                    </button>
                   </div>
-                </article>
-              </div>
+                </div>
+              </article>
             </aside>
-          </div>
+            </div>
         </main>
       </div>
     </div>
@@ -201,8 +205,8 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const previewProduct = computed(() => ({
-  title: product.name.trim() || 'Nombre del producto',
-  description: product.description.trim() || 'La descripción aparecerá aquí.',
+  title: product.name.trim(),
+  description: product.description.trim() || 'La descripción de tu producto aparecerá aquí. Intenta ser claro y conciso.',
   photos: imagePreviews.value.map(img => ({ url: img })),
   category_name: product.category || 'Categoría',
   condition: product.condition || 'Estado',
@@ -276,21 +280,29 @@ onBeforeUnmount(()=>window.removeEventListener('keydown',keydown))
 </script>
 
 <style scoped>
+/* Transiciones y animaciones existentes */
 .slide-fade-enter-active, .slide-fade-leave-active { transition: all 0.3s ease-out }
 .slide-fade-enter-from, .slide-fade-leave-to { transform: translateX(20px); opacity: 0 }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease }
 .fade-enter-from, .fade-leave-to { opacity: 0 }
 
-/* Microinteracción de error (sutil) */
 @keyframes shake { 10%, 90% { transform: translateX(-1px) } 20%, 80% { transform: translateX(2px) } 30%, 50%, 70% { transform: translateX(-4px) } 40%, 60% { transform: translateX(4px) } }
 .animate-shake { animation: shake 0.4s ease }
 
-/* Select arrow (compat) */
+/* Estilos para el select */
 select {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   background-position: right 0.25rem center;
   background-repeat: no-repeat;
   background-size: 0.8em 0.8em;
+}
+
+/* Clamp multi-línea para la descripción */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
