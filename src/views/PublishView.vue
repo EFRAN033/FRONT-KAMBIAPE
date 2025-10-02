@@ -2,7 +2,6 @@
   <div class="min-h-screen bg-[radial-gradient(1200px_600px_at_10%_-10%,#fde4e9,transparent_60%),radial-gradient(900px_500px_at_110%_10%,#e0f2fe,transparent_55%),linear-gradient(180deg,#fff,65%,#fafafa)] text-slate-800 selection:bg-rose-200/60">
     <Header />
 
-    <!-- Barra superior delgada con progreso (sin cambiar colores) -->
     <div class="sticky top-0 z-30 w-full h-1.5 bg-slate-200/70 overflow-hidden">
       <div class="h-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-400 transition-[width] duration-500" :style="{ width: currentStep===1 ? '50%' : '100%' }"></div>
     </div>
@@ -10,16 +9,13 @@
     <div class="flex">
       <Sidebar />
 
-      <!-- Lienzo: diseño asimétrico de dos paneles sin tarjetas -->
       <div class="relative flex-1">
-        <!-- Motas orgánicas -->
         <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
           <div class="absolute -top-24 -left-10 h-72 w-72 rounded-full bg-rose-300/20 blur-3xl"></div>
           <div class="absolute -bottom-24 -right-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl"></div>
         </div>
 
         <main class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <!-- Cabecera con línea decorativa -->
           <section class="mb-10">
             <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Publica tu Producto
             </h1>
@@ -27,9 +23,7 @@
             
           </section>
 
-          <!-- Paneles: Izq = contenido, Der = preview sticky -->
-          <div class="grid lg:grid-cols-[minmax(0,1fr),420px] gap-12 items-start">
-            <!-- Izquierda: pasos y formulario -->
+          <div class="grid lg:grid-cols-[minmax(0,1fr),380px] gap-12 items-start">
             <section class="space-y-10">
               <nav class="flex items-center gap-4 text-sm select-none" aria-label="Progreso">
                 <button type="button" @click="currentStep=1" class="group flex items-center gap-2">
@@ -43,7 +37,6 @@
                 </button>
               </nav>
 
-              <!-- Paso 1 -->
               <transition name="slide-fade" mode="out-in">
                 <div v-if="currentStep===1" key="s1" class="space-y-8">
                   <header class="flex items-center gap-3">
@@ -52,14 +45,12 @@
                   </header>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                    <!-- Nombre (etiqueta flotante minimal) -->
                     <div class="relative">
                       <label for="name" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Nombre del Producto <span class="text-rose-600">*</span></label>
                       <input id="name" v-model="product.name" type="text" placeholder="Ej. Bicicleta…" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2" :class="{'!border-rose-400': step1Errors.name}"/>
                       <p v-if="step1Errors.name" class="text-rose-600 text-xs mt-1">{{ step1Errors.name }}</p>
                     </div>
 
-                    <!-- Categoría -->
                     <div class="relative">
                       <label for="category" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Categoría <span class="text-rose-600">*</span></label>
                       <select id="category" v-model="product.category" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2 appearance-none pr-8" :class="{'!border-rose-400': step1Errors.category}">
@@ -70,7 +61,6 @@
                       <p v-if="step1Errors.category" class="text-rose-600 text-xs mt-1">{{ step1Errors.category }}</p>
                     </div>
 
-                    <!-- Estado -->
                     <div class="relative">
                       <label for="condition" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Estado <span class="text-rose-600">*</span></label>
                       <select id="condition" v-model="product.condition" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2 appearance-none pr-8" :class="{'!border-rose-400': step1Errors.condition}">
@@ -81,7 +71,6 @@
                       <p v-if="step1Errors.condition" class="text-rose-600 text-xs mt-1">{{ step1Errors.condition }}</p>
                     </div>
 
-                    <!-- Descripción con contador y barra -->
                     <div class="md:col-span-2">
                       <label for="description" class="block text-sm font-medium text-slate-700">Descripción <span class="text-rose-600">*</span></label>
                       <textarea id="description" v-model="product.description" rows="4" maxlength="500" placeholder="Incluye estado, características y detalles clave."
@@ -102,7 +91,6 @@
                 </div>
               </transition>
 
-              <!-- Paso 2 -->
               <transition name="slide-fade" mode="out-in">
                 <div v-if="currentStep===2" key="s2" class="space-y-8">
                   <header class="flex items-center gap-3">
@@ -110,7 +98,6 @@
                     <h2 class="text-lg font-semibold text-slate-900">Fotos del producto</h2>
                   </header>
 
-                  <!-- Dropzone amplia -->
                   <div class="group relative rounded-3xl border-2 border-dashed border-slate-300 px-6 py-10 text-center cursor-pointer hover:border-rose-400/80 hover:shadow-sm transition will-change-transform hover:scale-[1.01]"
                        :class="{'border-rose-500': step2Errors.photos}"
                        @click="triggerFileInput" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
@@ -122,7 +109,6 @@
 
                   <p v-if="step2Errors.photos" class="text-rose-600 text-xs -mt-4">{{ step2Errors.photos }}</p>
 
-                  <!-- Galería: mosaico fluido sin "cards" -->
                   <div v-if="imagePreviews.length" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div v-for="(image, i) in imagePreviews" :key="i" class="relative overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-white">
                       <img :src="image" :alt="`Preview ${i+1}`" class="w-full h-36 object-cover"/>
@@ -147,38 +133,42 @@
               </transition>
             </section>
 
-            <!-- Derecha: Poster / Preview sticky -->
-            <aside class="sticky top-20 hidden lg:block">
-              <div class="relative">
-                <!-- Cortina diagonal decorativa -->
-                <svg class="absolute -top-6 -right-6 w-56 h-56 opacity-30" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="dg" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stop-color="#fda4af"/>
-                      <stop offset="100%" stop-color="#7dd3fc"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="M0 0 L200 0 L200 200 Z" fill="url(#dg)"/>
-                </svg>
-
-                <div class="relative rounded-[2rem] overflow-hidden ring-1 ring-slate-200/70">
-                  <div class="absolute inset-0 bg-gradient-to-br from-rose-200/40 via-transparent to-sky-200/40"></div>
-                  <div class="aspect-[4/3] w-full grid place-items-center bg-[radial-gradient(450px_250px_at_70%_0%,#ffffff,transparent_60%)]">
-                    <div class="text-center px-6">
-                      <div v-if="imagePreviews.length" class="relative">
-                        <img :src="imagePreviews[0]" alt="Principal" class="mx-auto max-h-64 object-contain" />
-                      </div>
-                      <div v-else class="text-slate-400">
-                        <svg class="mx-auto h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke-width="1.5"/></svg>
-                        <p class="mt-2 text-sm">Tu foto principal aparecerá aquí</p>
-                      </div>
-                      <div class="mt-4">
-                        <h4 class="text-base font-semibold text-slate-900 truncate">{{ product.name || 'Nombre del producto' }}</h4>
-                        <p class="text-xs text-slate-600">{{ product.category || 'Categoría' }} • {{ product.condition || 'Estado' }}</p>
-                      </div>
+            <aside class="sticky top-24 hidden lg:block">
+              <div class="font-sans text-base">
+                <p class="mb-2 text-sm font-semibold text-slate-600">Previsualización en vivo</p>
+                <article class="product-card bg-white rounded-2xl overflow-hidden shadow-lg group flex flex-col transition-transform duration-300">
+                  <div class="relative">
+                    <img
+                      :src="previewProduct.photos[0]?.url || 'https://assets.placehold.co/600x400/F8F9FA/BDBDBD/png?text=Tu+Foto+Aquí'"
+                      :alt="`Imagen de ${previewProduct.title}`"
+                      class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div
+                      v-if="previewProduct.category_name"
+                      class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-slate-700"
+                    >
+                      {{ previewProduct.category_name }}
                     </div>
                   </div>
-                </div>
+                  <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-lg text-slate-800 truncate">
+                      {{ previewProduct.title }}
+                    </h3>
+                    <p class="text-sm text-slate-500 mt-1 flex-grow line-clamp-2 min-h-[40px]">
+                      {{ previewProduct.description }}
+                    </p>
+                    <div class="mt-4 flex items-center justify-between">
+                      <span class="text-sm font-semibold text-slate-600">{{ previewProduct.condition }}</span>
+                      <button
+                        type="button"
+                        disabled
+                        class="px-4 py-2 text-sm font-semibold text-white bg-rose-500 rounded-full hover:bg-rose-600 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-opacity-75 disabled:bg-rose-400/80 disabled:cursor-not-allowed"
+                      >
+                        Trocar
+                      </button>
+                    </div>
+                  </div>
+                </article>
               </div>
             </aside>
           </div>
@@ -186,13 +176,12 @@
       </div>
     </div>
 
-    <!-- Dock inferior fijo (atajos) -->
     <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import Header from './Header.vue'
 import Footer from './Footer.vue'
 import Sidebar from './Sidebar.vue'
@@ -210,6 +199,14 @@ const step2Errors = reactive({ photos: '' })
 const fileInput = ref(null)
 const userStore = useUserStore()
 const router = useRouter()
+
+const previewProduct = computed(() => ({
+  title: product.name.trim() || 'Nombre del producto',
+  description: product.description.trim() || 'La descripción aparecerá aquí.',
+  photos: imagePreviews.value.map(img => ({ url: img })),
+  category_name: product.category || 'Categoría',
+  condition: product.condition || 'Estado',
+}))
 
 const validateStep1 = () => {
   let ok = true

@@ -215,7 +215,11 @@
 
       <div class="mt-6 sm:mt-8 border-t border-white/10 pt-3.5 sm:pt-4 text-center text-[13px] text-gray-400">
         <div class="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-           <p class="text-[12px] sm:text-[13px]">© {{ year }} <span class="font-lobster">KambiaPe</span>. Todos los derechos reservados.</p>
+           <p class="text-[12px] sm:text-[13px]">
+             © {{ year }} <span class="font-lobster">KambiaPe</span>. Todos los derechos reservados.
+             <span class="mx-2 hidden sm:inline-block">|</span>
+             <span class="block sm:inline-block mt-1 sm:mt-0">God Is Good</span>
+           </p>
           <div class="flex items-center gap-3 sm:gap-4">
             <router-link to="/terminos" class="text-[12px] sm:text-[13px] hover:text-white">Términos</router-link>
             <router-link to="/privacidad" class="text-[12px] sm:text-[13px] hover:text-white">Privacidad</router-link>
