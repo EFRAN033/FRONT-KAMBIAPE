@@ -83,6 +83,46 @@
                         <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-[width] duration-500" :style="{ width: Math.min(100, Math.round((product.description.length/500)*100)) + '%' }"></div>
                       </div>
                     </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-slate-700">¿Qué buscas a cambio? (Intereses)</label>
+                        <div class="mt-3 p-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg bg-transparent">
+                            <p v-if="exchangeInterests.size === 0" class="text-sm text-slate-500 dark:text-slate-400">
+                                Selecciona las categorías que te interesan para el intercambio.
+                            </p>
+                            <div v-else class="flex flex-wrap gap-1.5">
+                                <span v-for="interestName in exchangeInterests" :key="`selected-${interestName}`" class="badge-sq badge-sq--active">
+                                    {{ interestName }}
+                                    <button @click="toggleInterest(interestName)" type="button" class="badge-remove" :aria-label="`Quitar ${interestName}`">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Añadir Intereses:</p>
+                            <div v-if="availableCategories.length > 0" class="tile-list">
+                                <button v-for="category in availableCategories" :key="category.id" type="button" class="tile" :class="exchangeInterests.has(category.name) && 'is-selected'" :aria-pressed="exchangeInterests.has(category.name)" @click="toggleInterest(category.name)">
+                                    <span class="tile-check" aria-hidden="true">
+                                        <svg v-if="exchangeInterests.has(category.name)" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 0 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </span>
+                                    <span class="tile-text">{{ category.name }}</span>
+                                </button>
+                            </div>
+                            <p v-else-if="allCategories.length > 0" class="text-sm text-slate-500 dark:text-slate-400">
+                                ¡Has seleccionado todos los intereses disponibles!
+                            </p>
+                            <p v-else class="text-sm text-slate-500 dark:text-slate-400">
+                                Cargando categorías...
+                            </p>
+                        </div>
+                    </div>
+
                   </div>
 
                   <div class="pt-4 flex justify-end border-t border-dashed border-slate-300/70">
@@ -137,13 +177,16 @@
               <p class="mb-2 text-sm font-semibold text-slate-600">Previsualización en vivo</p>
               <article class="relative isolate flex flex-col bg-white rounded-xl shadow-lg group border border-gray-100">
                 <div class="relative overflow-hidden rounded-t-xl">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-[1]"></div>
                   <img
                     v-if="imagePreviews.length > 0"
                     :src="previewProduct.photos[0]?.url"
                     :alt="previewProduct.title"
                     class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                   />
-                  <div v-else class="w-full h-48 bg-slate-100"></div>
+                  <div v-else class="w-full h-48 bg-slate-100 grid place-items-center">
+                    <svg class="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  </div>
                 </div>
 
                 <div v-if="previewProduct.category_name !== 'Categoría'" class="absolute -top-3 right-3 z-10 bg-rose-600 text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg shadow-rose-600/30">
@@ -164,6 +207,14 @@
                     </div>
                   </div>
 
+                  <div v-if="previewProduct.interests.length > 0" class="mt-2 pt-3 border-t border-gray-100">
+                    <h4 class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Busca a cambio:</h4>
+                    <div class="flex flex-wrap gap-1.5">
+                      <span v-for="interest in previewProduct.interests" :key="`prev-${interest}`" class="badge-sq">
+                        {{ interest }}
+                      </span>
+                    </div>
+                  </div>
                   <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 mt-auto">
                     <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">
                       Intercambiar
@@ -204,12 +255,38 @@ const fileInput = ref(null)
 const userStore = useUserStore()
 const router = useRouter()
 
+const allCategories = ref([]);
+const exchangeInterests = ref(new Set()); 
+
+const availableCategories = computed(() => {
+  return allCategories.value.filter(category => !exchangeInterests.value.has(category.name));
+});
+
+const fetchCategories = async () => {
+    try {
+        const response = await axios.get('/categories');
+        allCategories.value = response.data;
+    } catch (error) {
+        console.error("Error al cargar las categorías:", error);
+        errorMessage.value = 'No se pudieron cargar las categorías de intereses.';
+    }
+};
+
+const toggleInterest = (interestName) => {
+    if (exchangeInterests.value.has(interestName)) {
+        exchangeInterests.value.delete(interestName);
+    } else {
+        exchangeInterests.value.add(interestName);
+    }
+};
+
 const previewProduct = computed(() => ({
-  title: product.name.trim(),
+  title: product.name.trim() || 'Nombre del producto',
   description: product.description.trim() || 'La descripción de tu producto aparecerá aquí. Intenta ser claro y conciso.',
   photos: imagePreviews.value.map(img => ({ url: img })),
   category_name: product.category || 'Categoría',
   condition: product.condition || 'Estado',
+  interests: Array.from(exchangeInterests.value)
 }))
 
 const validateStep1 = () => {
@@ -259,6 +336,18 @@ const submitNow = async () => {
     formData.append('category_name', product.category)
     formData.append('condition', product.condition)
     formData.append('description', product.description)
+    
+    const selectedInterestIds = Array.from(exchangeInterests.value)
+        .map(interestName => {
+            const category = allCategories.value.find(cat => cat.name === interestName);
+            return category ? category.id : null;
+        })
+        .filter(id => id !== null);
+
+    selectedInterestIds.forEach(id => {
+        formData.append('interest_ids[]', id);
+    });
+
     product.photos.forEach(p => formData.append('photos', p))
     const response = await axios.post('/products', formData)
     if (response.status === 201) { alert('¡Producto publicado con éxito!'); router.push('/my-products') }
@@ -272,15 +361,16 @@ const submitNow = async () => {
 
 const handleSubmit = submitNow
 
-// Atajos
 const keydown = (e) => { if ((e.ctrlKey||e.metaKey) && e.key==='Enter' && currentStep.value===2) submitNow(); if (e.key==='Escape' && currentStep.value===2) goToPreviousStep() }
 
-onMounted(()=>window.addEventListener('keydown',keydown))
+onMounted(()=> {
+  window.addEventListener('keydown',keydown);
+  fetchCategories();
+})
 onBeforeUnmount(()=>window.removeEventListener('keydown',keydown))
 </script>
 
 <style scoped>
-/* Transiciones y animaciones existentes */
 .slide-fade-enter-active, .slide-fade-leave-active { transition: all 0.3s ease-out }
 .slide-fade-enter-from, .slide-fade-leave-to { transform: translateX(20px); opacity: 0 }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease }
@@ -289,7 +379,6 @@ onBeforeUnmount(()=>window.removeEventListener('keydown',keydown))
 @keyframes shake { 10%, 90% { transform: translateX(-1px) } 20%, 80% { transform: translateX(2px) } 30%, 50%, 70% { transform: translateX(-4px) } 40%, 60% { transform: translateX(4px) } }
 .animate-shake { animation: shake 0.4s ease }
 
-/* Estilos para el select */
 select {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   background-position: right 0.25rem center;
@@ -297,7 +386,6 @@ select {
   background-size: 0.8em 0.8em;
 }
 
-/* Clamp multi-línea para la descripción */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -305,8 +393,33 @@ select {
   overflow: hidden;
 }
 
+.badge-sq{
+  display:inline-flex; align-items:center; gap:.35rem;
+  padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
+  border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
+}
+.dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
+.badge-sq--active{ background:#0f172a; color:#fff; border-color:#0f172a; }
+.dark .badge-sq--active{ background:#e2e8f0; color:#0f172a; border-color:#e2e8f0; }
+.badge-remove{ display:inline-grid; place-items:center; width:18px; height:18px; border-radius:3px; background:rgba(255,255,255,.14); border:1px solid rgba(148,163,184,.35); }
+.dark .badge-remove{ background:rgba(15,23,42,.4); border-color:#475569; }
+
+.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:.55rem; }
+.tile{
+  display:flex; align-items:center; gap:.6rem; padding:.65rem .7rem; border:1px solid #E2E8F0; background:#fff; color:#0f172a;
+  border-radius:6px; text-align:left; transition: border-color .18s ease, box-shadow .18s ease, transform .06s ease;
+}
+.tile:hover{ border-color:#94A3B8; box-shadow:0 4px 16px -10px rgba(2,6,23,.25); transform:translateY(-1px); }
+.dark .tile{ border-color:#334155; background:#0b1220; color:#e2e8f0; }
+.dark .tile:hover{ border-color:#475569; box-shadow:0 6px 20px -12px rgba(0,0,0,.5); }
+.tile.is-selected{ border-color:#0f172a; box-shadow: inset 0 0 0 1px #0f172a, 0 2px 10px -6px rgba(2,6,23,.25); }
+.dark .tile.is-selected{ border-color:#e2e8f0; box-shadow: inset 0 0 0 1px #e2e8f0, 0 2px 10px -6px rgba(0,0,0,.6); }
+.tile-check{ width:18px; height:18px; border-radius:3px; display:inline-grid; place-items:center; border:1px solid #CBD5E1; background:#F8FAFC; }
+.dark .tile-check{ border-color:#475569; background:#0f172a; }
+
 @media (prefers-reduced-motion: reduce) {
   .slide-fade-enter-active, .slide-fade-leave-active, .fade-enter-active, .fade-leave-active { transition: none }
   .animate-shake { animation: none }
 }
 </style>
+}

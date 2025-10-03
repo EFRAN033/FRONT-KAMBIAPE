@@ -1,7 +1,5 @@
-<!-- src/components/Productos.vue -->
 <template>
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 antialiased">
-    <!-- ===== Modal Propuesta ===== -->
     <Transition name="fade-overlay">
       <div
         v-if="activeProposal"
@@ -48,7 +46,6 @@
             Selecciona el producto de tu lista que te gustaría ofrecer:
           </p>
 
-          <!-- Lista de productos del usuario -->
           <div class="max-h-64 overflow-y-auto p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <button
               v-for="product in userProducts"
@@ -107,7 +104,6 @@
       </div>
     </Transition>
 
-    <!-- Toast -->
     <transition name="slide-in-right">
       <div v-if="showNotification" class="fixed top-20 right-4 bg-success text-white px-4 py-3 rounded-xl shadow-xl z-[70] flex items-center gap-3">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,7 +113,6 @@
       </div>
     </transition>
 
-    <!-- ===== HERO ===== -->
     <section class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-3xl ring-1 ring-gray-200 dark:ring-gray-700">
       <div aria-hidden="true" class="pointer-events-none absolute inset-0">
         <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/15 to-brand-dark/15 blur-3xl"></div>
@@ -236,10 +231,8 @@
       </div>
     </section>
 
-    <!-- ===== Filtros sticky ===== -->
     <div class="bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl shadow-md my-8 p-4 sticky top-3 z-40">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        <!-- Buscador con debounce -->
         <div class="w-full md:w-1/3 relative">
           <label for="search-filter" class="sr-only">Buscar productos</label>
           <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -255,9 +248,7 @@
           />
         </div>
 
-        <!-- Controles -->
         <div class="flex items-center gap-3 flex-wrap">
-          <!-- Categoría -->
           <div class="relative" @keydown.escape="isCategoryDropdownOpen=false">
             <button
               ref="catBtnRef"
@@ -309,7 +300,6 @@
             </Transition>
           </div>
 
-          <!-- Orden -->
           <div class="relative" @keydown.escape="isSortDropdownOpen=false">
             <button
               ref="sortBtnRef"
@@ -351,7 +341,6 @@
             </Transition>
           </div>
 
-          <!-- Reiniciar -->
           <div class="w-full md:w-auto">
             <button @click="resetFilters" class="w-full md:w-auto flex-shrink-0 bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 font-medium py-2.5 px-6 rounded-full transition shadow-sm ring-1 ring-inset ring-transparent hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-brand-primary">
               Reiniciar
@@ -361,9 +350,7 @@
       </div>
     </div>
 
-    <!-- ===== Grid Productos ===== -->
     <div class="py-10 md:py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-inner">
-      <!-- Skeleton -->
       <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
         <div v-for="n in 12" :key="n" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 animate-pulse">
           <div class="w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700"></div>
@@ -379,7 +366,6 @@
         </div>
       </div>
 
-      <!-- Empty -->
       <div v-else-if="visibleProducts.length === 0" class="text-center py-20 px-4">
         <p class="text-xl text-gray-600 dark:text-gray-300 mb-3 font-semibold">No se encontraron productos</p>
         <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Prueba cambiando filtros o términos de búsqueda. También puedes mostrar todos los productos nuevamente.</p>
@@ -388,73 +374,78 @@
         </button>
       </div>
 
-      <!-- Lista -->
       <TransitionGroup name="product-list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
         <article
-  v-for="product in visibleProducts"
-  :key="product.id"
-  class="relative isolate flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 group border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-brand-primary outline-none"
-  tabindex="0"
-  @keydown.enter.prevent="openProposalModal(product)"
->
-  <div class="relative overflow-hidden rounded-t-xl">
-    <img
-      :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
-      :alt="product.title"
-      class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-      loading="lazy"
-    />
-    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-  </div>
+          v-for="product in visibleProducts"
+          :key="product.id"
+          class="relative isolate flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 group border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-brand-primary outline-none"
+          tabindex="0"
+          @keydown.enter.prevent="openProposalModal(product)"
+        >
+          <div class="relative overflow-hidden rounded-t-xl">
+            <img
+              :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
+              :alt="product.title"
+              class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              loading="lazy"
+            />
+            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+          </div>
 
-  <div class="absolute -top-3 right-3 z-10 bg-brand-primary text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg shadow-brand-primary/30">
-    {{ product.category_name }}
-  </div>
+          <div class="absolute -top-3 right-3 z-10 bg-brand-primary text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg shadow-brand-primary/30">
+            {{ product.category_name }}
+          </div>
 
-  <div class="flex flex-col flex-grow p-5">
-    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ product.title }}</h3>
-    
-    <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-      Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ product.user_username || 'Usuario' }}</span>
-    </div>
-    
-    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 flex-grow">{{ product.description }}</p>
+          <div class="flex flex-col flex-grow p-5">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ product.title }}</h3>
+            
+            <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ product.user_username || 'Usuario' }}</span>
+            </div>
+            
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 flex-grow min-h-[40px]">{{ product.description }}</p>
 
-    <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
-      <div class="inline-flex items-center">
-        <svg class="w-4 h-4 mr-1 text-brand-primary" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
-        </svg>
-        <span class="truncate">{{ product.condition }}</span>
-      </div>
-      <span aria-hidden="true">•</span>
-      <span class="truncate">Hace {{ calculateAgeDays(product.created_at) }} días</span>
-    </div>
+            <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
+              <div class="inline-flex items-center">
+                <svg class="w-4 h-4 mr-1 text-brand-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="truncate">{{ product.condition }}</span>
+              </div>
+              <span aria-hidden="true">•</span>
+              <span class="truncate">Hace {{ calculateAgeDays(product.created_at) }} días</span>
+            </div>
 
-    <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
-      <button
-        @click="openProposalModal(product)"
-        class="bg-brand-primary text-white px-4 py-2 rounded-full text-sm font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
-      >
-        Intercambiar
-      </button>
-      <button
-        class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium transition hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500/60"
-      >
-        Comprar
-      </button>
-    </div>
-  </div>
-</article>
+            <div v-if="product.exchange_interests && product.exchange_interests.length > 0" class="mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Busca a cambio:</h4>
+                <div class="flex flex-wrap gap-1.5">
+                    <span v-for="interest in product.exchange_interests" :key="interest" class="badge-sq">
+                    {{ interest }}
+                    </span>
+                </div>
+            </div>
+            <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
+              <button
+                @click="openProposalModal(product)"
+                class="bg-brand-primary text-white px-4 py-2 rounded-full text-sm font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+              >
+                Intercambiar
+              </button>
+              <button
+                class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium transition hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500/60"
+              >
+                Comprar
+              </button>
+            </div>
+          </div>
+        </article>
       </TransitionGroup>
 
-      <!-- Infinite scroll sentinel -->
       <div v-if="hasMore" ref="sentinelRef" class="px-4 sm:px-6 lg:px-8 mt-8">
         <div class="w-full h-11 rounded-full bg-gray-200/80 dark:bg-gray-700/60 animate-pulse"></div>
       </div>
     </div>
 
-    <!-- ===== CTA Redes ===== -->
     <section class="relative w-full overflow-hidden mt-10 rounded-2xl ring-1 ring-white/20" aria-label="Redes sociales Kambix">
       <div class="absolute inset-0 bg-gradient-to-r from-brand-primary to-brand-dark">
         <div class="absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.4)_1px,transparent_1.5px)] bg-[length:18px_18px]"></div>
@@ -806,7 +797,7 @@ watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 </script>
 
 <style scoped>
-/* Transiciones reutilizando tus keyframes/animaciones */
+/* Transiciones y animaciones existentes */
 .fade-overlay-enter-active,
 .fade-overlay-leave-active { transition: opacity .25s ease }
 .fade-overlay-enter-from,
@@ -828,4 +819,13 @@ watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 /* Clamp multi-línea */
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+
+/* ============== NUEVOS ESTILOS PARA BADGES ============== */
+.badge-sq{
+  display:inline-flex; align-items:center; gap:.35rem;
+  padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
+  border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
+}
+.dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
+/* ======================================================== */
 </style>
