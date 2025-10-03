@@ -338,15 +338,16 @@ const submitNow = async () => {
     formData.append('description', product.description)
     
     const selectedInterestIds = Array.from(exchangeInterests.value)
-        .map(interestName => {
-            const category = allCategories.value.find(cat => cat.name === interestName);
-            return category ? category.id : null;
-        })
-        .filter(id => id !== null);
+      .map(interestName => {
+        const category = allCategories.value.find(cat => cat.name === interestName);
+        return category ? category.id : null;
+      })
+      .filter(id => id !== null);
 
-    selectedInterestIds.forEach(id => {
-        formData.append('interest_ids[]', id);
-    });
+    // ✨ CAMBIO CLAVE: Enviamos los IDs como un solo string separado por comas
+    if (selectedInterestIds.length > 0) {
+      formData.append('exchange_interest_ids', selectedInterestIds.join(','));
+    }
 
     product.photos.forEach(p => formData.append('photos', p))
     const response = await axios.post('/products', formData)
@@ -422,4 +423,3 @@ select {
   .animate-shake { animation: none }
 }
 </style>
-}
