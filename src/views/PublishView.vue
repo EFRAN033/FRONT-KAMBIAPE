@@ -71,6 +71,16 @@
                       <p v-if="step1Errors.condition" class="text-rose-600 text-xs mt-1">{{ step1Errors.condition }}</p>
                     </div>
 
+                    <div class="flex items-center justify-between pt-3">
+                      <label for="is_for_sale" class="flex flex-col cursor-pointer">
+                        <span class="text-sm font-medium text-slate-700">Acepto ofertas para comprar</span>
+                        <span class="text-xs text-slate-500">Permite que otros te hagan ofertas en dinero.</span>
+                      </label>
+                      <label class="switch">
+                        <input id="is_for_sale" type="checkbox" v-model="product.is_for_sale">
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
                     <div class="md:col-span-2">
                       <label for="description" class="block text-sm font-medium text-slate-700">Descripción <span class="text-rose-600">*</span></label>
                       <textarea id="description" v-model="product.description" rows="4" maxlength="500" placeholder="Incluye estado, características y detalles clave."
@@ -257,7 +267,7 @@
                     <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">
                       Intercambiar
                     </button>
-                    <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">
+                    <button type="button" :disabled="!product.is_for_sale" class="text-white px-4 py-2 rounded-full text-sm font-medium transition" :class="product.is_for_sale ? 'bg-rose-600 hover:bg-rose-700' : 'bg-rose-300 cursor-not-allowed'">
                       Comprar
                     </button>
                   </div>
@@ -285,7 +295,7 @@ import { useRouter } from 'vue-router'
 const currentStep = ref(1)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
-const product = reactive({ name: '', category: '', condition: '', description: '', photos: [] })
+const product = reactive({ name: '', category: '', condition: '', description: '', photos: [], is_for_sale: false }) // <-- Campo añadido
 const imagePreviews = ref([])
 const step1Errors = reactive({ name: '', category: '', condition: '', description: '' })
 const step2Errors = reactive({ photos: '' })
@@ -436,6 +446,7 @@ const submitNow = async () => {
     formData.append('category_name', product.category)
     formData.append('condition', product.condition)
     formData.append('description', product.description)
+    formData.append('is_for_sale', product.is_for_sale) // <-- Campo añadido
     
     const selectedInterestIds = Array.from(exchangeInterests.value)
       .map(interestName => {
@@ -521,6 +532,17 @@ select {
 .dark .tile.is-selected{ border-color:#e2e8f0; box-shadow: inset 0 0 0 1px #e2e8f0, 0 2px 10px -6px rgba(0,0,0,.6); }
 .tile-check{ width:18px; height:18px; border-radius:3px; display:inline-grid; place-items:center; border:1px solid #CBD5E1; background:#F8FAFC; }
 .dark .tile-check{ border-color:#475569; background:#0f172a; }
+
+/* Estilo para el switch */
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: #d7037b; }
+input:focus + .slider { box-shadow: 0 0 1px #d7037b; }
+input:checked + .slider:before { transform: translateX(20px); }
+.slider.round { border-radius: 24px; }
+.slider.round:before { border-radius: 50%; }
 
 @media (prefers-reduced-motion: reduce) {
   .slide-fade-enter-active, .slide-fade-leave-active, .fade-enter-active, .fade-leave-active { transition: none }

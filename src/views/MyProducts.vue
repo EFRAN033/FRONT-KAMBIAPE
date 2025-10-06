@@ -131,8 +131,13 @@
 
                   <td data-label="Título">
                     <div class="flex flex-col">
-                      <span class="font-semibold text-slate-900 line-clamp-1">{{ product.title }}</span>
-                      <span class="text-[11px] text-slate-500 line-clamp-1">{{ product.id ? `ID: ${product.id}` : '' }}</span>
+                      <div class="flex items-center gap-2">
+                        <span v-if="product.is_for_sale" class="grid h-5 w-5 place-items-center rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0" title="Acepta ofertas de compra">
+                          <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-5.93V8.5a1 1 0 10-2 0v3.57a2 2 0 00.5 1.43l1.1 1.1a1 1 0 001.41-1.42l-.51-.5z" clip-rule="evenodd" /></svg>
+                        </span>
+                        <span class="font-semibold text-slate-900 line-clamp-1">{{ product.title }}</span>
+                      </div>
+                      <span class="text-[11px] text-slate-500 line-clamp-1" :class="{'pl-7': product.is_for_sale}">{{ product.id ? `ID: ${product.id}` : '' }}</span>
                     </div>
                   </td>
 
@@ -141,11 +146,13 @@
                   </td>
 
                   <td data-label="Estado">
-                    <span :class="['status-pill', ...getStatusClass(product.status).split(' ')]">
-                      {{ getStatusText(product.status) }}
-                    </span>
+                    <div class="flex items-center gap-2">
+                      <span class="h-2.5 w-2.5 rounded-full flex-shrink-0" :class="getStatusDotClass(product.status)"></span>
+                      <span class="text-sm font-medium" :class="getStatusTextClass(product.status)">
+                        {{ getStatusText(product.status) }}
+                      </span>
+                    </div>
                   </td>
-
                   <td data-label="Publicado">
                     <span class="text-sm text-slate-600">{{ product.created_at ? formatDate(product.created_at) : '—' }}</span>
                   </td>
@@ -187,7 +194,7 @@
             <div class="flex items-center gap-3">
               <div class="mini-thumb">
                 <img
-                  :src="livePreviewData.photos[0]?.url || FALLBACK_IMG"
+                  :src="livePreviewData.photos.length > 0 ? livePreviewData.photos[0].url : FALLBACK_IMG"
                   alt=""
                   @error="onImgError"
                 />
@@ -253,6 +260,17 @@
                   <option>Electrónica</option><option>Mobiliario</option><option>Deportes</option><option>Libros</option><option>Ropa y Accesorios</option><option>Hogar</option><option>Juguetes</option><option>Herramientas</option><option>Música</option><option>Videojuegos</option><option>Coleccionables</option><option>Arte</option><option>Otros</option>
                 </select>
               </div>
+            </div>
+            
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+              <label for="is_for_sale_edit" class="flex flex-col cursor-pointer">
+                <span class="text-sm font-medium text-slate-700">Acepto ofertas para comprar</span>
+                <span class="text-xs text-slate-500">Permite que otros te hagan ofertas en dinero.</span>
+              </label>
+              <label class="switch">
+                <input id="is_for_sale_edit" type="checkbox" v-model="editingProduct.is_for_sale">
+                <span class="slider round"></span>
+              </label>
             </div>
 
             <div>
@@ -385,7 +403,7 @@
                 </div>
                 <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 mt-auto">
                   <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">Intercambiar</button>
-                  <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">Comprar</button>
+                  <button type="button" :disabled="!livePreviewData.is_for_sale" class="text-white px-4 py-2 rounded-full text-sm font-medium transition" :class="livePreviewData.is_for_sale ? 'bg-rose-600' : 'bg-rose-300 cursor-not-allowed'">Comprar</button>
                 </div>
               </div>
             </article>
@@ -506,11 +524,14 @@ const fetchCategories = async () => {
 const openEditModal = async (product) => {
   await fetchCategories();
   
-  editingProduct.value = JSON.parse(JSON.stringify(product));
+  editingProduct.value = {
+    ...JSON.parse(JSON.stringify(product)),
+    is_for_sale: product.is_for_sale || false
+  };
   
-  imagesForEditing.value = (editingProduct.value.photos || []).map(p => ({
-    ...p,
-    url: imageUrl(p.url),
+  imagesForEditing.value = (product.images || []).map(p => ({
+    id: p.id,
+    url: imageUrl(p.image_url),
     uniqueKey: `existing-${p.id}`,
     isNew: false,
     file: null
@@ -537,6 +558,7 @@ const handleUpdateProduct = async () => {
     formData.append('description', editingProduct.value.description);
     formData.append('condition', editingProduct.value.condition);
     formData.append('category_name', editingProduct.value.category_name);
+    formData.append('is_for_sale', editingProduct.value.is_for_sale);
     
     const orderedPhotoIds = imagesForEditing.value
       .filter(img => !img.isNew)
@@ -584,7 +606,15 @@ const handleDeleteProduct = async () => {
   }
 };
 
-const getStatusClass=(s)=>{const c={available:"bg-emerald-100 text-emerald-800 ring-emerald-200",pending_exchange:"bg-amber-100 text-amber-900 ring-amber-200",exchanged:"bg-slate-100 text-slate-800 ring-slate-200"};return c[s]||"bg-slate-100 text-slate-800 ring-slate-200"};
+const getStatusDotClass = (status) => {
+  const classes = { available: "bg-emerald-500", pending_exchange: "bg-amber-500", exchanged: "bg-slate-400" };
+  return classes[status] || "bg-slate-400";
+};
+
+const getStatusTextClass = (status) => {
+  const classes = { available: "text-slate-700", pending_exchange: "text-slate-700", exchanged: "text-slate-500" };
+  return classes[status] || "text-slate-500";
+};
 const getStatusText=(s)=>{const t={available:"Disponible",pending_exchange:"En Intercambio",exchanged:"Intercambiado"};return t[s]||"Desconocido"};
 const stats=computed(()=>{const a=products.value.filter(p=>p.status==="available").length;const b=products.value.filter(p=>p.status==="pending_exchange").length;const c=products.value.filter(p=>p.status==="exchanged").length;return{available:a,pending:b,exchanged:c}});
 const filteredProducts=computed(()=>{let l=[...products.value];if(statusFilter.value!=="all"){l=l.filter(p=>p.status===statusFilter.value)}if(query.value){const q=query.value.toLowerCase();l=l.filter(p=>(p.title||"").toLowerCase().includes(q)||(p.category_name||"").toLowerCase().includes(q))}switch(sortBy.value){case"title_asc":l.sort((a,b)=>(a.title||"").localeCompare(b.title||""));break;case"title_desc":l.sort((a,b)=>(b.title||"").localeCompare(a.title||""));break;case"category_asc":l.sort((a,b)=>(a.category_name||"").localeCompare(b.category_name||""));break;default:{const g=(p)=>p.created_at?new Date(p.created_at).getTime():Number(p.id)||0;l.sort((a,b)=>g(b)-g(a))}}return l});
@@ -601,7 +631,7 @@ const toggleInterest = (name) => { editableInterests.value.has(name) ? editableI
 
 const livePreviewData = computed(() => {
   if (!editingProduct.value) {
-    return { title: '', description: '', category_name: '', condition: '', photos: [], interests: [] };
+    return { title: '', description: '', category_name: '', condition: '', photos: [], interests: [], is_for_sale: false };
   }
   return {
     title: editingProduct.value.title || 'Nombre del producto',
@@ -609,7 +639,8 @@ const livePreviewData = computed(() => {
     category_name: editingProduct.value.category_name || 'Categoría',
     condition: editingProduct.value.condition || 'Estado',
     photos: imagesForEditing.value,
-    interests: Array.from(editableInterests.value)
+    interests: Array.from(editableInterests.value),
+    is_for_sale: editingProduct.value.is_for_sale
   };
 });
 
@@ -647,13 +678,27 @@ const processFiles=(files)=>{
   }
 };
 
-const removeImage=(index)=>{
+/**
+ * --- FUNCIÓN CLAVE MEJORADA ---
+ * Maneja la eliminación de una imagen desde la interfaz del modal de edición.
+ */
+const removeImage = (index) => {
+  // 1. Obtiene la imagen del array que se muestra en la UI.
   const image = imagesForEditing.value[index];
+
+  // 2. Si la imagen NO es nueva (es una que ya estaba guardada),
+  //    y tiene un ID válido, se añade ese ID al Set de 'imagesToDelete'.
+  //    Este Set se enviará al backend para borrar la imagen de la base de datos.
   if (!image.isNew && image.id) {
     imagesToDelete.value.add(image.id);
   }
+
+  // 3. Finalmente, se elimina la imagen del array 'imagesForEditing'.
+  //    Esto hace que desaparezca de la vista del usuario inmediatamente.
+  //    Si era una imagen nueva, simplemente se descarta.
   imagesForEditing.value.splice(index, 1);
 };
+
 
 const onDrop = (toIndex) => {
   const fromIndex = draggedIndex.value;
@@ -696,7 +741,6 @@ onMounted(()=>{fetchUserProducts();});
 .data-table tbody tr:last-child td{border-bottom:0;}
 .thumb{width:84px;height:64px;background:#f1f5f9;border:1px solid #e5e7eb;border-radius:.5rem;overflow:hidden;}
 .thumb img{width:100%;height:100%;object-fit:cover;}
-.status-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.22rem .5rem;font-size:.78rem;font-weight:800;border-radius:.5rem;border-width:1px;border-style:solid;box-shadow:0 1px 0 rgba(2,6,23,.04);}
 .icon-btn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:.7rem;border:1px solid #e5e7eb;background:#fff;transition:background .2s ease,transform .06s ease,border-color .2s ease,box-shadow .2s ease;}
 .icon-btn:hover{background:#f8fafc;border-color:#d1d5db;transform:translateY(-1px);}
 .icon-btn.danger:hover{background:#fff1f2;border-color:#fecdd3;}
@@ -739,7 +783,6 @@ onMounted(()=>{fetchUserProducts();});
 .error-text{color:#b91c1c;font-size:.85rem;margin-top:.25rem;}
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-/* Estilos para Drag and Drop e Intereses */
 .list-move { transition: transform 0.3s ease; }
 .badge-sq{display:inline-flex;align-items:center;gap:.35rem;padding:.28rem .5rem;font-size:.75rem;font-weight:700;line-height:1;border:1px solid #E2E8F0;color:#0f172a;background:#fff;border-radius:4px;box-shadow:0 1px 0 rgba(2,6,23,.05);}
 .badge-sq--active{background:#0f172a;color:#fff;border-color:#0f172a;}
@@ -758,4 +801,13 @@ select.input {
   appearance: none;
   padding-right: 2.5rem;
 }
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: #d7037b; }
+input:focus + .slider { box-shadow: 0 0 1px #d7037b; }
+input:checked + .slider:before { transform: translateX(20px); }
+.slider.round { border-radius: 24px; }
+.slider.round:before { border-radius: 50%; }
 </style>
