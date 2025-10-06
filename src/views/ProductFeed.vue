@@ -37,7 +37,7 @@
               <img :src="`${API_BASE_URL}${activeProposal.thumbnail_image_url}`" :alt="activeProposal.title" class="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl shadow-md border-2 border-brand-medium/60" />
             </div>
             <div class="text-center sm:text-left">
-              <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ activeProposal.title }}</p>
+              <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ formatTitle(activeProposal.title) }}</p>
               <p class="text-sm text-gray-600 dark:text-gray-400">{{ activeProposal.category_name }}</p>
             </div>
           </div>
@@ -59,7 +59,7 @@
             >
               <img :src="`${API_BASE_URL}${product.thumbnail_image_url}`" :alt="product.title" class="w-16 h-16 object-cover rounded-md mr-4 border border-gray-200 dark:border-gray-600" />
               <div class="flex-1">
-                <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ product.title }}</p>
+                <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ formatTitle(product.title) }}</p>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ product.category_name }}</p>
               </div>
               <div v-if="isSelected(product)" class="text-brand-primary ml-3 animate-pulse">
@@ -397,10 +397,10 @@
           </div>
 
           <div class="flex flex-col flex-grow p-5">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ product.title }}</h3>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ formatTitle(product.title) }}</h3>
             
             <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ product.user_username || 'Usuario' }}</span>
+              Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ formatOwnerName(product.user_username) || 'Usuario' }}</span>
             </div>
             
             <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 flex-grow min-h-[40px]">{{ product.description }}</p>
@@ -556,6 +556,24 @@ const calculateAgeDays = (dateString) => {
   const productDate = new Date(dateString);
   const diffTime = Math.abs(today.getTime() - productDate.getTime());
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const formatOwnerName = (fullName) => {
+  if (!fullName || typeof fullName !== 'string') return 'Usuario';
+  const parts = fullName.trim().split(/\s+/).filter(p => p);
+
+  if (parts.length === 0) return 'Usuario';
+  if (parts.length === 1) return parts[0].toUpperCase();
+
+  const firstName = parts[0].toUpperCase();
+  const initials = parts.slice(1).map(part => `${part.charAt(0).toUpperCase()}.`);
+  
+  return `${firstName}, ${initials.join(' ')}`;
+};
+
+const formatTitle = (title) => {
+  if (!title || typeof title !== 'string') return '';
+  return title.charAt(0).toUpperCase() + title.slice(1);
 };
 
 // Debounce búsqueda
