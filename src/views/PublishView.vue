@@ -149,13 +149,24 @@
 
                   <p v-if="step2Errors.photos" class="text-rose-600 text-xs -mt-4">{{ step2Errors.photos }}</p>
 
-                  <div v-if="imagePreviews.length" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div v-for="(image, i) in imagePreviews" :key="i" class="relative overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-white">
-                      <img :src="image" :alt="`Preview ${i+1}`" class="w-full h-36 object-cover"/>
-                      <button @click="removeImage(i)" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-1 opacity-90 hover:opacity-100 transition" aria-label="Eliminar imagen">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                      </button>
-                    </div>
+                  <div v-if="imagePreviews.length > 0">
+                    <p class="text-sm text-slate-600 mb-2">Arrastra las imágenes para reordenarlas. La primera será la portada.</p>
+                    <transition-group tag="div" name="list" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div v-for="(image, i) in imagePreviews" :key="image" class="relative overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-white cursor-move group/item"
+                        draggable="true" @dragstart="onDragStart(i)" @dragover.prevent="onDragOver($event, i)" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop(i)"
+                        :class="{ 'opacity-50': dragging && draggedIndex === i }">
+                        
+                        <div class="absolute inset-0 z-10 transition-colors" :class="{ 'bg-rose-100/50': dragOverIndex === i }"></div>
+                        
+                        <img :src="image" :alt="`Preview ${i+1}`" class="w-full h-36 object-cover"/>
+                        <button @click="removeImage(i)" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-1 opacity-90 hover:opacity-100 transition" aria-label="Eliminar imagen">
+                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                        <div v-if="i === 0" class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                          Portada
+                        </div>
+                      </div>
+                    </transition-group>
                   </div>
 
                   <div class="pt-4 flex items-center justify-between border-t border-dashed border-slate-300/70">
@@ -178,12 +189,39 @@
               <article class="relative isolate flex flex-col bg-white rounded-xl shadow-lg group border border-gray-100">
                 <div class="relative overflow-hidden rounded-t-xl">
                   <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-[1]"></div>
-                  <img
-                    v-if="imagePreviews.length > 0"
-                    :src="previewProduct.photos[0]?.url"
-                    :alt="previewProduct.title"
-                    class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  />
+                  
+                  <div v-if="imagePreviews.length > 0" class="relative">
+                    <div class="w-full h-48 overflow-hidden">
+                      <div class="flex transition-transform duration-300 ease-in-out" :style="{ transform: `translateX(-${currentPreviewIndex * 100}%)` }">
+                        <div v-for="(photo, index) in previewProduct.photos" :key="index" class="w-full flex-shrink-0">
+                          <img
+                            :src="photo.url"
+                            :alt="previewProduct.title"
+                            class="w-full h-48 object-cover"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <button v-if="imagePreviews.length > 1" @click="prevPreview" class="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-1 z-10">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button v-if="imagePreviews.length > 1" @click="nextPreview" class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-1 z-10">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                    <div v-if="imagePreviews.length > 1" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                      <button
+                        v-for="(photo, index) in previewProduct.photos"
+                        :key="`dot-${index}`"
+                        @click="goToPreview(index)"
+                        class="h-2 w-2 rounded-full"
+                        :class="index === currentPreviewIndex ? 'bg-white' : 'bg-white/50'"
+                      ></button>
+                    </div>
+                    </div>
                   <div v-else class="w-full h-48 bg-slate-100 grid place-items-center">
                     <svg class="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   </div>
@@ -236,7 +274,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import Header from './Header.vue'
 import Footer from './Footer.vue'
 import Sidebar from './Sidebar.vue'
@@ -256,7 +294,12 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const allCategories = ref([]);
-const exchangeInterests = ref(new Set()); 
+const exchangeInterests = ref(new Set());
+
+// Nuevas refs para el drag and drop
+const draggedIndex = ref(null);
+const dragOverIndex = ref(null);
+const dragging = ref(false);
 
 const availableCategories = computed(() => {
   return allCategories.value.filter(category => !exchangeInterests.value.has(category.name));
@@ -279,6 +322,28 @@ const toggleInterest = (interestName) => {
         exchangeInterests.value.add(interestName);
     }
 };
+
+const currentPreviewIndex = ref(0)
+
+const nextPreview = () => {
+  if (imagePreviews.value.length > 1) {
+    currentPreviewIndex.value = (currentPreviewIndex.value + 1) % imagePreviews.value.length
+  }
+}
+
+const prevPreview = () => {
+  if (imagePreviews.value.length > 1) {
+    currentPreviewIndex.value = (currentPreviewIndex.value - 1 + imagePreviews.value.length) % imagePreviews.value.length
+  }
+}
+
+const goToPreview = (index) => {
+  currentPreviewIndex.value = index;
+};
+
+watch(imagePreviews, () => {
+  currentPreviewIndex.value = 0;
+});
 
 const previewProduct = computed(() => ({
   title: product.name.trim() || 'Nombre del producto',
@@ -325,6 +390,41 @@ const processFiles = (files) => {
 
 const removeImage = (i) => { product.photos.splice(i,1); imagePreviews.value.splice(i,1) }
 
+// Funciones para el Drag and Drop
+const onDragStart = (index) => {
+  draggedIndex.value = index;
+  dragging.value = true;
+};
+
+const onDragOver = (event, index) => {
+  dragOverIndex.value = index;
+};
+
+const onDragLeave = () => {
+  dragOverIndex.value = null;
+};
+
+const onDrop = (toIndex) => {
+  if (draggedIndex.value === null || draggedIndex.value === toIndex) {
+    // No hacer nada si se suelta en el mismo lugar
+  } else {
+    const fromIndex = draggedIndex.value;
+    
+    // Reordenar el array de previsualizaciones
+    const previewItem = imagePreviews.value.splice(fromIndex, 1)[0];
+    imagePreviews.value.splice(toIndex, 0, previewItem);
+    
+    // Reordenar el array de archivos
+    const photoItem = product.photos.splice(fromIndex, 1)[0];
+    product.photos.splice(toIndex, 0, photoItem);
+  }
+
+  // Limpiar estado
+  dragging.value = false;
+  draggedIndex.value = null;
+  dragOverIndex.value = null;
+};
+
 const submitNow = async () => {
   errorMessage.value = ''
   if (!validateStep2()) { errorMessage.value = 'Por favor, sube al menos una imagen.'; return }
@@ -344,7 +444,6 @@ const submitNow = async () => {
       })
       .filter(id => id !== null);
 
-    // ✨ CAMBIO CLAVE: Enviamos los IDs como un solo string separado por comas
     if (selectedInterestIds.length > 0) {
       formData.append('exchange_interest_ids', selectedInterestIds.join(','));
     }
@@ -376,6 +475,11 @@ onBeforeUnmount(()=>window.removeEventListener('keydown',keydown))
 .slide-fade-enter-from, .slide-fade-leave-to { transform: translateX(20px); opacity: 0 }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease }
 .fade-enter-from, .fade-leave-to { opacity: 0 }
+
+/* Animación para la lista de imágenes */
+.list-move {
+  transition: transform 0.3s ease;
+}
 
 @keyframes shake { 10%, 90% { transform: translateX(-1px) } 20%, 80% { transform: translateX(2px) } 30%, 50%, 70% { transform: translateX(-4px) } 40%, 60% { transform: translateX(4px) } }
 .animate-shake { animation: shake 0.4s ease }
