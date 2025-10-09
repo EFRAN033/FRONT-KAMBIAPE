@@ -264,16 +264,6 @@
               </div>
             </div>
             
-            <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-              <label for="is_for_sale_edit" class="flex flex-col cursor-pointer">
-                <span class="text-sm font-medium text-slate-700">Acepto ofertas para comprar</span>
-                <span class="text-xs text-slate-500">Permite que otros te hagan ofertas en dinero.</span>
-              </label>
-              <label class="switch">
-                <input id="is_for_sale_edit" type="checkbox" v-model="editingProduct.is_for_sale">
-                <span class="slider round"></span>
-              </label>
-            </div>
 
             <div>
               <label class="label">Descripción <span class="muted">(máx. {{ DESC_MAX }} caracteres)</span></label>
@@ -404,10 +394,6 @@
                       {{ interest }}
                     </span>
                   </div>
-                </div>
-                <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 mt-auto">
-                  <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">Intercambiar</button>
-                  <button type="button" :disabled="!livePreviewData.is_for_sale" class="text-white px-4 py-2 rounded-full text-sm font-medium transition" :class="livePreviewData.is_for_sale ? 'bg-rose-600' : 'bg-rose-300 cursor-not-allowed'">Comprar</button>
                 </div>
               </div>
             </article>

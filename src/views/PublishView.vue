@@ -71,16 +71,6 @@
                       <p v-if="step1Errors.condition" class="text-rose-600 text-xs mt-1">{{ step1Errors.condition }}</p>
                     </div>
 
-                    <div class="flex items-center justify-between pt-3">
-                      <label for="is_for_sale" class="flex flex-col cursor-pointer">
-                        <span class="text-sm font-medium text-slate-700">Acepto ofertas para comprar</span>
-                        <span class="text-xs text-slate-500">Permite que otros te hagan ofertas en dinero.</span>
-                      </label>
-                      <label class="switch">
-                        <input id="is_for_sale" type="checkbox" v-model="product.is_for_sale">
-                        <span class="slider round"></span>
-                      </label>
-                    </div>
                     <div class="md:col-span-2">
                       <label for="description" class="block text-sm font-medium text-slate-700">Descripción <span class="text-rose-600">*</span></label>
                       <textarea id="description" v-model="product.description" rows="4" maxlength="500" placeholder="Incluye estado, características y detalles clave."
@@ -266,9 +256,6 @@
                   <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 mt-auto">
                     <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">
                       Intercambiar
-                    </button>
-                    <button type="button" :disabled="!product.is_for_sale" class="text-white px-4 py-2 rounded-full text-sm font-medium transition" :class="product.is_for_sale ? 'bg-rose-600 hover:bg-rose-700' : 'bg-rose-300 cursor-not-allowed'">
-                      Comprar
                     </button>
                   </div>
                 </div>

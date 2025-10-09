@@ -431,11 +431,6 @@
               >
                 Intercambiar
               </button>
-              <button
-                class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium transition hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500/60"
-              >
-                Comprar
-              </button>
             </div>
           </div>
         </article>
