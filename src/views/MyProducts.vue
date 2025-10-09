@@ -133,7 +133,7 @@
                     <div class="flex flex-col">
                       <div class="flex items-center gap-2">
                         <span v-if="product.is_for_sale" class="grid h-5 w-5 place-items-center rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0" title="Acepta ofertas de compra">
-                          <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-5.93V8.5a1 1 0 10-2 0v3.57a2 2 0 00.5 1.43l1.1 1.1a1 1 0 001.41-1.42l-.51-.5z" clip-rule="evenodd" /></svg>
+                          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A1 1 0 012 10V5a1 1 0 011-1h5a1 1 0 01.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
                         </span>
                         <span class="font-semibold text-slate-900 line-clamp-1">{{ product.title }}</span>
                       </div>
