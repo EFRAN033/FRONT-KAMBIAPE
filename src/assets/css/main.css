@@ -76,3 +76,7 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) {
   .strip-track { animation: none !important; }
 }
+
+.Vue-Toastification__toast--success.toast-success-brand {
+  background-color: #d7037b !important;
+}

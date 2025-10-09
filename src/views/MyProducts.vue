@@ -257,7 +257,9 @@
               <div>
                 <label for="category" class="label">Categoría</label>
                 <select id="category" v-model="editingProduct.category_name" class="input !bg-white">
-                  <option>Electrónica</option><option>Mobiliario</option><option>Deportes</option><option>Libros</option><option>Ropa y Accesorios</option><option>Hogar</option><option>Juguetes</option><option>Herramientas</option><option>Música</option><option>Videojuegos</option><option>Coleccionables</option><option>Arte</option><option>Otros</option>
+                    <option v-for="category in allCategories" :key="category.id" :value="category.name">
+                        {{ category.name }}
+                    </option>
                 </select>
               </div>
             </div>
@@ -321,9 +323,11 @@
             </div>
 
             <div>
-              <label class="label">Imágenes del producto</label>
-              <div class="group relative rounded-xl border-2 border-dashed border-slate-300 px-4 py-6 text-center cursor-pointer hover:border-rose-400/80"
-                   @click="triggerFileInput" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
+              <label class="label">Imágenes del producto ({{ imagesForEditing.length }} / 4)</label>
+              <div class="group relative rounded-xl border-2 border-dashed border-slate-300 px-4 py-6 text-center hover:border-rose-400/80"
+                   :class="{'cursor-pointer': imagesForEditing.length < 4, 'cursor-not-allowed opacity-60': imagesForEditing.length >= 4}"
+                   @click="imagesForEditing.length < 4 && triggerFileInput()" 
+                   @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
                 <input type="file" ref="fileInput" @change="handleFileChange" multiple accept="image/*" class="hidden" />
                 <svg class="mx-auto h-8 w-8 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3-3a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <p class="mt-1 text-sm text-slate-600">Añadir más imágenes</p>
@@ -338,7 +342,7 @@
                     <div class="absolute inset-0 z-10 transition-colors" :class="{ 'bg-rose-100/50': dragOverIndex === i }"></div>
                     
                     <img :src="image.url" :alt="`Preview ${i+1}`" class="w-full h-24 object-cover"/>
-                    <button @click="removeImage(i)" type="button" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-1" aria-label="Eliminar imagen">
+                    <button @click="removeImage(i)" type="button" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-1 z-20" aria-label="Eliminar imagen">
                       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                     <div v-if="i === 0" class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">Portada</div>
@@ -446,18 +450,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Header from './Header.vue';
 import Sidebar from './Sidebar.vue';
 import { useUserStore } from '@/stores/user';
 import axios from '@/axios';
+import { useToast } from "vue-toastification";
 
 const products = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const router = useRouter();
 const userStore = useUserStore();
+const toast = useToast();
 
 const isEditModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
@@ -518,6 +524,7 @@ const fetchCategories = async () => {
       allCategories.value = response.data;
   } catch (error) {
       console.error("Error al cargar las categorías:", error);
+      toast.error("No se pudieron cargar las categorías.");
   }
 };
 
@@ -545,7 +552,20 @@ const openEditModal = async (product) => {
   isEditModalOpen.value = true;
 };
 
-const closeEdit = () => { isEditModalOpen.value = false; editingProduct.value = null; };
+const revokeObjectURLs = () => {
+    imagesForEditing.value.forEach(image => {
+        if (image.isNew && image.url.startsWith('blob:')) {
+            URL.revokeObjectURL(image.url);
+        }
+    });
+};
+
+const closeEdit = () => { 
+    revokeObjectURLs();
+    isEditModalOpen.value = false; 
+    editingProduct.value = null; 
+};
+
 const openDeleteModal = (product) => { deletingProduct.value = product; isDeleteModalOpen.value = true; };
 
 const handleUpdateProduct = async () => {
@@ -586,9 +606,9 @@ const handleUpdateProduct = async () => {
 
     closeEdit();
     await fetchUserProducts();
-    alert('¡Producto actualizado con éxito!');
+    toast.success('¡Producto actualizado con éxito!');
   } catch (err) {
-    alert(`Error: ${err.response?.data?.detail || 'No se pudo actualizar.'}`);
+    toast.error(`Error: ${err.response?.data?.detail || 'No se pudo actualizar.'}`);
   } finally {
     isSaving.value = false;
   }
@@ -600,9 +620,9 @@ const handleDeleteProduct = async () => {
     await axios.delete(`/products/${deletingProduct.value.id}`);
     isDeleteModalOpen.value = false;
     await fetchUserProducts();
-    alert('¡Producto eliminado con éxito!');
+    toast.success('¡Producto eliminado con éxito!');
   } catch (err) {
-    alert(`Error: ${err.response?.data?.detail || 'No se pudo eliminar.'}`);
+    toast.error(`Error: ${err.response?.data?.detail || 'No se pudo eliminar.'}`);
   }
 };
 
@@ -658,44 +678,30 @@ const handleFileChange=(e)=>{processFiles(e.target.files)};
 const processFiles=(files)=>{
   const limit=4;
   if(imagesForEditing.value.length + files.length > limit) {
-    alert(`No puedes subir más de ${limit} imágenes.`);
+    toast.warning(`No puedes subir más de ${limit} imágenes.`);
     return;
   }
   for(const file of files) {
     if(file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        imagesForEditing.value.push({
-          id: null,
-          url: e.target.result,
-          uniqueKey: `new-${Date.now()}-${Math.random()}`,
-          isNew: true,
-          file: file
-        });
-      };
-      reader.readAsDataURL(file);
+      imagesForEditing.value.push({
+        id: null,
+        url: URL.createObjectURL(file),
+        uniqueKey: `new-${Date.now()}-${Math.random()}`,
+        isNew: true,
+        file: file
+      });
     }
   }
 };
 
-/**
- * --- FUNCIÓN CLAVE MEJORADA ---
- * Maneja la eliminación de una imagen desde la interfaz del modal de edición.
- */
 const removeImage = (index) => {
-  // 1. Obtiene la imagen del array que se muestra en la UI.
   const image = imagesForEditing.value[index];
-
-  // 2. Si la imagen NO es nueva (es una que ya estaba guardada),
-  //    y tiene un ID válido, se añade ese ID al Set de 'imagesToDelete'.
-  //    Este Set se enviará al backend para borrar la imagen de la base de datos.
+  if (image.isNew && image.url.startsWith('blob:')) {
+    URL.revokeObjectURL(image.url);
+  }
   if (!image.isNew && image.id) {
     imagesToDelete.value.add(image.id);
   }
-
-  // 3. Finalmente, se elimina la imagen del array 'imagesForEditing'.
-  //    Esto hace que desaparezca de la vista del usuario inmediatamente.
-  //    Si era una imagen nueva, simplemente se descarta.
   imagesForEditing.value.splice(index, 1);
 };
 
@@ -714,7 +720,13 @@ const onDrop = (toIndex) => {
   dragOverIndex.value = null;
 };
 
-onMounted(()=>{fetchUserProducts();});
+onMounted(()=>{
+  fetchUserProducts();
+});
+
+onUnmounted(() => {
+    revokeObjectURLs();
+});
 </script>
 
 <style scoped>
