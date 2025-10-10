@@ -9,9 +9,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       
       <div class="md:col-span-1">
-        <div class="relative rounded-lg overflow-hidden shadow-lg aspect-square">
+        <div class="relative rounded-lg overflow-hidden shadow-lg aspect-square bg-gray-100 dark:bg-gray-700">
           <transition name="fade-img" mode="out-in">
-            <img :key="currentImage" :src="currentImage" :alt="product.title" class="w-full h-full object-cover" loading="lazy" />
+            <img :key="currentImage" :src="currentImage" :alt="product.title" class="w-full h-full object-contain" loading="lazy" />
           </transition>
           
           <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
@@ -146,6 +146,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user';
+import defaultAvatar from '@/assets/imagenes/defaul/7.svg'; // Importa la imagen por defecto
 
 const userStore = useUserStore();
 
@@ -201,8 +202,7 @@ const formattedDate = computed(() => {
 const avatarSrc = computed(() => {
   const url = props.product?.user_avatar_url;
   if (!url) {
-    // Si el producto no trae avatar, usamos el del store (que tendrá el default)
-    return userStore.user.profilePicture;
+    return defaultAvatar;
   }
   if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) {
     return url;
@@ -210,11 +210,9 @@ const avatarSrc = computed(() => {
   return `${props.apiBase}${url}`;
 });
 
-
 const contactLabel = computed(() => formatUserName(props.product?.contact_name) || 'Contactar vendedor');
 
 const placeholderImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
-const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3" stroke="%23888" stroke-width="1.5"/><path d="M4 20c1.2-4 6.8-6 8-6s6.8 2 8 6" stroke="%23888" stroke-width="1.5" stroke-linecap="round"/></svg>';
 
 const currentIndexSafe = (idx) => {
   if (images.value.length === 0) return 0;
