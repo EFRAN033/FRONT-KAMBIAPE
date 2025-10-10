@@ -9,19 +9,37 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       
       <div class="md:col-span-1">
-        <div v-if="hasImages" class="relative rounded-lg overflow-hidden shadow-lg h-full">
-          <img :src="currentImage" :alt="product.title" class="w-full h-full object-cover" loading="lazy" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        <div class="relative rounded-lg overflow-hidden shadow-lg aspect-square">
+          <transition name="fade-img" mode="out-in">
+            <img :key="currentImage" :src="currentImage" :alt="product.title" class="w-full h-full object-cover" loading="lazy" />
+          </transition>
+          
+          <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
 
-          <div v-if="images.length > 1" class="absolute bottom-4 left-4 flex items-center gap-2">
-            <div v-for="(img, idx) in images" :key="img" @click="goTo(idx)" class="w-10 h-10 rounded-md overflow-hidden ring-2 ring-white/50 cursor-pointer transition-transform hover:scale-105" :class="{ 'ring-brand-primary ring-offset-2 ring-offset-black/50': idx === currentIndex }">
-              <img :src="img" alt="thumb" class="w-full h-full object-cover" loading="lazy" />
-            </div>
+          <template v-if="images.length > 1">
+            <button @click="prevImage" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all focus:outline-none" aria-label="Imagen anterior">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <button @click="nextImage" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all focus:outline-none" aria-label="Siguiente imagen">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </template>
+          
+          <div v-if="images.length > 1" class="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
+            <button
+              v-for="(img, idx) in images"
+              :key="`dot-${idx}`"
+              @click="goTo(idx)"
+              class="w-2.5 h-2.5 rounded-full transition-all duration-300 shadow"
+              :class="idx === currentIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'"
+              :aria-label="`Ir a la imagen ${idx + 1}`"
+            ></button>
           </div>
+
         </div>
-        <div v-else class="flex items-center justify-center h-full rounded-lg bg-gray-100 dark:bg-gray-700">
+        <div v-if="!hasImages" class="flex items-center justify-center h-full rounded-lg bg-gray-100 dark:bg-gray-700 aspect-square">
           <div class="text-center text-gray-500 dark:text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 3H8a2 2 0 00-2 2v0a2 2 0 002 2h8a2 2 0 002-2v0a2 2 0 00-2-2z"/></svg>
+             <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 3H8a2 2 0 00-2 2v0a2 2 0 002 2h8a2 2 0 002-2v0a2 2 0 00-2-2z"/></svg>
             <p class="font-medium">Sin imágenes</p>
           </div>
         </div>
@@ -68,7 +86,7 @@
         </div>
 
         <div class="mt-auto pt-8 flex flex-col sm:flex-row gap-3">
-           <button @click="openProposeModal" class="flex-1 inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-brand-primary to-brand-accentPink text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
+           <button @click="openProposeModal" class="flex-1 inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v6a6 6 0 11-12 0V5H4a2 2 0 01-2-2z"/></svg>
             Proponer Intercambio
           </button>
@@ -94,14 +112,20 @@
               <label class="text-xs font-medium text-gray-600">Qué ofreces</label>
               <input v-model="proposal.item" type="text" placeholder="Ej: 2 cajas de tornillos" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
             </div>
+
             <div>
               <label class="text-xs font-medium text-gray-600">Tu nombre</label>
-              <input v-model="proposal.name" type="text" placeholder="Tu nombre" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
+              <div class="mt-2 flex items-center gap-3">
+                <img v-if="userStore.isAuthenticated" :src="userStore.profilePicture" alt="Tu avatar" class="h-10 w-10 rounded-full object-cover">
+                <input v-model="proposal.name" type="text" placeholder="Tu nombre" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
+              </div>
             </div>
+
             <div>
               <label class="text-xs font-medium text-gray-600">Contacto</label>
               <input v-model="proposal.contact" type="text" placeholder="Teléfono o chat" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
             </div>
+            
             <div class="sm:col-span-2 flex items-center justify-end gap-2">
               <button type="button" @click="closeProposeModal" class="px-4 py-2 rounded-md">Cancelar</button>
               <button :disabled="submitting" type="submit" class="px-5 py-3 rounded-md bg-brand-primary text-white font-semibold disabled:opacity-60">Enviar propuesta</button>
@@ -121,6 +145,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useUserStore } from '@/stores/user'; // <--- 1. IMPORTAR EL STORE
+
+const userStore = useUserStore(); // <--- 2. INICIALIZAR EL STORE
 
 const props = defineProps({
   product: { type: Object, required: true },
@@ -135,7 +162,7 @@ const proposal = ref({ item: '', name: '', contact: '' });
 const images = ref([]);
 const currentIndex = ref(0);
 const hasImages = computed(() => images.value.length > 0);
-const currentImage = computed(() => images.value[currentIndex.value] || placeholderImage);
+const currentImage = computed(() => hasImages.value ? images.value[currentIndex.value] : placeholderImage);
 
 function formatUserName(name) {
   if (!name) return null;
@@ -187,7 +214,13 @@ const prevImage = () => { currentIndex.value = currentIndexSafe(currentIndex.val
 const nextImage = () => { currentIndex.value = currentIndexSafe(currentIndex.value + 1); };
 const goTo = (i) => { currentIndex.value = i; };
 
-const openProposeModal = () => { isModalOpen.value = true; };
+const openProposeModal = () => { 
+  isModalOpen.value = true;
+  // <--- 3. LLENAR AUTOMÁTICAMENTE EL NOMBRE DEL USUARIO
+  if (userStore.isAuthenticated) {
+    proposal.value.name = userStore.username;
+  }
+};
 const closeProposeModal = () => { isModalOpen.value = false; };
 
 const submitProposal = async () => {
@@ -208,10 +241,18 @@ watch(() => props.product, (p) => {
   images.value = [];
   currentIndex.value = 0;
   if (!p) return;
-  if (Array.isArray(p.images) && p.images.length) images.value = p.images.map(i => normalizeImageUrl(i));
-  else if (typeof p.images === 'string' && p.images.length) images.value = p.images.split(',').map(i => normalizeImageUrl(i.trim()));
-  else if (p.image_url) images.value = [normalizeImageUrl(p.image_url)];
+
+  if (Array.isArray(p.images) && p.images.length) {
+    images.value = p.images.map(imgObject => normalizeImageUrl(imgObject.image_url));
+  } 
+  else if (typeof p.images === 'string' && p.images.length) {
+    images.value = p.images.split(',').map(i => normalizeImageUrl(i.trim()));
+  } 
+  else if (p.image_url) {
+    images.value = [normalizeImageUrl(p.image_url)];
+  }
 }, { immediate: true });
+
 
 function normalizeImageUrl(url) {
   if (!url) return placeholderImage;
@@ -225,15 +266,28 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity .18s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+/* Transición para el modal */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Transición para la imagen del carrusel */
+.fade-img-enter-active,
+.fade-img-leave-active {
+  transition: opacity .3s ease;
+}
+.fade-img-enter-from,
+.fade-img-leave-to {
+  opacity: 0;
+}
 
 :root {
   --brand-primary: #2563eb;
   --brand-accent-pink: #ec4899;
-}
-
-.ring-brand-primary {
-  box-shadow: 0 0 0 2px var(--brand-primary);
 }
 </style>
