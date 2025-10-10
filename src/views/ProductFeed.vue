@@ -10,10 +10,11 @@
         @keydown.esc="closeProductModal"
         @click.self="closeProductModal"
       >
-        <div class="max-w-md w-full animate-[pop-in] opacity-0">
-          <ProductCard 
-            :product="selectedProduct" 
+        <div class="max-w-5xl w-full animate-[pop-in] opacity-0">
+          <ProductCard
+            :product="selectedProduct"
             @propose-trade="handleProposeTrade"
+            @close="closeProductModal"
           />
         </div>
       </div>
@@ -385,7 +386,7 @@ import ProductCard from './ProductCard.vue';
    Config / Estado General
 ========================= */
 const userStore = useUserStore();
-const API_BASE_URL = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const products = ref([]);
 const loading = ref(true);

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-900 py-6 px-10 sm:py-8 sm:px-12 rounded-2xl shadow-xl h-full max-w-3xl mx-auto">
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
     <header class="mb-4">
       <div class="flex items-center justify-between">
         <div>
@@ -81,7 +81,13 @@
           <div v-if="product.exchange_interests && product.exchange_interests.length" class="mt-4">
             <p class="text-xs text-gray-500 mb-2 uppercase font-semibold">Busca a cambio de</p>
             <div class="flex flex-wrap gap-2">
-              <span v-for="interest in product.exchange_interests" :key="interest" class="inline-flex items-center text-xs font-medium px-3 py-1 rounded-full bg-white/80 dark:bg-gray-700/60 ring-1 ring-inset ring-gray-200 dark:ring-gray-700">{{ interest }}</span>
+              <span
+                v-for="interest in product.exchange_interests"
+                :key="interest"
+                class="inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 dark:text-brand-primary/90"
+              >
+                {{ interest }}
+              </span>
             </div>
           </div>
         </div>
