@@ -1,7 +1,7 @@
 <template>
   <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
     <button @click="$emit('close')" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
+      <svg xmlns="http://www.w.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
       </svg>
     </button>
@@ -116,7 +116,7 @@
             <div>
               <label class="text-xs font-medium text-gray-600">Tu nombre</label>
               <div class="mt-2 flex items-center gap-3">
-                <img v-if="userStore.isAuthenticated" :src="userStore.profilePicture" alt="Tu avatar" class="h-10 w-10 rounded-full object-cover">
+                <img v-if="userStore.isLoggedIn" :src="userStore.user.profilePicture" alt="Tu avatar" class="h-10 w-10 rounded-full object-cover">
                 <input v-model="proposal.name" type="text" placeholder="Tu nombre" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
               </div>
             </div>
@@ -145,9 +145,11 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useUserStore } from '@/stores/user'; // <--- 1. IMPORTAR EL STORE
+// 1. IMPORTAR EL STORE DE USUARIO
+import { useUserStore } from '@/stores/user';
 
-const userStore = useUserStore(); // <--- 2. INICIALIZAR EL STORE
+// 2. INICIALIZAR EL STORE PARA PODER USARLO
+const userStore = useUserStore();
 
 const props = defineProps({
   product: { type: Object, required: true },
@@ -216,9 +218,9 @@ const goTo = (i) => { currentIndex.value = i; };
 
 const openProposeModal = () => { 
   isModalOpen.value = true;
-  // <--- 3. LLENAR AUTOMÁTICAMENTE EL NOMBRE DEL USUARIO
-  if (userStore.isAuthenticated) {
-    proposal.value.name = userStore.username;
+  // 3. AUTO-RELLENAR EL NOMBRE DEL USUARIO DESDE EL STORE
+  if (userStore.isLoggedIn) {
+    proposal.value.name = userStore.user.fullName;
   }
 };
 const closeProposeModal = () => { isModalOpen.value = false; };
