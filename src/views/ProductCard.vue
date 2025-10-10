@@ -100,17 +100,17 @@
     <transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeProposeModal" aria-hidden="true"></div>
-        <div class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl p-6 sm:p-8 shadow-2xl z-10">
+        <div class="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl p-6 sm:p-8 shadow-2xl z-10">
           <div class="flex items-start justify-between">
             <h3 class="text-lg font-semibold">Proponer intercambio</h3>
             <button @click="closeProposeModal" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none" aria-label="Cerrar diálogo">
               ✕
             </button>
           </div>
-          <form @submit.prevent="submitProposal" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form @submit.prevent="submitProposal" class="mt-4 space-y-6">
             
-            <div class="sm:col-span-2">
-              <label class="text-xs font-medium text-gray-600">Selecciona un producto de tu inventario para ofrecer:</label>
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Selecciona tu producto a ofrecer:</label>
               
               <div v-if="isLoadingInventory" class="mt-2 text-center p-4 text-gray-500">Cargando tu inventario...</div>
 
@@ -138,7 +138,7 @@
                             <p class="text-xs text-gray-500">{{ item.condition }}</p>
                           </div>
                           <span v-if="item.id === product.id" class="text-xs font-semibold text-gray-500 mr-2 flex-shrink-0">
-                              (Producto actual)
+                              (Actual)
                           </span>
                       </label>
                   </div>
@@ -147,23 +147,10 @@
                   <p>No tienes productos en tu inventario para proponer un intercambio.</p>
               </div>
             </div>
-
-            <div>
-              <label class="text-xs font-medium text-gray-600">Tu nombre</label>
-              <div class="mt-2 flex items-center gap-3">
-                <img v-if="userStore.isLoggedIn" :src="userStore.user.profilePicture" alt="Tu avatar" class="h-10 w-10 rounded-full object-cover">
-                <input v-model="proposal.name" type="text" placeholder="Tu nombre" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
-              </div>
-            </div>
-
-            <div>
-              <label class="text-xs font-medium text-gray-600">Contacto</label>
-              <input v-model="proposal.contact" type="text" placeholder="Teléfono o chat" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
-            </div>
             
-            <div class="sm:col-span-2 flex items-center justify-end gap-2">
-              <button type="button" @click="closeProposeModal" class="px-4 py-2 rounded-md">Cancelar</button>
-              <button :disabled="submitting || !selectedProductId" type="submit" class="px-5 py-3 rounded-md bg-brand-primary text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed">
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" @click="closeProposeModal" class="px-4 py-2 rounded-md text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cancelar</button>
+              <button :disabled="submitting || !selectedProductId" type="submit" class="px-5 py-2.5 rounded-md bg-brand-primary text-white font-semibold text-sm disabled:opacity-60 disabled:cursor-not-allowed">
                 {{ submitting ? 'Enviando...' : 'Enviar propuesta' }}
               </button>
             </div>
@@ -185,18 +172,21 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user';
 import axios from '@/axios';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
+const router = useRouter(); // Para la redirección
+const toast = useToast(); // Para mostrar notificaciones
 
 const props = defineProps({
   product: { type: Object, required: true },
   apiBase: { type: String, default: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' }
 });
-const emit = defineEmits(['propose-trade', 'close', 'favorite']);
+const emit = defineEmits(['close', 'favorite']); // 'propose-trade' ya no es necesario
 
 const isModalOpen = ref(false);
 const submitting = ref(false);
-const proposal = ref({ name: '', contact: '' });
 
 const userInventory = ref([]);
 const selectedProductId = ref(null);
@@ -211,13 +201,11 @@ const fetchUserInventory = async () => {
     if (!userStore.isLoggedIn) return;
     isLoadingInventory.value = true;
     try {
-        const response = await axios.get(`/users/${userStore.user.id}/products`, {
-            headers: { 'Authorization': `Bearer ${userStore.access_token}` }
-        });
-        // AHORA MOSTRAMOS TODOS LOS PRODUCTOS, SIN FILTRAR
+        const response = await axios.get(`/users/${userStore.user.id}/products`);
         userInventory.value = response.data;
     } catch (error) {
         console.error("Error al cargar el inventario del usuario:", error);
+        toast.error("No se pudo cargar tu inventario.");
     } finally {
         isLoadingInventory.value = false;
     }
@@ -234,7 +222,6 @@ const formattedDescription = computed(() => capitalizeFirstLetter(props.product?
 function formatUserName(name) {
   if (!name) return null;
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return null;
   const firstName = capitalizeFirstLetter(parts[0].toLowerCase());
   if (parts.length === 1) return firstName;
   const initials = parts.slice(1).map(part => `${part.charAt(0).toUpperCase()}.`).join(' ');
@@ -242,19 +229,15 @@ function formatUserName(name) {
 }
 
 const formattedUsername = computed(() => formatUserName(props.product?.user_username) || 'Usuario Anónimo');
-
 const daysAgo = computed(() => {
   if (!props.product?.created_at) return '?';
-  const diff = Math.ceil(Math.abs(new Date() - new Date(props.product.created_at)) / (1000 * 60 * 60 * 24));
-  return diff;
+  return Math.ceil(Math.abs(new Date() - new Date(props.product.created_at)) / (1000 * 60 * 60 * 24));
 });
-
 const formattedDate = computed(() => {
   if (!props.product?.created_at) return '—';
   const date = new Date(props.product.created_at);
   return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 });
-
 const avatarSrc = computed(() => {
   const url = props.product?.user_avatar_url;
   if (!url) return defaultAvatar;
@@ -271,7 +254,6 @@ const goTo = (i) => { currentIndex.value = i; };
 const openProposeModal = () => { 
   isModalOpen.value = true;
   if (userStore.isLoggedIn) {
-    proposal.value.name = userStore.user.fullName || '';
     fetchUserInventory();
   }
 };
@@ -281,26 +263,32 @@ const closeProposeModal = () => {
   selectedProductId.value = null;
 };
 
+// --- FUNCIÓN DE ENVÍO TOTALMENTE NUEVA ---
 const submitProposal = async () => {
-  if (!selectedProductId.value || !proposal.value.name || !proposal.value.contact) {
-    console.error("Por favor, selecciona un producto y completa todos los campos.");
+  if (!selectedProductId.value) {
+    toast.error("Por favor, selecciona un producto para ofrecer.");
     return;
   }
   submitting.value = true;
   try {
-    emit('propose-trade', {
-      product_to_receive_id: props.product.id,
-      product_to_offer_id: selectedProductId.value,
-      proposal_details: {
-        name: proposal.value.name,
-        contact: proposal.value.contact
-      }
-    });
-    proposal.value.name = '';
-    proposal.value.contact = '';
-    closeProposeModal();
-  } catch (err) {
-    console.error(err);
+    const payload = {
+      offered_product_id: selectedProductId.value,
+      requested_product_id: props.product.id,
+    };
+
+    // Llamada directa a la API para crear la propuesta
+    const response = await axios.post('/proposals', payload);
+
+    if (response.status === 201) {
+      toast.success("¡Propuesta enviada! Revisa tu bandeja de entrada.");
+      closeProposeModal();
+      // Redirige al usuario a su Inbox
+      router.push({ name: 'Inbox' });
+    }
+  } catch (error) {
+    const errorMessage = error.response?.data?.detail || "Hubo un error al enviar la propuesta.";
+    console.error("Error al crear la propuesta:", error.response || error);
+    toast.error(errorMessage);
   } finally {
     submitting.value = false;
   }
@@ -310,15 +298,12 @@ watch(() => props.product, (p) => {
   images.value = [];
   currentIndex.value = 0;
   if (!p) return;
-
   if (Array.isArray(p.images) && p.images.length) {
     images.value = p.images.map(imgObject => normalizeImageUrl(imgObject.image_url));
-  } 
-  else if (p.image_url) {
+  } else if (p.image_url) {
     images.value = [normalizeImageUrl(p.image_url)];
   }
 }, { immediate: true });
-
 
 function normalizeImageUrl(url) {
   if (!url) return placeholderImage;
@@ -332,7 +317,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Transición para el modal */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity .2s ease;
@@ -341,8 +325,6 @@ onMounted(() => {
 .fade-leave-to {
   opacity: 0;
 }
-
-/* Transición para la imagen del carrusel */
 .fade-img-enter-active,
 .fade-img-leave-active {
   transition: opacity .3s ease;
@@ -351,7 +333,6 @@ onMounted(() => {
 .fade-img-leave-to {
   opacity: 0;
 }
-
 :root {
   --brand-primary: #2563eb;
   --brand-accent-pink: #ec4899;
