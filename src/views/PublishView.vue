@@ -10,6 +10,15 @@
       <Sidebar />
 
       <div class="relative flex-1">
+        <transition name="gif-fade">
+          <img 
+            v-if="showGif"
+            src="@/assets/imagenes/gif/Anamación-1.gif" 
+            alt="Animación decorativa" 
+            class="absolute top-4 right-4 w-48 h-48 z-20 pointer-events-none"
+          >
+        </transition>
+        
         <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
           <div class="absolute -top-24 -left-10 h-72 w-72 rounded-full bg-rose-300/20 blur-3xl"></div>
           <div class="absolute -bottom-24 -right-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl"></div>
@@ -278,22 +287,27 @@ import Sidebar from './Sidebar.vue'
 import axios from '@/axios'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification';
+
+// ===== LÓGICA PARA EL GIF (INICIO) =====
+const showGif = ref(true);
+// ===== LÓGICA PARA EL GIF (FIN) =====
 
 const currentStep = ref(1)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
-const product = reactive({ name: '', category: '', condition: '', description: '', photos: [], is_for_sale: false }) // <-- Campo añadido
+const product = reactive({ name: '', category: '', condition: '', description: '', photos: [], is_for_sale: false })
 const imagePreviews = ref([])
 const step1Errors = reactive({ name: '', category: '', condition: '', description: '' })
 const step2Errors = reactive({ photos: '' })
 const fileInput = ref(null)
 const userStore = useUserStore()
 const router = useRouter()
+const toast = useToast(); 
 
 const allCategories = ref([]);
 const exchangeInterests = ref(new Set());
 
-// Nuevas refs para el drag and drop
 const draggedIndex = ref(null);
 const dragOverIndex = ref(null);
 const dragging = ref(false);
@@ -387,7 +401,6 @@ const processFiles = (files) => {
 
 const removeImage = (i) => { product.photos.splice(i,1); imagePreviews.value.splice(i,1) }
 
-// Funciones para el Drag and Drop
 const onDragStart = (index) => {
   draggedIndex.value = index;
   dragging.value = true;
@@ -402,21 +415,13 @@ const onDragLeave = () => {
 };
 
 const onDrop = (toIndex) => {
-  if (draggedIndex.value === null || draggedIndex.value === toIndex) {
-    // No hacer nada si se suelta en el mismo lugar
-  } else {
+  if (draggedIndex.value === null || draggedIndex.value === toIndex) { } else {
     const fromIndex = draggedIndex.value;
-    
-    // Reordenar el array de previsualizaciones
     const previewItem = imagePreviews.value.splice(fromIndex, 1)[0];
     imagePreviews.value.splice(toIndex, 0, previewItem);
-    
-    // Reordenar el array de archivos
     const photoItem = product.photos.splice(fromIndex, 1)[0];
     product.photos.splice(toIndex, 0, photoItem);
   }
-
-  // Limpiar estado
   dragging.value = false;
   draggedIndex.value = null;
   dragOverIndex.value = null;
@@ -433,7 +438,7 @@ const submitNow = async () => {
     formData.append('category_name', product.category)
     formData.append('condition', product.condition)
     formData.append('description', product.description)
-    formData.append('is_for_sale', product.is_for_sale) // <-- Campo añadido
+    formData.append('is_for_sale', product.is_for_sale)
     
     const selectedInterestIds = Array.from(exchangeInterests.value)
       .map(interestName => {
@@ -448,7 +453,10 @@ const submitNow = async () => {
 
     product.photos.forEach(p => formData.append('photos', p))
     const response = await axios.post('/products', formData)
-    if (response.status === 201) { alert('¡Producto publicado con éxito!'); router.push('/my-products') }
+      if (response.status === 201) {
+        toast.success('¡Producto publicado con éxito!');
+        router.push('/my-products')
+    }
     else { errorMessage.value = response.data.detail || 'Error al publicar.' }
   } catch (error) {
     if (error.response) { console.error('Error del servidor:', error.response.data); errorMessage.value = error.response.data.detail || 'Error al publicar.'; if (error.response.status === 401) router.push('/login') }
@@ -462,6 +470,12 @@ const handleSubmit = submitNow
 const keydown = (e) => { if ((e.ctrlKey||e.metaKey) && e.key==='Enter' && currentStep.value===2) submitNow(); if (e.key==='Escape' && currentStep.value===2) goToPreviousStep() }
 
 onMounted(()=> {
+  // ===== LÓGICA PARA EL GIF (INICIO) =====
+  setTimeout(() => {
+    showGif.value = false;
+  }, 10000); // 10000 milisegundos = 10 segundos
+  // ===== LÓGICA PARA EL GIF (FIN) =====
+
   window.addEventListener('keydown',keydown);
   fetchCategories();
 })
@@ -473,6 +487,14 @@ onBeforeUnmount(()=>window.removeEventListener('keydown',keydown))
 .slide-fade-enter-from, .slide-fade-leave-to { transform: translateX(20px); opacity: 0 }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease }
 .fade-enter-from, .fade-leave-to { opacity: 0 }
+
+/* ===== ESTILOS PARA LA ANIMACIÓN DEL GIF ===== */
+.gif-fade-enter-active, .gif-fade-leave-active {
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gif-fade-enter-from, .gif-fade-leave-to {
+  opacity: 0;
+}
 
 /* Animación para la lista de imágenes */
 .list-move {

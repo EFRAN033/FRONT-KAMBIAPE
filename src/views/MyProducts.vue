@@ -606,7 +606,7 @@ const handleDeleteProduct = async () => {
     await axios.delete(`/products/${deletingProduct.value.id}`);
     isDeleteModalOpen.value = false;
     await fetchUserProducts();
-    toast.success('¡Producto eliminado con éxito!');
+    toast.success('¡Producto eliminado con éxito!'); 
   } catch (err) {
     toast.error(`Error: ${err.response?.data?.detail || 'No se pudo eliminar.'}`);
   }

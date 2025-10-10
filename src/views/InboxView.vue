@@ -423,6 +423,7 @@ import { useUserStore } from '@/stores/user'
 import axios from '@/axios'
 import Header from './Header.vue'
 import Footer from './Footer.vue'
+import { useToast } from 'vue-toastification';
 import {
   ChatBubbleLeftRightIcon,
   ChatBubbleOvalLeftIcon,
@@ -443,6 +444,7 @@ const filter = ref('all')
 const search = ref('') // búsqueda local
 const selectedConversation = ref(null)
 const newMessageText = ref('')
+const toast = useToast()
 const loading = ref(true)
 const sendingMessage = ref(false)
 const messagesContainer = ref(null)
@@ -562,16 +564,15 @@ const updateProposalStatus = async (status) => {
     selectedConversation.value.messages.push(systemMessage)
     selectedConversation.value.last_message = systemMessage
     alert(`Propuesta ${selectedConversation.value.exchange.id} ${status === 'accepted' ? 'aceptada' : 'rechazada'}.`)
-    await fetchConversations()
+    await fetchConversations();
   } catch (e) {
-    console.error('Error al actualizar la propuesta:', e)
-    const msg = e.response?.data?.detail || 'Error al actualizar la propuesta.'
-    alert(`Error: ${msg}`)
+    console.error('Error al actualizar la propuesta:', e);
+    const msg = e.response?.data?.detail || 'Error al actualizar la propuesta.';
+    toast.error(`Error: ${msg}`); // REEMPLAZO
   } finally {
-    showDetailsModal.value = false
+    showDetailsModal.value = false;
   }
 }
-
 watch(() => selectedConversation.value?.messages, async () => {
   await nextTick(() => {
     if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight

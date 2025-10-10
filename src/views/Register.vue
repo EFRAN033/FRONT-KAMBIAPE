@@ -3,8 +3,8 @@
     <header class="bg-gradient-to-r from-[#d7037b] to-[#9e0154] shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
       <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5">
         <div class="flex items-center justify-between">
-          <button 
-            @click="$router.back()" 
+          <button
+            @click="$router.back()"
             class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/25 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 ease-in-out"
             aria-label="Volver atrás"
           >
@@ -46,10 +46,7 @@
             <span class="text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white font-lobster">
               Kambia<span class="text-transparent bg-clip-text bg-[conic-gradient(from_180deg_at_50%_50%,#d7037b_0deg,#9e0154_150deg,#d7037b_360deg)]">Pe</span>
             </span>
-            <span class="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9e0154] bg-[#d7037b]/10 ring-1 ring-[#d7037b]/20">
-              beta
-            </span>
-          </router-link>
+            </router-link>
           <div class="hidden sm:flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
             <span class="inline-flex items-center gap-2">
               <span class="h-1 w-5 bg-[#d7037b] inline-block"></span> Registro seguro
@@ -75,14 +72,15 @@
               <p class="mt-5 max-w-prose text-[15px] leading-relaxed text-gray-700 dark:text-gray-300">
                 Tu acceso a KambiaPe: rápido, claro y seguro.
               </p>
-              <ul class="mt-8 grid grid-cols-2 gap-4 text-sm">
-                <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <span class="h-1 w-6 bg-[#d7037b] inline-block"></span> Inicio ágil
-                </li>
-                <li class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <span class="h-1 w-6 bg-[#9e0154] inline-block"></span> Protección activa
-                </li>
-              </ul>
+              <div class="mt-8 flex items-start gap-4 pl-3 border-l-2 border-[#d7037b]/50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#d7037b] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                  <strong class="font-semibold text-gray-800 dark:text-gray-200">Por favor, usa tus datos reales.</strong>
+                  <p class="mt-1">Tu nombre y DNI serán verificados para garantizar la seguridad en la comunidad. Tus datos son privados y jamás se compartirán.</p>
+                </div>
+              </div>
             </div>
           </aside>
 
@@ -113,10 +111,26 @@
                   <input
                     type="text" id="name" v-model="name" required
                     class="peer w-full bg-transparent border-b-2 border-gray-300/80 dark:border-white/20 focus:outline-none focus:border-transparent transition-all px-0 py-2 placeholder-gray-400 dark:text-white"
-                    placeholder="Tu nombre" autocomplete="name" />
+                    placeholder="Tu nombre y apellidos" autocomplete="name" />
                   <span class="pointer-events-none absolute left-0 -bottom-[2px] h-[2px] w-0 bg-gradient-to-r from-[#d7037b] via-[#b90266] to-[#9e0154] transition-[width] duration-500 ease-out peer-focus:w-full"></span>
                   <div class="absolute -bottom-6 right-0 text-gray-400 dark:text-gray-500">
                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"/></svg>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <label for="dni" class="mb-3 block text-[11px] font-semibold tracking-[0.22em] text-gray-600 dark:text-gray-400 uppercase">DNI</label>
+                <div class="relative">
+                  <input
+                    type="text" id="dni" v-model="dni" required maxlength="8" @input="formatDNI"
+                    class="peer w-full bg-transparent border-b-2 border-gray-300/80 dark:border-white/20 focus:outline-none focus:border-transparent transition-all px-0 py-2 placeholder-gray-400 dark:text-white"
+                    placeholder="Tu número de DNI" autocomplete="off" />
+                  <span class="pointer-events-none absolute left-0 -bottom-[2px] h-[2px] w-0 bg-gradient-to-r from-[#d7037b] via-[#b90266] to-[#9e0154] transition-[width] duration-500 ease-out peer-focus:w-full"></span>
+                  <div class="absolute -bottom-6 right-0 text-gray-400 dark:text-gray-500">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm14.293 3.293a1 1 0 00-1.414 0L13 9.586V7a1 1 0 10-2 0v6a1 1 0 102 0v-2.586l2.879-2.879a1 1 0 000-1.414zM8 7a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1zm-3 4a1 1 0 100 2h3a1 1 0 100-2H5z" clip-rule="evenodd" />
+                      </svg>
                   </div>
                 </div>
               </section>
@@ -222,14 +236,20 @@
 
 <script>
 import Footer from '@/views/Footer.vue';
-import axios from '@/axios'; // ✨ Importa tu instancia de axios configurada
+import axios from '@/axios';
+import { useToast } from 'vue-toastification';
 
 export default {
   name: 'PremiumRegisterView',
   components: { Footer },
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
   data() {
     return {
       name: '',
+      dni: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -259,6 +279,12 @@ export default {
     }
   },
   methods: {
+    formatDNI() {
+      this.dni = this.dni.replace(/[^0-9]/g, '');
+      if (this.dni.length > 8) {
+        this.dni = this.dni.slice(0, 8);
+      }
+    },
     validatePassword() {
       if (this.password && this.confirmPassword && this.password !== this.confirmPassword) {
         this.errorMessage = 'Las contraseñas no coinciden';
@@ -266,51 +292,55 @@ export default {
         this.errorMessage = '';
       }
     },
-    // ✨ MÉTODO ACTUALIZADO CON AXIOS ✨
     async handleRegister() {
       this.errorMessage = '';
       this.isLoading = true;
 
       if (this.password !== this.confirmPassword) {
         this.errorMessage = 'Las contraseñas no coinciden.';
+        this.toast.error(this.errorMessage);
         this.isLoading = false;
         return;
       }
+      if (this.dni.length !== 8) {
+          this.errorMessage = 'El DNI debe contener 8 dígitos.';
+          this.toast.error(this.errorMessage);
+          this.isLoading = false;
+          return;
+      }
       if (!this.termsAccepted) {
         this.errorMessage = 'Debes aceptar los Términos de servicio y la Política de privacidad.';
+        this.toast.error(this.errorMessage);
         this.isLoading = false;
         return;
       }
 
       try {
-        // La URL es relativa a la baseURL de axios, que ya usa el proxy.
-        // La llamada irá a /api/register, y el proxy la redirigirá a http://localhost:8000/register
         const response = await axios.post('/register', {
           full_name: this.name,
+          dni: this.dni,
           email: this.email,
           password: this.password,
           confirm_password: this.confirmPassword,
           agreed_terms: this.termsAccepted,
         });
-        
+
         console.log('Registro exitoso:', response.data);
-        alert('¡Registro exitoso! Serás redirigido para iniciar sesión.');
+        this.toast.success('¡Registro exitoso! Serás redirigido para iniciar sesión.');
         this.$router.push('/login');
 
       } catch (error) {
         if (error.response) {
-          // El backend respondió con un error (ej. email ya existe, error de validación)
-          this.errorMessage = error.response.data.detail || 'Error en el registro. Verifica que tus datos sean correctos.';
+          this.errorMessage = error.response.data.detail || 'Error en el registro. Verifica tus datos.';
           console.error('Error de registro desde el servidor:', error.response.data);
         } else if (error.request) {
-            // No se recibió respuesta del servidor (puede estar caído o el proxy mal configurado)
             this.errorMessage = 'No se pudo conectar al servidor. Por favor, inténtalo más tarde.';
             console.error('No se recibió respuesta del servidor:', error.request);
         } else {
-          // Otro tipo de error
           this.errorMessage = 'Ocurrió un error inesperado al procesar tu solicitud.';
           console.error('Error inesperado:', error.message);
         }
+        this.toast.error(this.errorMessage);
       } finally {
         this.isLoading = false;
       }
