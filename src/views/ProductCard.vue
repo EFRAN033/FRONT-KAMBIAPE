@@ -1,132 +1,87 @@
 <template>
-  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
-    <header class="mb-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <span class="text-xs font-semibold uppercase tracking-wider text-brand-primary">{{ product.category_name }}</span>
-          <h1 id="product-title" class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1 leading-tight">
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
+    <button @click="$emit('close')" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </button>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      
+      <div class="md:col-span-1">
+        <div v-if="hasImages" class="relative rounded-lg overflow-hidden shadow-lg h-full">
+          <img :src="currentImage" :alt="product.title" class="w-full h-full object-cover" loading="lazy" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+
+          <div v-if="images.length > 1" class="absolute bottom-4 left-4 flex items-center gap-2">
+            <div v-for="(img, idx) in images" :key="img" @click="goTo(idx)" class="w-10 h-10 rounded-md overflow-hidden ring-2 ring-white/50 cursor-pointer transition-transform hover:scale-105" :class="{ 'ring-brand-primary ring-offset-2 ring-offset-black/50': idx === currentIndex }">
+              <img :src="img" alt="thumb" class="w-full h-full object-cover" loading="lazy" />
+            </div>
+          </div>
+        </div>
+        <div v-else class="flex items-center justify-center h-full rounded-lg bg-gray-100 dark:bg-gray-700">
+          <div class="text-center text-gray-500 dark:text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 3H8a2 2 0 00-2 2v0a2 2 0 002 2h8a2 2 0 002-2v0a2 2 0 00-2-2z"/></svg>
+            <p class="font-medium">Sin imágenes</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="md:col-span-1 flex flex-col">
+        <header>
+          <span class="text-sm font-semibold uppercase tracking-wider text-brand-primary">{{ product.category_name }}</span>
+          <h1 id="product-title" class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mt-1 leading-tight">
             {{ formattedTitle }}
           </h1>
+          <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Publicado hace {{ daysAgo }} días</p>
+        </header>
+
+        <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+          <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ product.description || 'No hay descripción disponible.' }}</p>
         </div>
-        <button @click="$emit('close')" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none" aria-label="Cerrar">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 011.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-          </svg>
-        </button>
-      </div>
-      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Publicado por <strong class="text-gray-800 dark:text-gray-100">{{ product.user_username || 'Usuario Anónimo' }}</strong> · <span class="text-gray-500">hace {{ daysAgo }} días</span></p>
-    </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="md:col-span-2">
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 flex flex-col h-full">
-          <div v-if="hasImages" class="relative rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
-            <img
-              :src="currentImage"
-              :alt="product.title"
-              class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 ease-in-out transform hover:scale-105"
-              loading="lazy"
-            />
-
-            <button v-if="images.length > 1" @click="prevImage" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 rounded-full shadow focus:outline-none" aria-label="Imagen anterior">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.293 16.293a1 1 0 010-1.414L15.586 11H5a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-            </button>
-            <button v-if="images.length > 1" @click="nextImage" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 rounded-full shadow focus:outline-none" aria-label="Siguiente imagen">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.707 3.707a1 1 0 010 1.414L4.414 9H15a1 1 0 110 2H4.414l3.293 3.293a1 1 0 11-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-            </button>
-
-            <div class="absolute bottom-3 left-3 flex items-center gap-2">
-              <div v-for="(img, idx) in images" :key="img" @click="goTo(idx)" class="w-8 h-8 rounded-md overflow-hidden ring-2 ring-white/70 dark:ring-gray-900/60 cursor-pointer" :class="{ 'ring-brand-primary': idx === currentIndex }">
-                <img :src="img" alt="thumb" class="w-full h-full object-cover" loading="lazy" />
+        <div class="mt-6 space-y-4 text-sm">
+            <div class="flex items-center gap-3">
+              <img :src="avatarSrc" alt="avatar" class="h-10 w-10 rounded-full object-cover" />
+              <div>
+                <p class="font-semibold text-gray-800 dark:text-gray-100">{{ formattedUsername }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ product.location || 'Ubicación no especificada' }}</p>
               </div>
             </div>
-          </div>
-
-          <div v-else class="flex items-center justify-center h-64 sm:h-80 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700">
-            <div class="text-center text-gray-500 dark:text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 3H8a2 2 0 00-2 2v0a2 2 0 002 2h8a2 2 0 002-2v0a2 2 0 00-2-2z"/></svg>
-              <p class="font-medium">Sin imágenes</p>
-              <p class="text-xs">El vendedor no agregó fotos.</p>
-            </div>
-          </div>
-
-          <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-            <p v-if="product.description" class="whitespace-pre-line">{{ product.description }}</p>
-            <p v-else class="text-gray-500">No hay descripción disponible.</p>
-          </div>
+             <div class="flex justify-between">
+                <span class="text-gray-500">Condición:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-100">{{ product.condition || '—' }}</span>
+             </div>
+             <div class="flex justify-between">
+                <span class="text-gray-500">Publicado:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-100">{{ formattedDate }}</span>
+             </div>
         </div>
-      </div>
 
-      <aside class="md:col-span-1 flex flex-col gap-4">
-        <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
-          <div class="flex items-center gap-3">
-            <img :src="avatarSrc" alt="avatar" class="h-12 w-12 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" />
-            <div>
-              <p class="font-semibold text-gray-800 dark:text-gray-100">{{ product.user_username || 'Usuario Anónimo' }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ product.location || 'Ubicación no especificada' }}</p>
-            </div>
-          </div>
-
-          <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p class="text-xs text-gray-500">Condición</p>
-              <p class="font-semibold text-gray-800 dark:text-gray-100">{{ product.condition || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-500">Publicado</p>
-              <p class="font-semibold text-gray-800 dark:text-gray-100">{{ formattedDate }}</p>
-            </div>
-          </div>
-
-          <div v-if="product.exchange_interests && product.exchange_interests.length" class="mt-4">
-            <p class="text-xs text-gray-500 mb-2 uppercase font-semibold">Busca a cambio de</p>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="interest in product.exchange_interests"
-                :key="interest"
-                class="inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 dark:text-brand-primary/90"
-              >
-                {{ interest }}
-              </span>
-            </div>
+        <div v-if="product.exchange_interests && product.exchange_interests.length" class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Busca a cambio de:</h3>
+          <div class="flex flex-wrap gap-2">
+            <span v-for="interest in product.exchange_interests" :key="interest" class="inline-flex items-center whitespace-nowrap rounded border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50">
+              {{ interest }}
+            </span>
           </div>
         </div>
 
-        <div class="p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div class="mb-3">
-            <p class="text-sm text-gray-500">Contacto</p>
-            <p class="font-semibold text-lg text-gray-900 dark:text-white">{{ contactLabel }}</p>
-          </div>
-
-          <button @click="openProposeModal" class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-brand-primary to-brand-accentPink text-white font-semibold shadow-md hover:scale-[1.02] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
+        <div class="mt-auto pt-8 flex flex-col sm:flex-row gap-3">
+           <button @click="openProposeModal" class="flex-1 inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-brand-primary to-brand-accentPink text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v6a6 6 0 11-12 0V5H4a2 2 0 01-2-2z"/></svg>
-            Proponer intercambio
+            Proponer Intercambio
           </button>
-
-          <button v-if="product.contact_phone" @click="startCall" class="mt-3 w-full inline-flex items-center justify-center gap-3 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-transparent text-sm font-medium focus:outline-none">
-            Llamar: <span class="ml-2 font-semibold">{{ product.contact_phone }}</span>
+          <button @click="$emit('favorite', product)" class="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 18l-6.828-6.828a4 4 0 010-5.656z"/></svg>
           </button>
         </div>
-
-        <div class="text-xs text-gray-400">ID: <span class="font-mono">{{ product.id }}</span></div>
       </aside>
     </div>
-
-    <footer class="mt-6 flex flex-col sm:flex-row gap-3 items-center">
-      <button @click="openProposeModal" class="flex-1 inline-flex items-center justify-center gap-3 px-5 py-3 rounded-xl border border-transparent bg-brand-primary text-white font-semibold hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
-        Proponer intercambio
-      </button>
-
-      <button @click="$emit('favorite', product)" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 18l-6.828-6.828a4 4 0 010-5.656z"/></svg>
-        Guardar
-      </button>
-    </footer>
 
     <transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeProposeModal" aria-hidden="true"></div>
-
         <div class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl p-6 sm:p-8 shadow-2xl z-10">
           <div class="flex items-start justify-between">
             <h3 class="text-lg font-semibold">Proponer intercambio</h3>
@@ -134,23 +89,19 @@
               ✕
             </button>
           </div>
-
           <form @submit.prevent="submitProposal" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="sm:col-span-2">
               <label class="text-xs font-medium text-gray-600">Qué ofreces</label>
               <input v-model="proposal.item" type="text" placeholder="Ej: 2 cajas de tornillos" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
             </div>
-
             <div>
               <label class="text-xs font-medium text-gray-600">Tu nombre</label>
               <input v-model="proposal.name" type="text" placeholder="Tu nombre" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
             </div>
-
             <div>
               <label class="text-xs font-medium text-gray-600">Contacto</label>
               <input v-model="proposal.contact" type="text" placeholder="Teléfono o chat" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
             </div>
-
             <div class="sm:col-span-2 flex items-center justify-end gap-2">
               <button type="button" @click="closeProposeModal" class="px-4 py-2 rounded-md">Cancelar</button>
               <button :disabled="submitting" type="submit" class="px-5 py-3 rounded-md bg-brand-primary text-white font-semibold disabled:opacity-60">Enviar propuesta</button>
@@ -177,22 +128,32 @@ const props = defineProps({
 });
 const emit = defineEmits(['propose-trade', 'close', 'favorite']);
 
-// Local UI state
 const isModalOpen = ref(false);
 const submitting = ref(false);
 const proposal = ref({ item: '', name: '', contact: '' });
 
-// Images handling
 const images = ref([]);
 const currentIndex = ref(0);
 const hasImages = computed(() => images.value.length > 0);
 const currentImage = computed(() => images.value[currentIndex.value] || placeholderImage);
 
-// Derived/formatting
+function formatUserName(name) {
+  if (!name) return null;
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return null;
+  const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+  if (parts.length === 1) return firstName;
+  const initials = parts.slice(1).map(part => `${part.charAt(0).toUpperCase()}.`).join(' ');
+  return `${firstName} ${initials}`;
+}
+
 const formattedTitle = computed(() => {
   if (!props.product || !props.product.title) return '';
   return props.product.title.charAt(0).toUpperCase() + props.product.title.slice(1);
 });
+
+const formattedUsername = computed(() => formatUserName(props.product?.user_username) || 'Usuario Anónimo');
+
 const daysAgo = computed(() => {
   if (!props.product?.created_at) return '?';
   const today = new Date();
@@ -200,22 +161,24 @@ const daysAgo = computed(() => {
   const diff = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
   return diff;
 });
+
 const formattedDate = computed(() => {
   if (!props.product?.created_at) return '—';
-  return new Date(props.product.created_at).toLocaleDateString();
+  const date = new Date(props.product.created_at);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
 });
 
-const avatarSrc = computed(() => {
-  return props.product?.user_avatar_url ? `${props.apiBase}${props.product.user_avatar_url}` : defaultAvatar;
-});
-const contactLabel = computed(() => props.product?.contact_name || 'Contactar vendedor');
+const avatarSrc = computed(() => props.product?.user_avatar_url ? `${props.apiBase}${props.product.user_avatar_url}` : defaultAvatar);
+const contactLabel = computed(() => formatUserName(props.product?.contact_name) || 'Contactar vendedor');
 
-// constants
 const placeholderImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
 const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3" stroke="%23888" stroke-width="1.5"/><path d="M4 20c1.2-4 6.8-6 8-6s6.8 2 8 6" stroke="%23888" stroke-width="1.5" stroke-linecap="round"/></svg>';
 
-// Image controls
 const currentIndexSafe = (idx) => {
+  if (images.value.length === 0) return 0;
   if (idx < 0) return images.value.length - 1;
   if (idx >= images.value.length) return 0;
   return idx;
@@ -224,51 +187,29 @@ const prevImage = () => { currentIndex.value = currentIndexSafe(currentIndex.val
 const nextImage = () => { currentIndex.value = currentIndexSafe(currentIndex.value + 1); };
 const goTo = (i) => { currentIndex.value = i; };
 
-// Modal handling
-const openProposeModal = () => { isModalOpen.value = true; focusTrap(); };
-const closeProposeModal = () => { isModalOpen.value = false; }
+const openProposeModal = () => { isModalOpen.value = true; };
+const closeProposeModal = () => { isModalOpen.value = false; };
 
-// Form submit
 const submitProposal = async () => {
   if (!proposal.value.item || !proposal.value.name || !proposal.value.contact) return;
   submitting.value = true;
   try {
-    // Emit proposal to parent — parent decides how to persist (API call / socket)
     emit('propose-trade', { product: props.product, proposal: proposal.value });
-    // reset UI
     proposal.value = { item: '', name: '', contact: '' };
     closeProposeModal();
   } catch (err) {
     console.error(err);
-    // Notify user (parent can listen to errors)
   } finally {
     submitting.value = false;
   }
 };
 
-const startCall = () => {
-  if (!props.product.contact_phone) return;
-  // for web: open tel: link
-  window.open(`tel:${props.product.contact_phone}`);
-};
-
-// accessibility: small focus trap implementation for modal (keeps focus inside modal while open)
-const focusTrap = () => {
-  // quick, minimal trap: focus first input after modal opens
-  setTimeout(() => {
-    const first = document.querySelector('input[required]');
-    if (first) first.focus();
-  }, 50);
-};
-
-// when product changes, set images
 watch(() => props.product, (p) => {
   images.value = [];
   currentIndex.value = 0;
   if (!p) return;
-  // normalize images: accept array or comma-separated string or relative urls
-  if (Array.isArray(p.images) && p.images.length) images.value = p.images.map((i) => normalizeImageUrl(i));
-  else if (typeof p.images === 'string' && p.images.length) images.value = p.images.split(',').map((i) => normalizeImageUrl(i.trim()));
+  if (Array.isArray(p.images) && p.images.length) images.value = p.images.map(i => normalizeImageUrl(i));
+  else if (typeof p.images === 'string' && p.images.length) images.value = p.images.split(',').map(i => normalizeImageUrl(i.trim()));
   else if (p.image_url) images.value = [normalizeImageUrl(p.image_url)];
 }, { immediate: true });
 
@@ -279,7 +220,6 @@ function normalizeImageUrl(url) {
 }
 
 onMounted(() => {
-  // prefetch thumbnail images (improves perceived performance)
   images.value.forEach((src) => { const i = new Image(); i.src = src; });
 });
 </script>
@@ -288,12 +228,12 @@ onMounted(() => {
 .fade-enter-active, .fade-leave-active { transition: opacity .18s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-/* theme tokens (Tailwind should handle but we provide CSS variables for portability) */
 :root {
-  --brand-primary: #2563eb; /* blue-600 */
-  --brand-accent-pink: #ec4899; /* pink-500 */
+  --brand-primary: #2563eb;
+  --brand-accent-pink: #ec4899;
 }
 
-/* small utility to keep ring consistent */
-.ring-brand-primary { box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+.ring-brand-primary {
+  box-shadow: 0 0 0 2px var(--brand-primary);
+}
 </style>
