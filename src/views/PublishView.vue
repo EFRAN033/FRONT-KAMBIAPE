@@ -11,7 +11,16 @@
 
       <div class="relative flex-1">
         <transition name="gif-fade">
-          <img v-if="showGif" src="@/assets/imagenes/gif/Anamación-1.gif" alt="Animación decorativa" class="absolute top-4 right-4 w-64 h-64 z-20 pointer-events-none">
+          <div v-if="showAnimation" class="absolute top-4 right-4 w-64 h-64 z-20 pointer-events-none">
+            <img 
+              v-for="(image, index) in animationImages" 
+              :key="index" 
+              :src="image" 
+              alt="Animación de publicación"
+              v-show="currentImageIndex === index" 
+              class="absolute top-0 left-0 w-full h-full object-contain"
+            >
+          </div>
         </transition>
         
         <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
@@ -21,10 +30,8 @@
 
         <main class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <section class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Publica tu Producto
-            </h1>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Publica tu Producto</h1>
             <p class="mt-2 max-w-2xl text-[15px] sm:text-base text-slate-600">Completa los detalles y ponlo en circulación para un trueque.</p>
-            
           </section>
 
           <div class="grid lg:grid-cols-[minmax(0,1fr),380px] gap-12 items-start">
@@ -284,9 +291,33 @@ import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification';
 
-// ===== LÓGICA PARA EL GIF (INICIO) =====
-const showGif = ref(true);
-// ===== LÓGICA PARA EL GIF (FIN) =====
+// --- NUEVO: Importa las imágenes para la animación ---
+import image1 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
+import image2 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
+import image3 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
+
+// --- NUEVO: Lógica para la animación de imágenes ---
+const showAnimation = ref(false);
+const animationImages = [image1, image2, image3];
+const currentImageIndex = ref(0);
+let animationInterval = null;
+
+const startAnimation = () => {
+  showAnimation.value = true;
+  animationInterval = setInterval(() => {
+    currentImageIndex.value = (currentImageIndex.value + 1) % animationImages.length;
+  }, 500); // Cambia la imagen cada 500ms
+};
+
+const stopAnimation = () => {
+  showAnimation.value = false;
+  if (animationInterval) {
+    clearInterval(animationInterval);
+    animationInterval = null;
+  }
+  currentImageIndex.value = 0;
+};
+// --- FIN DE LA NUEVA LÓGICA ---
 
 const currentStep = ref(1)
 const isSubmitting = ref(false)
@@ -315,7 +346,7 @@ const fetchCategories = async () => {
     try {
         const response = await axios.get('/categories');
         allCategories.value = response.data;
-    } catch (error) {
+    } catch (error) { // <-- ESTA ES LA LÍNEA CORREGIDA
         console.error("Error al cargar las categorías:", error);
         errorMessage.value = 'No se pudieron cargar las categorías de intereses.';
     }
@@ -450,14 +481,22 @@ const submitNow = async () => {
     const response = await axios.post('/products', formData)
       if (response.status === 201) {
         toast.success('¡Producto publicado con éxito!');
-        router.push('/my-products')
+        
+        startAnimation(); 
+        setTimeout(() => {
+          stopAnimation();
+          router.push('/my-products');
+        }, 600000); // 10 minutos
+
     }
     else { errorMessage.value = response.data.detail || 'Error al publicar.' }
   } catch (error) {
     if (error.response) { console.error('Error del servidor:', error.response.data); errorMessage.value = error.response.data.detail || 'Error al publicar.'; if (error.response.status === 401) router.push('/login') }
     else if (error.request) { console.error('No se recibió respuesta:', error.request); errorMessage.value = 'No se pudo conectar al servidor. Inténtalo más tarde.' }
     else { console.error('Error:', error.message); errorMessage.value = `Error inesperado: ${error.message}.` }
-  } finally { isSubmitting.value = false }
+  } finally { 
+    setTimeout(() => { isSubmitting.value = false; }, 600000); // 10 minutos
+  }
 }
 
 const handleSubmit = submitNow
@@ -465,16 +504,16 @@ const handleSubmit = submitNow
 const keydown = (e) => { if ((e.ctrlKey||e.metaKey) && e.key==='Enter' && currentStep.value===2) submitNow(); if (e.key==='Escape' && currentStep.value===2) goToPreviousStep() }
 
 onMounted(()=> {
-  // ===== LÓGICA PARA EL GIF (INICIO) =====
-  setTimeout(() => {
-    showGif.value = false;
-  }, 10000); // 10000 milisegundos = 10 segundos
-  // ===== LÓGICA PARA EL GIF (FIN) =====
-
   window.addEventListener('keydown',keydown);
   fetchCategories();
 })
-onBeforeUnmount(()=>window.removeEventListener('keydown',keydown))
+
+onBeforeUnmount(()=> {
+  window.removeEventListener('keydown',keydown);
+  if (animationInterval) {
+    clearInterval(animationInterval);
+  }
+})
 </script>
 
 <style scoped>
@@ -483,7 +522,7 @@ onBeforeUnmount(()=>window.removeEventListener('keydown',keydown))
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease }
 .fade-enter-from, .fade-leave-to { opacity: 0 }
 
-/* ===== ESTILOS PARA LA ANIMACIÓN DEL GIF ===== */
+/* ===== ESTILOS PARA LA ANIMACIÓN DE IMÁGENES (antes gif) ===== */
 .gif-fade-enter-active, .gif-fade-leave-active {
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
