@@ -1,6 +1,5 @@
 <template>
-  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-3xl mx-auto">
-    <!-- HEADER -->
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-900 py-6 px-10 sm:py-8 sm:px-12 rounded-2xl shadow-xl h-full max-w-3xl mx-auto">
     <header class="mb-4">
       <div class="flex items-center justify-between">
         <div>
@@ -18,11 +17,9 @@
       <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Publicado por <strong class="text-gray-800 dark:text-gray-100">{{ product.user_username || 'Usuario Anónimo' }}</strong> · <span class="text-gray-500">hace {{ daysAgo }} días</span></p>
     </header>
 
-    <!-- GALLERY + INFO -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="md:col-span-2">
         <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 flex flex-col h-full">
-          <!-- Image gallery / fallback -->
           <div v-if="hasImages" class="relative rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
             <img
               :src="currentImage"
@@ -53,7 +50,6 @@
             </div>
           </div>
 
-          <!-- DESCRIPTION -->
           <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             <p v-if="product.description" class="whitespace-pre-line">{{ product.description }}</p>
             <p v-else class="text-gray-500">No hay descripción disponible.</p>
@@ -61,7 +57,6 @@
         </div>
       </div>
 
-      <!-- SIDEBAR -->
       <aside class="md:col-span-1 flex flex-col gap-4">
         <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center gap-3">
@@ -111,7 +106,6 @@
       </aside>
     </div>
 
-    <!-- FOOTER ACTIONS -->
     <footer class="mt-6 flex flex-col sm:flex-row gap-3 items-center">
       <button @click="openProposeModal" class="flex-1 inline-flex items-center justify-center gap-3 px-5 py-3 rounded-xl border border-transparent bg-brand-primary text-white font-semibold hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
         Proponer intercambio
@@ -123,7 +117,6 @@
       </button>
     </footer>
 
-    <!-- PROPOSE MODAL -->
     <transition name="fade">
       <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeProposeModal" aria-hidden="true"></div>
@@ -162,7 +155,6 @@
     </transition>
   </div>
 
-  <!-- SKELETON / PLACEHOLDER WHEN NO PRODUCT -->
   <div v-else class="animate-pulse p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl">
     <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
     <div class="h-40 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
