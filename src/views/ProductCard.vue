@@ -115,18 +115,36 @@
               <div v-if="isLoadingInventory" class="mt-2 text-center p-4 text-gray-500">Cargando tu inventario...</div>
 
               <div v-else-if="userInventory.length > 0" class="mt-2 h-48 overflow-y-auto rounded-lg border border-gray-200 p-2 space-y-2">
-                  <label v-for="item in userInventory" :key="item.id" class="flex items-center gap-4 p-2 rounded-md cursor-pointer transition-all duration-200 ease-in-out" :class="{ 'bg-blue-50 ring-2 ring-blue-400 shadow-sm': selectedProductId === item.id, 'hover:bg-gray-50 dark:hover:bg-gray-800': selectedProductId !== item.id }">
-                      <input type="radio" :value="item.id" v-model="selectedProductId" name="product-offer" class="sr-only">
-                      <img :src="normalizeImageUrl(item.images.length > 0 ? item.images[0].image_url : null)" :alt="item.title" class="w-12 h-12 object-cover rounded-md flex-shrink-0">
-                      <div class="flex-grow">
-                        <p class="font-semibold text-sm">{{ item.title }}</p>
-                        <p class="text-xs text-gray-500">{{ item.condition }}</p>
-                      </div>
-                  </label>
+                  <div v-for="item in userInventory" :key="item.id">
+                      <label 
+                        class="flex items-center gap-4 p-2 rounded-md transition-all duration-200 ease-in-out" 
+                        :class="{ 
+                            'bg-blue-50 ring-2 ring-blue-400 shadow-sm': selectedProductId === item.id, 
+                            'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer': item.id !== product.id,
+                            'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800': item.id === product.id 
+                        }"
+                      >
+                          <input 
+                            type="radio" 
+                            :value="item.id" 
+                            v-model="selectedProductId" 
+                            name="product-offer" 
+                            class="sr-only"
+                            :disabled="item.id === product.id"
+                          >
+                          <img :src="normalizeImageUrl(item.images.length > 0 ? item.images[0].image_url : null)" :alt="item.title" class="w-12 h-12 object-cover rounded-md flex-shrink-0">
+                          <div class="flex-grow">
+                            <p class="font-semibold text-sm">{{ item.title }}</p>
+                            <p class="text-xs text-gray-500">{{ item.condition }}</p>
+                          </div>
+                          <span v-if="item.id === product.id" class="text-xs font-semibold text-gray-500 mr-2 flex-shrink-0">
+                              (Producto actual)
+                          </span>
+                      </label>
+                  </div>
               </div>
-
               <div v-else class="mt-2 text-center p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-                  <p>No tienes otros productos en tu inventario para proponer un intercambio.</p>
+                  <p>No tienes productos en tu inventario para proponer un intercambio.</p>
               </div>
             </div>
 
@@ -153,7 +171,7 @@
         </div>
       </div>
     </transition>
-    </div>
+  </div>
 
   <div v-else class="animate-pulse p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl">
     <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
@@ -180,7 +198,6 @@ const isModalOpen = ref(false);
 const submitting = ref(false);
 const proposal = ref({ name: '', contact: '' });
 
-// --- NUEVOS REFS PARA EL INVENTARIO ---
 const userInventory = ref([]);
 const selectedProductId = ref(null);
 const isLoadingInventory = ref(false);
@@ -190,16 +207,15 @@ const currentIndex = ref(0);
 const hasImages = computed(() => images.value.length > 0);
 const currentImage = computed(() => hasImages.value ? images.value[currentIndex.value] : placeholderImage);
 
-// --- FUNCIÓN PARA CARGAR EL INVENTARIO DEL USUARIO ---
 const fetchUserInventory = async () => {
     if (!userStore.isLoggedIn) return;
     isLoadingInventory.value = true;
     try {
-        const response = await axios.get('/my-products', {
+        const response = await axios.get(`/users/${userStore.user.id}/products`, {
             headers: { 'Authorization': `Bearer ${userStore.access_token}` }
         });
-        // Filtrar para no poder ofrecer un producto por sí mismo
-        userInventory.value = response.data.filter(p => p.id !== props.product.id);
+        // AHORA MOSTRAMOS TODOS LOS PRODUCTOS, SIN FILTRAR
+        userInventory.value = response.data;
     } catch (error) {
         console.error("Error al cargar el inventario del usuario:", error);
     } finally {
@@ -252,30 +268,26 @@ const prevImage = () => { currentIndex.value = (currentIndex.value - 1 + images.
 const nextImage = () => { currentIndex.value = (currentIndex.value + 1) % images.value.length; };
 const goTo = (i) => { currentIndex.value = i; };
 
-// --- LÓGICA DE APERTURA/CIERRE DEL MODAL ACTUALIZADA ---
 const openProposeModal = () => { 
   isModalOpen.value = true;
   if (userStore.isLoggedIn) {
     proposal.value.name = userStore.user.fullName || '';
-    fetchUserInventory(); // Cargar inventario al abrir
+    fetchUserInventory();
   }
 };
 const closeProposeModal = () => {
   isModalOpen.value = false;
-  userInventory.value = []; // Limpiar para la próxima vez
-  selectedProductId.value = null; // Resetear selección
+  userInventory.value = [];
+  selectedProductId.value = null;
 };
 
-// --- LÓGICA DE ENVÍO ACTUALIZADA ---
 const submitProposal = async () => {
   if (!selectedProductId.value || !proposal.value.name || !proposal.value.contact) {
     console.error("Por favor, selecciona un producto y completa todos los campos.");
-    // Aquí podrías mostrar una notificación al usuario
     return;
   }
   submitting.value = true;
   try {
-    // El payload ahora es más claro
     emit('propose-trade', {
       product_to_receive_id: props.product.id,
       product_to_offer_id: selectedProductId.value,
@@ -284,7 +296,6 @@ const submitProposal = async () => {
         contact: proposal.value.contact
       }
     });
-    // Limpiamos los campos después de enviar
     proposal.value.name = '';
     proposal.value.contact = '';
     closeProposeModal();
