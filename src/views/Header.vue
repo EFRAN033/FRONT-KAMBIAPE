@@ -94,77 +94,88 @@
               </div>
             </div>
           </div>
+          
+          <template v-if="userStore.isLoggedIn">
+            <div class="flex items-center space-x-4">
+              <div class="credits-chip" title="Tus créditos disponibles">
+                <svg class="credits-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M8.433 7.418c.158-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.134 0V7.418zM11.567 7.151c.22.07.408.164.567.267v1.698a2.5 2.5 0 00-1.134 0V7.151z" />
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.5 4.5 0 00-1.879 3.487c-.024.143-.024.287 0 .431.133.791.436 1.53.86 2.185.341.52.768.963 1.228 1.328V15a1 1 0 102 0v-2.083c.46-.365.887-.808 1.228-1.328.424-.655.727-1.394.86-2.185.024-.144.024-.288 0-.431A4.5 4.5 0 0011 5.092V5z" clip-rule="evenodd" />
+                </svg>
+                <span class="credits-text">{{ userStore.userCredits }}</span>
+                <span class="credits-label hidden sm:inline">Créditos</span>
+              </div>
 
-          <div class="relative">
-            <template v-if="userStore.isLoggedIn">
-              <button
-                @click="toggleUserMenu"
-                class="flex items-center space-x-2 focus:outline-none"
-                aria-label="Menú de usuario"
-              >
-                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
-                  <img
-                    v-if="userStore.user.profilePicture"
-                    :src="userStore.user.profilePicture"
-                    alt="Foto de perfil"
-                    class="w-full h-full object-cover"
-                  >
-                  <span v-else class="text-sm font-medium text-white">{{ userStore.userInitials }}</span>
-                </div>
-                <span class="text-white text-sm font-medium hidden md:inline">{{ userStore.userFirstName }}</span>
-              </button>
-
-              <transition
-                enter-active-class="transition duration-100 ease-out"
-                leave-active-class="transition duration-75 ease-in"
-                enter-from-class="transform scale-95 opacity-0"
-                enter-to-class="transform scale-100 opacity-100"
-                leave-from-class="transform scale-100 opacity-100"
-                leave-to-class="transform scale-95 opacity-0"
-              >
-                <div
-                  v-show="userMenuOpen"
-                  class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
-                  @click.stop
+              <div class="relative">
+                <button
+                  @click="toggleUserMenu"
+                  class="flex items-center space-x-2 focus:outline-none"
+                  aria-label="Menú de usuario"
                 >
-                  <router-link
-                    to="/profile"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    @click="userMenuOpen = false"
+                  <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
+                    <img
+                      v-if="userStore.user.profilePicture"
+                      :src="userStore.user.profilePicture"
+                      alt="Foto de perfil"
+                      class="w-full h-full object-cover"
+                    >
+                    <span v-else class="text-sm font-medium text-white">{{ userStore.userInitials }}</span>
+                  </div>
+                  <span class="text-white text-sm font-medium hidden md:inline">{{ userStore.userFirstName }}</span>
+                </button>
+
+                <transition
+                  enter-active-class="transition duration-100 ease-out"
+                  leave-active-class="transition duration-75 ease-in"
+                  enter-from-class="transform scale-95 opacity-0"
+                  enter-to-class="transform scale-100 opacity-100"
+                  leave-from-class="transform scale-100 opacity-100"
+                  leave-to-class="transform scale-95 opacity-0"
+                >
+                  <div
+                    v-show="userMenuOpen"
+                    class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+                    @click.stop
                   >
-                    Mi perfil
-                  </router-link>
-                  <router-link
-                    to="/settings"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    @click="userMenuOpen = false"
-                  >
-                    Configuración
-                  </router-link>
-                  <button
-                    @click="logout"
-                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Cerrar sesión
-                  </button>
-                </div>
-              </transition>
-            </template>
-            <template v-else>
-              <router-link
-                to="/login"
-                class="text-sm font-medium text-white/90 hover:text-white transition-colors"
-              >
-                Iniciar sesión
-              </router-link>
-              <router-link
-                to="/register"
-                class="px-4 py-2 ml-4 text-sm font-medium text-white bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-              >
-                Registrarse
-              </router-link>
-            </template>
-          </div>
+                    <router-link
+                      to="/profile"
+                      class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      @click="userMenuOpen = false"
+                    >
+                      Mi perfil
+                    </router-link>
+                    <router-link
+                      to="/settings"
+                      class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      @click="userMenuOpen = false"
+                    >
+                      Configuración
+                    </router-link>
+                    <button
+                      @click="logout"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
+                </transition>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <router-link
+              to="/login"
+              class="text-sm font-medium text-white/90 hover:text-white transition-colors"
+            >
+              Iniciar sesión
+            </router-link>
+            <router-link
+              to="/register"
+              class="px-4 py-2 ml-4 text-sm font-medium text-white bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+            >
+              Registrarse
+            </router-link>
+          </template>
         </div>
 
         <div class="lg:hidden flex items-center space-x-4">
@@ -289,7 +300,6 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-// === ✨ 1. IMPORTAMOS EL NUEVO STORE DEL BUZÓN ✨ ===
 import { useInboxStore } from '@/stores/inbox';
 
 import {
@@ -304,7 +314,6 @@ import {
 
 const router = useRouter();
 const userStore = useUserStore();
-// === ✨ 2. CREAMOS UNA INSTANCIA DEL STORE DEL BUZÓN ✨ ===
 const inboxStore = useInboxStore();
 
 const menuOpen = ref(false);
@@ -312,12 +321,11 @@ const searchOpen = ref(false);
 const userMenuOpen = ref(false);
 const searchQuery = ref('');
 
-// Definición de los enlaces de navegación (Buzón se maneja por separado ahora)
 const navLinks = [
   { path: '/', label: 'Inicio', icon: HomeIcon },
   { path: '/nosotros', label: 'Nosotros', icon: AboutIcon },
   { path: '/publicar', label: 'Publicar', icon: PostIcon },
-  { path: '/buzon', label: 'Buzón', icon: InboxIcon }, // Se mantiene para el menú móvil
+  { path: '/buzon', label: 'Buzón', icon: InboxIcon },
 ];
 
 const userInitials = computed(() => userStore.userInitials);
@@ -337,7 +345,6 @@ const performSearch = () => {
 
 const logout = () => {
   userStore.clearUser();
-  // Limpiamos el contador de mensajes al cerrar sesión
   inboxStore.clearUnreadCount();
   menuOpen.value = false;
   userMenuOpen.value = false;
@@ -361,16 +368,13 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-// === ✨ 3. OBSERVAMOS CAMBIOS EN EL LOGIN PARA ACTUALIZAR MENSAJES ✨ ===
 watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   if (isLoggedIn) {
-    // Si el usuario acaba de iniciar sesión, buscamos sus mensajes.
     inboxStore.fetchUnreadCount();
   } else {
-    // Si el usuario cierra sesión, limpiamos el contador.
     inboxStore.clearUnreadCount();
   }
-}, { immediate: true }); // 'immediate: true' ejecuta la función al cargar el componente.
+}, { immediate: true });
 
 </script>
 
@@ -384,5 +388,43 @@ button, a, .router-link {
 :focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.5);
   outline-offset: 2px;
+}
+
+/* ===== NUEVOS ESTILOS PARA EL INDICADOR DE CRÉDITOS ===== */
+.credits-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem; /* 6px */
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem 0.25rem 0.25rem; /* py-1 pr-3 pl-1 */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: default;
+  transition: all 0.2s ease-in-out;
+}
+.credits-chip:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.credits-icon {
+  width: 1.5rem; /* 24px */
+  height: 1.5rem; /* 24px */
+  color: #fBBF24; /* Un amarillo vibrante */
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0.25rem; /* 4px */
+}
+
+.credits-text {
+  font-weight: 700;
+  font-size: 0.875rem; /* 14px */
+  color: white;
+}
+.credits-label {
+  font-weight: 500;
+  font-size: 0.75rem; /* 12px */
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: -0.15rem;
 }
 </style>

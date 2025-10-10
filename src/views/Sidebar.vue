@@ -73,14 +73,8 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const avatarUrl = computed(() => {
-  if (userStore.user && userStore.user.profilePicture) {
-    if (userStore.user.profilePicture.startsWith('http') || userStore.user.profilePicture.startsWith('data:') || userStore.user.profilePicture.startsWith('blob:')) {
-      return userStore.user.profilePicture
-    }
-    return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${userStore.user.profilePicture}`
-  }
-  const name = encodeURIComponent(userStore.user?.fullName || 'User')
-  return `https://ui-avatars.com/api/?name=${name}&background=d7037b&color=fff&rounded=true`
+  // Ahora user.profilePicture siempre tendrá un valor gracias al store
+  return userStore.user?.profilePicture;
 })
 </script>
 

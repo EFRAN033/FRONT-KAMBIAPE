@@ -200,16 +200,16 @@ const formattedDate = computed(() => {
 
 const avatarSrc = computed(() => {
   const url = props.product?.user_avatar_url;
-  // MODIFICACIÓN: Añadimos un console.log para depurar
-  console.log('Avatar URL recibida:', url);
   if (!url) {
-    return defaultAvatar;
+    // Si el producto no trae avatar, usamos el del store (que tendrá el default)
+    return userStore.user.profilePicture;
   }
   if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) {
     return url;
   }
   return `${props.apiBase}${url}`;
 });
+
 
 const contactLabel = computed(() => formatUserName(props.product?.contact_name) || 'Contactar vendedor');
 

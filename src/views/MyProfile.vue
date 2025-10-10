@@ -40,28 +40,20 @@
               <div class="avatar-border" aria-hidden="true"></div>
               <div class="avatar-glow" aria-hidden="true"></div>
 
-              <template v-if="displayPhotoUrl">
-                <img class="avatar-img" :src="displayPhotoUrl" alt="Foto de perfil" draggable="false" />
+              <template v-if="displayPhotoUrl && !imageHasError">
+                <img 
+                  class="avatar-img" 
+                  :src="displayPhotoUrl" 
+                  alt="Foto de perfil" 
+                  draggable="false"
+                  @error="handleImageError" 
+                />
               </template>
               <template v-else>
                 <div class="avatar-fallback">
-                  <span class="avatar-initials">{{ initials(userProfile.fullName) }}</span>
+                  <span class="avatar-initials">{{ userStore.userInitials }}</span>
                   <svg class="avatar-pattern" viewBox="0 0 60 60" aria-hidden="true">
-                    <defs>
-                      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-                        <stop offset="0" stop-color="currentColor" stop-opacity="0.16"/>
-                        <stop offset="1" stop-color="currentColor" stop-opacity="0.0"/>
-                      </linearGradient>
-                    </defs>
-                    <rect width="60" height="60" fill="url(#g)"/>
-                    <g opacity=".18">
-                      <circle cx="10" cy="10" r="1"></circle>
-                      <circle cx="30" cy="20" r="1"></circle>
-                      <circle cx="45" cy="35" r="1"></circle>
-                      <circle cx="15" cy="40" r="1"></circle>
-                      <circle cx="50" cy="12" r="1"></circle>
-                    </g>
-                  </svg>
+                    </svg>
                 </div>
               </template>
 
@@ -87,7 +79,6 @@
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
 
-            <!-- ===== NUEVO: Línea de estado (Miembro / Activo) ===== -->
             <div class="status-line mt-4" role="status" aria-label="Estado de cuenta">
               <span class="flag-role" title="Rol"> 
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 -mt-[1px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -104,11 +95,9 @@
                 <span class="state-text">Activo</span>
               </span>
             </div>
-            <!-- ===== /NUEVO ===== -->
 
             <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
               <h4 class="label">Intereses</h4>
-              <!-- SOLO LECTURA: micro-badges rectos -->
               <div v-if="userProfile.interests && userProfile.interests.length > 0" class="flex flex-wrap gap-1.5">
                 <span v-for="interest in userProfile.interests" :key="interest" class="badge-sq">
                   {{ interest }}
@@ -133,7 +122,7 @@
           </div>
         </section>
 
-        <nav class="mt-6 animate-in-up" v-reveal>
+        <nav class="mt-6 animate-in-up">
           <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-1.5 sm:p-2 overflow-hidden relative">
             <div class="segmented" role="tablist" aria-label="Secciones de perfil">
               <span class="seg-indicator" :style="indicatorStyle" aria-hidden="true"></span>
@@ -144,7 +133,7 @@
         </nav>
 
         <main class="mt-6">
-          <section v-show="activeTab==='perfil'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
+          <section v-show="activeTab==='perfil'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up">
             <header class="p-5 border-b border-gray-200 dark:border-slate-700">
               <h3 class="text-lg font-bold">Información Personal</h3>
               <p class="text-sm text-gray-500 dark:text-slate-400">Mantén tus datos actualizados para una mejor experiencia.</p>
@@ -182,7 +171,7 @@
 
               <div>
                 <label class="label">Fecha de Nacimiento</label>
-                <p v-if="!editMode" class="display-field">{{ userProfile.dateOfBirth || '-' }}</p>
+                <p v-if="!editMode" class="display-field">{{ formatDateForDisplay(userProfile.dateOfBirth) || '-' }}</p>
                 <input v-else v-model="editableProfile.dateOfBirth" type="date" class="input" />
               </div>
 
@@ -200,8 +189,6 @@
 
               <div class="md:col-span-2">
                 <label class="label">Intereses</label>
-
-                <!-- NO EDICIÓN -->
                 <div v-if="!editMode">
                   <p v-if="!userProfile.interests || userProfile.interests.length === 0" class="text-sm text-gray-500 dark:text-slate-400 mt-2">
                     Aún no has seleccionado intereses.
@@ -212,10 +199,7 @@
                     </span>
                   </div>
                 </div>
-
-                <!-- EDICIÓN -->
                 <div v-else>
-                  <!-- Seleccionados -->
                   <div class="p-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-[6px] bg-transparent">
                     <p v-if="editableInterests.size === 0" class="text-sm text-slate-500 dark:text-slate-400">
                       Selecciona tus intereses de la lista de abajo.
@@ -240,8 +224,6 @@
                       </span>
                     </div>
                   </div>
-
-                  <!-- Opciones -->
                   <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Añadir Intereses:</p>
                     <div v-if="availableCategories.length > 0" class="tile-list">
@@ -274,7 +256,7 @@
             </div>
           </section>
 
-          <section v-show="activeTab==='seguridad'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up" v-reveal>
+          <section v-show="activeTab==='seguridad'" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up">
             <header class="p-5 border-b border-gray-200 dark:border-slate-700">
               <h3 class="text-lg font-bold">Seguridad y Privacidad</h3>
               <p class="text-sm text-gray-500 dark:text-slate-400">Gestiona el acceso y la seguridad de tu cuenta.</p>
@@ -312,296 +294,254 @@
         </main>
       </div>
     </div>
-
-    </div>
+  </div>
 </template>
 
-<script>
+<script setup>
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import axios from '@/axios'; 
 
-export default {
-  name: 'MyProfile',
-  directives: {
-    reveal: {
-      mounted(el) {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        el.classList.add('reveal-initial');
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              el.classList.add('reveal-active');
-              observer.unobserve(el);
-            }
-          });
-        }, { threshold: 0.1 });
-        observer.observe(el);
-      }
-    }
-  },
-  setup() {
-    const userStore = useUserStore();
-    const router = useRouter();
-    const editMode = ref(false);
-    const editableProfile = ref({});
-       const activeTab = ref('perfil');
-    const darkMode = ref(false);
-    const showToast = ref(false);
-    const toastMessage = ref('');
-    const toastType = ref('info');
-    const fileInput = ref(null);
-    const isDragOver = ref(false);
-    const MAX_SIZE_MB = 2;
+// --- Lógica con <script setup> ---
 
-    const showDevices = ref(false);
-    const devices = ref([]);
-    
-    const showPasswordModal = ref(false);
-    const passwordFields = reactive({
-      current_password: '',
-      new_password: '',
-      confirm_new_password: ''
-    });
+const userStore = useUserStore();
+const router = useRouter();
 
-    const allCategories = ref([]);
-    const editableInterests = ref(new Set());
+// --- Estados para la UI ---
+const editMode = ref(false);
+const activeTab = ref('perfil');
+const showToast = ref(false);
+const toastMessage = ref('');
+const toastType = ref('info');
+const fileInput = ref(null);
+const isDragOver = ref(false);
+const MAX_SIZE_MB = 2;
+const imageHasError = ref(false);
 
-    const userProfile = computed(() => userStore.getUserProfile);
-    
-    const availableCategories = computed(() => {
-      return allCategories.value.filter(category => !editableInterests.value.has(category.name));
-    });
+// --- Estados para modales y datos ---
+const showDevices = ref(false);
+const devices = ref([]);
+const showPasswordModal = ref(false);
+const passwordFields = reactive({ current_password: '', new_password: '', confirm_new_password: '' });
 
-    const displayPhotoUrl = computed(() => {
-        if (userProfile.value && userProfile.value.profilePicture) {
-            const url = userProfile.value.profilePicture;
-            if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) {
-                return url;
-            }
-            return `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${url}`;
-        }
-        return null;
-    });
+// --- Estados para el formulario de perfil ---
+const editableProfile = ref({});
+const allCategories = ref([]);
+const editableInterests = ref(new Set());
 
-    const indicatorStyle = computed(() => ({
-      transform: `translateX(calc(${activeTab.value === 'perfil' ? 0 : 1} * 100%))`
-    }));
+// --- Propiedades Computadas ---
+const userProfile = computed(() => userStore.getUserProfile);
+const indicatorStyle = computed(() => ({ transform: `translateX(calc(${activeTab.value === 'perfil' ? 0 : 1} * 100%))` }));
 
-    const showNotification = (message, type = 'info', duration = 3000) => {
-      toastMessage.value = message;
-      toastType.value = type;
-      showToast.value = true;
-      setTimeout(() => { showToast.value = false }, duration);
-    };
+const displayPhotoUrl = computed(() => {
+  imageHasError.value = false;
+  return userStore.user?.profilePicture;
+});
 
-    const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+const availableCategories = computed(() => {
+  return allCategories.value.filter(category => !editableInterests.value.has(category.name));
+});
 
-    const initials = (name) => !name ? 'KP' : name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-
-    const setTab = (tab) => activeTab.value = tab;
-
-    const fetchCategories = async () => {
-        try {
-            const response = await axios.get('/categories');
-            allCategories.value = response.data;
-        } catch (error) {
-            console.error("Error al cargar las categorías:", error);
-            showNotification('No se pudieron cargar las categorías de intereses.', 'error');
-        }
-    };
-
-    const enterEditMode = async () => {
-      editableProfile.value = { ...userProfile.value };
-      editableInterests.value = new Set(userProfile.value.interests || []);
-
-      if (editableProfile.value?.phone) {
-        editableProfile.value.phone = formatPhoneGroups(onlyDigits(editableProfile.value.phone));
-      }
-      editMode.value = true;
-      showNotification('Modo de edición activado.', 'info');
-      
-      if (allCategories.value.length === 0) {
-        await fetchCategories();
-      }
-    };
-    
-    const toggleInterest = (interestName) => {
-        if (editableInterests.value.has(interestName)) {
-            editableInterests.value.delete(interestName);
-        } else {
-            editableInterests.value.add(interestName);
-        }
-    };
-
-    const cancelEdit = () => {
-      editMode.value = false;
-      showNotification('Edición cancelada.', 'info');
-    };
-
-    const saveProfile = async () => {
-      if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
-      
-      showNotification('Guardando cambios...', 'info');
-
-      const selectedInterestIds = Array.from(editableInterests.value)
-        .map(interestName => {
-          const category = allCategories.value.find(cat => cat.name === interestName);
-          return category ? category.id : null;
-        })
-        .filter(id => id !== null);
-
-      const payload = {
-        ...editableProfile.value,
-        interest_ids: selectedInterestIds,
-      };
-      delete payload.interests; 
-
-      if (typeof payload.phone === 'string') payload.phone = onlyDigits(payload.phone);
-
-      const success = await userStore.updateProfile(userStore.user.id, payload);
-      if (success) {
-        editMode.value = false;
-        showNotification('Perfil actualizado con éxito.', 'success');
-      } else {
-        showNotification(userStore.error || 'No se pudo actualizar el perfil.', 'error');
-      }
-    };
-
-    const logout = async () => {
-      showNotification('Cerrando sesión...', 'info');
-      await new Promise(r => setTimeout(r, 600));
-      userStore.clearUser();
-      router.push('/login');
-    };
-
-    const openChangePasswordModal = () => {
-      passwordFields.current_password = '';
-      passwordFields.new_password = '';
-      passwordFields.confirm_new_password = '';
-      showPasswordModal.value = true;
-    };
-
-    const handlePasswordChange = async () => {
-      if (passwordFields.new_password !== passwordFields.confirm_new_password) {
-        return showNotification('Las nuevas contraseñas no coinciden.', 'error');
-      }
-      if (passwordFields.new_password.length < 6) {
-        return showNotification('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
-      }
-
-      const result = await userStore.changePassword(passwordFields);
-      
-      if (result.success) {
-        showPasswordModal.value = false;
-        showNotification(result.message, 'success');
-      } else {
-        showNotification(result.message, 'error');
-      }
-    };
-
-    const changeProfilePicture = () => fileInput.value?.click();
-
-    const handleFile = async (file) => {
-      if (!file) return;
-      if (!file.type.startsWith('image/')) return showNotification('Solo se permiten archivos de imagen.', 'error');
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) return showNotification(`La imagen no debe superar ${MAX_SIZE_MB}MB.`, 'error');
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      showNotification('Subiendo imagen...', 'info');
-      const result = await userStore.uploadProfilePicture(formData);
-
-      if (result.success) {
-        showNotification('Foto de perfil actualizada.', 'success');
-      } else {
-        showNotification(result.error || 'No se pudo subir la imagen.', 'error');
-      }
-    };
-    
-    const onFileChange = (e) => handleFile(e.target.files?.[0]);
-    const onDragOver = (e) => {
-      e.preventDefault();
-      isDragOver.value = true;
-    };
-    const onDragLeave = () => { isDragOver.value = false; };
-    const onDrop = (e) => {
-      e.preventDefault();
-      isDragOver.value = false;
-      handleFile(e.dataTransfer?.files?.[0]);
-    };
-
-    const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
-    const formatPhoneGroups = (value) => {
-      const digits = onlyDigits(value);
-      return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
-    };
-    const onPhoneInput = (e) => {
-      const raw = e.target.value;
-      e.target.value = formatPhoneGroups(raw);
-      editableProfile.value.phone = e.target.value;
-    };
-    const onPhonePaste = (e) => {
-      const text = (e.clipboardData || window.clipboardData).getData('text');
-      const formatted = formatPhoneGroups(text);
-      const target = e.target;
-      const start = target.selectionStart;
-      const end = target.selectionEnd;
-      const before = target.value.slice(0, start);
-      const after = target.value.slice(end);
-      const merged = before + formatted + after;
-      target.value = formatPhoneGroups(merged);
-      editableProfile.value.phone = target.value;
-      requestAnimationFrame(() => { target.selectionStart = target.selectionEnd = target.value.length; });
-    };
-
-    const openDevicesModal = () => {
-      devices.value = [
-        { name: 'Chrome en Windows', location: 'Lima, Perú', lastActive: new Date().toISOString(), current: true, type: 'Desktop' },
-        { name: 'App KambiaPe en Android', location: 'Ica, Perú', lastActive: new Date(Date.now() - 86400000).toISOString(), current: false, type: 'Mobile' },
-      ];
-      showDevices.value = true;
-    };
-    const revokeDevice = (d) => showNotification(`Sesión cerrada en ${d.name}.`, 'info');
-    const formatDate = (iso) => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
-
-    onMounted(async () => {
-      if (localStorage.getItem('theme') === 'dark') {
-        darkMode.value = true;
-        document.documentElement.classList.add('dark');
-      }
-      if (userStore.isLoggedIn && userStore.user?.id) {
-        await userStore.fetchUserProfile(userStore.user.id);
-      } else {
-        router.push('/login');
-      }
-    });
-
-    watch(userProfile, (newProfile) => {
-      if (!editMode.value) {
-        editableProfile.value = { ...newProfile };
-      }
-    }, { immediate: true, deep: true });
-
-    return {
-      userProfile, editMode, editableProfile, activeTab, darkMode, showToast, toastMessage, toastType, userStore,
-      indicatorStyle, displayPhotoUrl,
-      enterEditMode, cancelEdit, saveProfile, logout, showNotification, setTab,
-      capitalizeFirstLetter, initials,
-      fileInput, MAX_SIZE_MB, isDragOver,
-      changeProfilePicture, onFileChange, onDragOver, onDragLeave, onDrop,
-      onPhoneInput, onPhonePaste, formatPhoneGroups,
-      showDevices, devices, openDevicesModal, revokeDevice, formatDate,
-      showPasswordModal, passwordFields, openChangePasswordModal, handlePasswordChange,
-      allCategories, editableInterests, toggleInterest, availableCategories,
-    };
-  },
+// --- Funciones de Utilidad ---
+const handleImageError = () => {
+  imageHasError.value = true;
 };
+
+// ===== ✨ NUEVAS FUNCIONES PARA FORMATEAR LA FECHA ✨ =====
+/**
+ * Formatea una fecha en formato local (ej: '1/12/2004') a 'dd/mm/yyyy'.
+ * @param {String | null} localeDate La fecha del store.
+ * @returns {String | null} La fecha formateada o null.
+ */
+const formatDateForDisplay = (localeDate) => {
+  if (!localeDate) return null;
+  const parts = localeDate.split('/');
+  if (parts.length !== 3) return localeDate; // Devuelve como está si el formato no es el esperado
+  
+  const day = parts[0].padStart(2, '0');
+  const month = parts[1].padStart(2, '0');
+  const year = parts[2];
+  
+  return `${day}/${month}/${year}`;
+};
+
+/**
+ * Convierte una fecha en formato local (ej: '1/12/2004') a 'yyyy-mm-dd'
+ * para usarla en un <input type="date">.
+ * @param {String | null} localeDate La fecha del store.
+ * @returns {String} La fecha en formato ISO o una cadena vacía.
+ */
+const formatDateForInput = (localeDate) => {
+    if (!localeDate) return '';
+    const parts = localeDate.split('/');
+    if (parts.length !== 3) return '';
+    
+    // El orden en `toLocaleDateString` es d/m/y
+    const day = parts[0].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[2];
+    
+    return `${year}-${month}-${day}`;
+};
+
+const showNotification = (message, type = 'info', duration = 3000) => {
+  toastMessage.value = message;
+  toastType.value = type;
+  showToast.value = true;
+  setTimeout(() => { showToast.value = false; }, duration);
+};
+
+const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+const setTab = (tab) => activeTab.value = tab;
+
+// --- Lógica de Negocio (API calls, etc.) ---
+const fetchCategories = async () => {
+  try {
+    const response = await axios.get('/categories');
+    allCategories.value = response.data;
+  } catch (error) {
+    console.error("Error al cargar las categorías:", error);
+    showNotification('No se pudieron cargar las categorías de intereses.', 'error');
+  }
+};
+
+const enterEditMode = async () => {
+  // Hacemos una copia profunda para no mutar el estado del store directamente
+  const profileCopy = JSON.parse(JSON.stringify(userProfile.value));
+  
+  // ✨ Convertimos la fecha al formato que necesita el input type="date"
+  profileCopy.dateOfBirth = formatDateForInput(profileCopy.dateOfBirth);
+  
+  editableProfile.value = profileCopy;
+  editableInterests.value = new Set(userProfile.value.interests || []);
+  if (editableProfile.value?.phone) {
+    editableProfile.value.phone = formatPhoneGroups(onlyDigits(editableProfile.value.phone));
+  }
+  editMode.value = true;
+  showNotification('Modo de edición activado.', 'info');
+  if (allCategories.value.length === 0) {
+    await fetchCategories();
+  }
+};
+
+const cancelEdit = () => {
+  editMode.value = false;
+  showNotification('Edición cancelada.', 'info');
+};
+
+const saveProfile = async () => {
+  if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
+  showNotification('Guardando cambios...', 'info');
+  const selectedInterestIds = Array.from(editableInterests.value)
+    .map(name => allCategories.value.find(cat => cat.name === name)?.id)
+    .filter(id => id !== null);
+  const payload = { ...editableProfile.value, interest_ids: selectedInterestIds };
+  delete payload.interests;
+  if (typeof payload.phone === 'string') payload.phone = onlyDigits(payload.phone);
+  const success = await userStore.updateProfile(userStore.user.id, payload);
+  if (success) {
+    editMode.value = false;
+    showNotification('Perfil actualizado con éxito.', 'success');
+  } else {
+    showNotification(userStore.error || 'No se pudo actualizar el perfil.', 'error');
+  }
+};
+
+const logout = async () => {
+  showNotification('Cerrando sesión...', 'info');
+  await new Promise(r => setTimeout(r, 600));
+  userStore.clearUser();
+  router.push('/login');
+};
+
+const openChangePasswordModal = () => {
+  Object.assign(passwordFields, { current_password: '', new_password: '', confirm_new_password: '' });
+  showPasswordModal.value = true;
+};
+
+const handlePasswordChange = async () => {
+  if (passwordFields.new_password !== passwordFields.confirm_new_password) return showNotification('Las nuevas contraseñas no coinciden.', 'error');
+  if (passwordFields.new_password.length < 6) return showNotification('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+  const result = await userStore.changePassword(passwordFields);
+  if (result.success) {
+    showPasswordModal.value = false;
+    showNotification(result.message, 'success');
+  } else {
+    showNotification(result.message, 'error');
+  }
+};
+
+const changeProfilePicture = () => fileInput.value?.click();
+
+const handleFile = async (file) => {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) return showNotification('Solo se permiten archivos de imagen.', 'error');
+  if (file.size > MAX_SIZE_MB * 1024 * 1024) return showNotification(`La imagen no debe superar ${MAX_SIZE_MB}MB.`, 'error');
+  const formData = new FormData();
+  formData.append('file', file);
+  showNotification('Subiendo imagen...', 'info');
+  const result = await userStore.uploadProfilePicture(formData);
+  if (result.success) {
+    showNotification('Foto de perfil actualizada.', 'success');
+  } else {
+    showNotification(result.error || 'No se pudo subir la imagen.', 'error');
+  }
+};
+
+const onFileChange = (e) => handleFile(e.target.files?.[0]);
+const onDragOver = (e) => { e.preventDefault(); isDragOver.value = true; };
+const onDragLeave = () => { isDragOver.value = false; };
+const onDrop = (e) => { e.preventDefault(); isDragOver.value = false; handleFile(e.dataTransfer?.files?.[0]); };
+
+const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
+const formatPhoneGroups = (value) => { const digits = onlyDigits(value); return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim(); };
+const onPhoneInput = (e) => { const raw = e.target.value; e.target.value = formatPhoneGroups(raw); editableProfile.value.phone = e.target.value; };
+const onPhonePaste = (e) => {
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  const formatted = formatPhoneGroups(text);
+  const target = e.target;
+  const start = target.selectionStart, end = target.selectionEnd;
+  const before = target.value.slice(0, start), after = target.value.slice(end);
+  const merged = before + formatted + after;
+  target.value = formatPhoneGroups(merged);
+  editableProfile.value.phone = target.value;
+  requestAnimationFrame(() => { target.selectionStart = target.selectionEnd = target.value.length; });
+};
+
+const openDevicesModal = () => {
+  devices.value = [
+    { name: 'Chrome en Windows', location: 'Lima, Perú', lastActive: new Date().toISOString(), current: true, type: 'Desktop' },
+    { name: 'App KambiaPe en Android', location: 'Ica, Perú', lastActive: new Date(Date.now() - 86400000).toISOString(), current: false, type: 'Mobile' },
+  ];
+  showDevices.value = true;
+};
+const toggleInterest = (interestName) => {
+  if (editableInterests.value.has(interestName)) {
+    editableInterests.value.delete(interestName);
+  } else {
+    editableInterests.value.add(interestName);
+  }
+};
+
+// --- Lifecycle Hooks ---
+onMounted(async () => {
+  if (userStore.isLoggedIn && userStore.user?.id) {
+    await userStore.fetchUserProfile(userStore.user.id);
+  } else {
+    router.push('/login');
+  }
+});
+
+watch(userProfile, (newProfile) => {
+  if (!editMode.value) {
+    editableProfile.value = { ...newProfile };
+  }
+}, { immediate: true, deep: true });
 </script>
 
 <style scoped>
+/* (Tus estilos se mantienen exactamente iguales, no es necesario copiarlos aquí de nuevo) */
 /* ---------- Branding ---------- */
 .brand-header { background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%); }
 .aurora {
@@ -613,7 +553,7 @@ export default {
 }
 @keyframes aurora-float { 50% { transform: translateY(-18px); } }
 
-/* ---------- Icono atrás & botones base ---------- */
+/* ... (el resto de tus estilos van aquí) ... */
 .icon-btn{ width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;transition:.25s; }
 .icon-btn:hover{ background:rgba(255,255,255,.22); transform:scale(1.08); }
 .icon-btn:focus-visible{ outline:2px solid rgba(255,255,255,.6); outline-offset:2px; }
@@ -637,7 +577,6 @@ export default {
 .btn-danger:hover{ background:#dc2626; transform: translateY(-2px); box-shadow:0 8px 20px -6px rgba(239,68,68,.5); }
 .btn-danger:active{ transform: translateY(0) scale(.98); box-shadow:0 2px 8px -2px rgba(239,68,68,.4); }
 
-/* ---------- Labels, inputs ---------- */
 .label{ display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#64748b;margin-bottom:.35rem; }
 .dark .label{ color:#94a3b8; }
 .input{ width:100%;border-radius:.9rem;border:1px solid #e5e7eb;background:transparent;color:inherit;padding:.8rem 1rem; transition:border-color .2s ease, box-shadow .2s ease; }
@@ -647,7 +586,6 @@ export default {
 .display-field{ width:100%;border-radius:.9rem;border:1px solid #e5e7eb;background:#f8fafc;padding:.8rem 1rem;font-weight:600; }
 .dark .display-field{ border-color:#334155;background:#0f172a; }
 
-/* ---------- Segmented control ---------- */
 .segmented{ position:relative;display:grid;grid-template-columns:repeat(2,1fr);background:rgba(148,163,184,.08);border-radius:12px;padding:5px; }
 .dark .segmented{ background-color:rgba(148,163,184,.1); }
 .seg-btn{ position:relative;z-index:2;padding:.6rem .7rem;border-radius:9px;font-weight:700;color:#64748b;transition:color .25s ease; }
@@ -661,7 +599,6 @@ export default {
 }
 .dark .seg-indicator{ background:linear-gradient(180deg,#0b1220,#0f172a);border-color:#334155;box-shadow:0 3px 8px -1px rgba(0,0,0,.25); }
 
-/* ---------- Avatar ---------- */
 .avatar-shell{ --size:168px; --ring:1px; --gap:6px; --blur:26px; position:relative;width:var(--size);height:var(--size);border-radius:999px;isolation:isolate;transition: transform .2s ease; }
 .avatar-shell:hover{ transform: translateY(-2px); }
 .avatar-shell.dragging{ transform: scale(1.02); }
@@ -690,7 +627,6 @@ export default {
 .avatar-shell.dragging .avatar-overlay{ background: rgba(215,3,123,.45); }
 .avatar-overlay-text{ color:white; font-weight:700; line-height:1.1; pointer-events: none; }
 
-/* ---------- NUEVO: Línea de estado ---------- */
 .status-line{
   display:flex; align-items:center; gap:.6rem;
   padding:.4rem .6rem; border:1px solid #E2E8F0; background:#fff; border-radius:6px;
@@ -726,7 +662,6 @@ export default {
 }
 @keyframes pulse{ 0%{transform:scale(1); opacity:.8} 70%{transform:scale(1.7); opacity:0} 100%{opacity:0} }
 
-/* ---------- Badges & tiles Intereses (tu diseño actual) ---------- */
 .badge-sq{
   display:inline-flex; align-items:center; gap:.35rem;
   padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
@@ -751,7 +686,6 @@ export default {
 .tile-check{ width:18px; height:18px; border-radius:3px; display:inline-grid; place-items:center; border:1px solid #CBD5E1; background:#F8FAFC; }
 .dark .tile-check{ border-color:#475569; background:#0f172a; }
 
-/* ---------- Misceláneo ---------- */
 .chip{ display:inline-block;padding:.375rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;background:#334155;color:#fff; }
 .dark .chip { background:#475569; }
 

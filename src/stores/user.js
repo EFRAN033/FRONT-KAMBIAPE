@@ -2,19 +2,15 @@
 import { defineStore } from 'pinia';
 import axios from '@/axios';
 
-// Función para encontrar un avatar por defecto en la carpeta de assets
-const getRandomDefaultAvatar = () => {
-  const avatarCount = 14; 
-  const randomAvatarNumber = Math.floor(Math.random() * avatarCount) + 1;
-  // Este método le pide a Vite que construya la URL correcta para la imagen
-  return new URL(`../assets/imagenes/defaul/${randomAvatarNumber}.svg`, import.meta.url).href;
-};
+// --- ✨ 1. IMPORTAMOS TU AVATAR POR DEFECTO ÚNICO ✨ ---
+// Esta línea importa la imagen SVG directamente.
+import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 
-// --- FUNCIÓN CORREGIDA ---
-// Función auxiliar para normalizar las URLs de las imágenes
+// Función auxiliar para normalizar las URLs de las imágenes.
 const normalizeImageUrl = (url) => {
   if (!url) {
-    return getRandomDefaultAvatar();
+    // --- ✨ 2. SI NO HAY URL, USAMOS TU AVATAR POR DEFECTO ✨ ---
+    return defaultAvatar;
   }
   // Si la URL ya es absoluta (http, https, data URI, blob), la devuelve tal cual.
   if (/^(https?:\/\/|data:|blob:)/i.test(url)) {
@@ -25,7 +21,6 @@ const normalizeImageUrl = (url) => {
   // Evita dobles barras si la URL ya empieza con una
   return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 };
-// --- FIN FUNCIÓN CORREGIDA ---
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -35,7 +30,8 @@ export const useUserStore = defineStore('user', {
       id: null,
       fullName: '',
       email: '',
-      profilePicture: getRandomDefaultAvatar(), // Asigna un avatar aleatorio al inicio
+      // --- ✨ 3. ASIGNAMOS EL AVATAR POR DEFECTO AL ESTADO INICIAL ✨ ---
+      profilePicture: defaultAvatar,
       phone: null,
       address: null,
       dateOfBirth: null,
@@ -80,9 +76,8 @@ export const useUserStore = defineStore('user', {
         id: data.id || null,
         fullName: data.full_name || data.fullName || '',
         email: data.email || '',
-        // --- LÍNEA MODIFICADA ---
+        // La normalización ahora se encarga de asignar el avatar por defecto
         profilePicture: normalizeImageUrl(data.profile_picture || data.profilePicture),
-        // --- FIN LÍNEA MODIFICADA ---
         phone: data.phone || null,
         address: data.address || null,
         dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES') : null,
@@ -218,7 +213,7 @@ export const useUserStore = defineStore('user', {
         id: null,
         fullName: '',
         email: '',
-        profilePicture: getRandomDefaultAvatar(),
+        profilePicture: defaultAvatar, // Usamos el avatar por defecto al limpiar
         phone: null,
         address: null,
         dateOfBirth: null,
