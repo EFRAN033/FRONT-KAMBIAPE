@@ -13,10 +13,11 @@
         <div class="max-w-5xl w-full animate-[pop-in] opacity-0">
           <ProductCard
             :product="selectedProduct"
+            :apiBase="API_BASE_URL" 
             @propose-trade="handleProposeTrade"
             @close="closeProductModal"
           />
-        </div>
+          </div>
       </div>
     </Transition>
     <section class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-3xl ring-1 ring-gray-200 dark:ring-gray-700">
