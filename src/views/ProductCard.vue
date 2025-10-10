@@ -145,10 +145,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-// 1. IMPORTAR EL STORE DE USUARIO
 import { useUserStore } from '@/stores/user';
 
-// 2. INICIALIZAR EL STORE PARA PODER USARLO
 const userStore = useUserStore();
 
 const props = defineProps({
@@ -200,20 +198,18 @@ const formattedDate = computed(() => {
   return `${day}/${month}/${year}`;
 });
 
-// --- CÓDIGO CORREGIDO ---
 const avatarSrc = computed(() => {
   const url = props.product?.user_avatar_url;
+  // MODIFICACIÓN: Añadimos un console.log para depurar
+  console.log('Avatar URL recibida:', url);
   if (!url) {
-    return defaultAvatar; // Usa el avatar por defecto si no hay URL
+    return defaultAvatar;
   }
-  // Comprueba si la URL ya es absoluta (empieza con http, https, etc.) o es una data URL
   if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) {
-    return url; // Usa la URL tal cual
+    return url;
   }
-  // Si no, construye la URL completa con la base de la API
   return `${props.apiBase}${url}`;
 });
-// --- FIN DEL CÓDIGO CORREGIDO ---
 
 const contactLabel = computed(() => formatUserName(props.product?.contact_name) || 'Contactar vendedor');
 
@@ -232,7 +228,6 @@ const goTo = (i) => { currentIndex.value = i; };
 
 const openProposeModal = () => { 
   isModalOpen.value = true;
-  // 3. AUTO-RELLENAR EL NOMBRE DEL USUARIO DESDE EL STORE
   if (userStore.isLoggedIn) {
     proposal.value.name = userStore.user.fullName;
   }
