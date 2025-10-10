@@ -1,128 +1,301 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full group animate-card-fade-in"
-       tabindex="0"
-       role="listitem"
-       :aria-labelledby="'product-name-' + product.id"
-       :aria-describedby="'product-description-' + product.id">
-    <div class="relative w-full h-48 sm:h-56 overflow-hidden">
-      <img :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-      <div class="absolute top-3 right-3 bg-brand-primary/90 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1 opacity-90">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-300" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
-        </svg>
-        <span>{{ getStarRating(product.value) }} Estrellas</span>
-      </div>
-    </div>
-    <div class="p-4 flex flex-col flex-grow">
-      <h3 :id="'product-name-' + product.id" class="text-xl font-bold text-gray-900 dark:text-white mb-2 leading-tight truncate">
-        {{ product.name }}
-      </h3>
-      <p :id="'product-description-' + product.id" class="text-gray-600 dark:text-gray-400 text-sm mb-3 flex-grow line-clamp-3">
-        {{ product.description }}
-      </p>
-      <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-brand-accentBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5.99L17 8v9.99A2 2 0 0115 20H9.002A2 2 0 017 18V7zm0 0a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-        <span class="font-medium text-gray-700 dark:text-gray-300">{{ product.category }}</span>
-      </div>
-      <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-brand-accentBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h8m-8 4h8m-6 4H8m0 0H6a2 2 0 01-2-2v-7a2 2 0 012-2h12a2 2 0 012 2v7a2 2 0 01-2 2h-2m-8 0V7m0 0H8" />
-        </svg>
-        Publicado: <span class="font-medium text-gray-700 dark:text-gray-300 ml-1">{{ formatDate(product.publicationDate) }}</span>
-      </div>
-      <div class="flex justify-end mt-auto">
-        <button
-          @click="$emit('propose-trade', product)"
-          class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-brand-primary to-brand-accentPink text-white font-bold rounded-full text-base shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-98 focus:outline-none focus:ring-4 focus:ring-brand-primary/50"
-          aria-label="Proponer intercambio"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.116 5.867C9.362 14.815 8.1 16 6.5 16H3a1 1 0 01-1-1V9a1 1 0 011-1h3.5c1.284 0 2.443.834 2.871 2.057A5.996 5.996 0 0118 8zM5 8h.5a1.5 1.5 0 000-3H5v3zm8 0c0-2.485-2.015-4.5-4.5-4.5S4 5.515 4 8h9z" clip-rule="evenodd" />
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-3xl mx-auto">
+    <!-- HEADER -->
+    <header class="mb-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-brand-primary">{{ product.category_name }}</span>
+          <h1 id="product-title" class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mt-1 leading-tight">
+            {{ formattedTitle }}
+          </h1>
+        </div>
+        <button @click="$emit('close')" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 011.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
           </svg>
-          Proponer intercambio
         </button>
       </div>
+      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Publicado por <strong class="text-gray-800 dark:text-gray-100">{{ product.user_username || 'Usuario Anónimo' }}</strong> · <span class="text-gray-500">hace {{ daysAgo }} días</span></p>
+    </header>
+
+    <!-- GALLERY + INFO -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="md:col-span-2">
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 flex flex-col h-full">
+          <!-- Image gallery / fallback -->
+          <div v-if="hasImages" class="relative rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <img
+              :src="currentImage"
+              :alt="product.title"
+              class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 ease-in-out transform hover:scale-105"
+              loading="lazy"
+            />
+
+            <button v-if="images.length > 1" @click="prevImage" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 rounded-full shadow focus:outline-none" aria-label="Imagen anterior">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.293 16.293a1 1 0 010-1.414L15.586 11H5a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+            </button>
+            <button v-if="images.length > 1" @click="nextImage" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 rounded-full shadow focus:outline-none" aria-label="Siguiente imagen">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.707 3.707a1 1 0 010 1.414L4.414 9H15a1 1 0 110 2H4.414l3.293 3.293a1 1 0 11-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            </button>
+
+            <div class="absolute bottom-3 left-3 flex items-center gap-2">
+              <div v-for="(img, idx) in images" :key="img" @click="goTo(idx)" class="w-8 h-8 rounded-md overflow-hidden ring-2 ring-white/70 dark:ring-gray-900/60 cursor-pointer" :class="{ 'ring-brand-primary': idx === currentIndex }">
+                <img :src="img" alt="thumb" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="flex items-center justify-center h-64 sm:h-80 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700">
+            <div class="text-center text-gray-500 dark:text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 3H8a2 2 0 00-2 2v0a2 2 0 002 2h8a2 2 0 002-2v0a2 2 0 00-2-2z"/></svg>
+              <p class="font-medium">Sin imágenes</p>
+              <p class="text-xs">El vendedor no agregó fotos.</p>
+            </div>
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p v-if="product.description" class="whitespace-pre-line">{{ product.description }}</p>
+            <p v-else class="text-gray-500">No hay descripción disponible.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="md:col-span-1 flex flex-col gap-4">
+        <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-3">
+            <img :src="avatarSrc" alt="avatar" class="h-12 w-12 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" />
+            <div>
+              <p class="font-semibold text-gray-800 dark:text-gray-100">{{ product.user_username || 'Usuario Anónimo' }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ product.location || 'Ubicación no especificada' }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p class="text-xs text-gray-500">Condición</p>
+              <p class="font-semibold text-gray-800 dark:text-gray-100">{{ product.condition || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Publicado</p>
+              <p class="font-semibold text-gray-800 dark:text-gray-100">{{ formattedDate }}</p>
+            </div>
+          </div>
+
+          <div v-if="product.exchange_interests && product.exchange_interests.length" class="mt-4">
+            <p class="text-xs text-gray-500 mb-2 uppercase font-semibold">Busca a cambio de</p>
+            <div class="flex flex-wrap gap-2">
+              <span v-for="interest in product.exchange_interests" :key="interest" class="inline-flex items-center text-xs font-medium px-3 py-1 rounded-full bg-white/80 dark:bg-gray-700/60 ring-1 ring-inset ring-gray-200 dark:ring-gray-700">{{ interest }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="mb-3">
+            <p class="text-sm text-gray-500">Contacto</p>
+            <p class="font-semibold text-lg text-gray-900 dark:text-white">{{ contactLabel }}</p>
+          </div>
+
+          <button @click="openProposeModal" class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-brand-primary to-brand-accentPink text-white font-semibold shadow-md hover:scale-[1.02] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v6a6 6 0 11-12 0V5H4a2 2 0 01-2-2z"/></svg>
+            Proponer intercambio
+          </button>
+
+          <button v-if="product.contact_phone" @click="startCall" class="mt-3 w-full inline-flex items-center justify-center gap-3 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-transparent text-sm font-medium focus:outline-none">
+            Llamar: <span class="ml-2 font-semibold">{{ product.contact_phone }}</span>
+          </button>
+        </div>
+
+        <div class="text-xs text-gray-400">ID: <span class="font-mono">{{ product.id }}</span></div>
+      </aside>
     </div>
+
+    <!-- FOOTER ACTIONS -->
+    <footer class="mt-6 flex flex-col sm:flex-row gap-3 items-center">
+      <button @click="openProposeModal" class="flex-1 inline-flex items-center justify-center gap-3 px-5 py-3 rounded-xl border border-transparent bg-brand-primary text-white font-semibold hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
+        Proponer intercambio
+      </button>
+
+      <button @click="$emit('favorite', product)" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 18l-6.828-6.828a4 4 0 010-5.656z"/></svg>
+        Guardar
+      </button>
+    </footer>
+
+    <!-- PROPOSE MODAL -->
+    <transition name="fade">
+      <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeProposeModal" aria-hidden="true"></div>
+
+        <div class="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl p-6 sm:p-8 shadow-2xl z-10">
+          <div class="flex items-start justify-between">
+            <h3 class="text-lg font-semibold">Proponer intercambio</h3>
+            <button @click="closeProposeModal" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none" aria-label="Cerrar diálogo">
+              ✕
+            </button>
+          </div>
+
+          <form @submit.prevent="submitProposal" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="text-xs font-medium text-gray-600">Qué ofreces</label>
+              <input v-model="proposal.item" type="text" placeholder="Ej: 2 cajas de tornillos" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-gray-600">Tu nombre</label>
+              <input v-model="proposal.name" type="text" placeholder="Tu nombre" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-gray-600">Contacto</label>
+              <input v-model="proposal.contact" type="text" placeholder="Teléfono o chat" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
+            </div>
+
+            <div class="sm:col-span-2 flex items-center justify-end gap-2">
+              <button type="button" @click="closeProposeModal" class="px-4 py-2 rounded-md">Cancelar</button>
+              <button :disabled="submitting" type="submit" class="px-5 py-3 rounded-md bg-brand-primary text-white font-semibold disabled:opacity-60">Enviar propuesta</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <!-- SKELETON / PLACEHOLDER WHEN NO PRODUCT -->
+  <div v-else class="animate-pulse p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl">
+    <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+    <div class="h-40 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+    <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 
 const props = defineProps({
-  product: {
-    type: Object,
-    required: true,
-    default: () => ({
-      id: null,
-      name: 'Producto Desconocido',
-      description: 'Sin descripción.',
-      value: 0,
-      category: 'General',
-      publicationDate: '2025-01-01',
-      imageUrl: 'https://via.placeholder.com/400x300.png?text=Producto',
-      owner: 'Desconocido',
-      status: 'disponible',
-    }),
-  },
+  product: { type: Object, required: true },
+  apiBase: { type: String, default: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' }
+});
+const emit = defineEmits(['propose-trade', 'close', 'favorite']);
+
+// Local UI state
+const isModalOpen = ref(false);
+const submitting = ref(false);
+const proposal = ref({ item: '', name: '', contact: '' });
+
+// Images handling
+const images = ref([]);
+const currentIndex = ref(0);
+const hasImages = computed(() => images.value.length > 0);
+const currentImage = computed(() => images.value[currentIndex.value] || placeholderImage);
+
+// Derived/formatting
+const formattedTitle = computed(() => {
+  if (!props.product || !props.product.title) return '';
+  return props.product.title.charAt(0).toUpperCase() + props.product.title.slice(1);
+});
+const daysAgo = computed(() => {
+  if (!props.product?.created_at) return '?';
+  const today = new Date();
+  const date = new Date(props.product.created_at);
+  const diff = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
+  return diff;
+});
+const formattedDate = computed(() => {
+  if (!props.product?.created_at) return '—';
+  return new Date(props.product.created_at).toLocaleDateString();
 });
 
-const emit = defineEmits(['propose-trade']);
+const avatarSrc = computed(() => {
+  return props.product?.user_avatar_url ? `${props.apiBase}${props.product.user_avatar_url}` : defaultAvatar;
+});
+const contactLabel = computed(() => props.product?.contact_name || 'Contactar vendedor');
 
-// Función de ayuda para obtener la calificación de estrellas
-const getStarRating = (value) => {
-  if (value >= 250) return 5;
-  if (value >= 150) return 4;
-  if (value >= 80) return 3;
-  if (value >= 30) return 2;
-  if (value >= 1) return 1;
-  return 0;
+// constants
+const placeholderImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
+const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3" stroke="%23888" stroke-width="1.5"/><path d="M4 20c1.2-4 6.8-6 8-6s6.8 2 8 6" stroke="%23888" stroke-width="1.5" stroke-linecap="round"/></svg>';
+
+// Image controls
+const currentIndexSafe = (idx) => {
+  if (idx < 0) return images.value.length - 1;
+  if (idx >= images.value.length) return 0;
+  return idx;
+};
+const prevImage = () => { currentIndex.value = currentIndexSafe(currentIndex.value - 1); };
+const nextImage = () => { currentIndex.value = currentIndexSafe(currentIndex.value + 1); };
+const goTo = (i) => { currentIndex.value = i; };
+
+// Modal handling
+const openProposeModal = () => { isModalOpen.value = true; focusTrap(); };
+const closeProposeModal = () => { isModalOpen.value = false; }
+
+// Form submit
+const submitProposal = async () => {
+  if (!proposal.value.item || !proposal.value.name || !proposal.value.contact) return;
+  submitting.value = true;
+  try {
+    // Emit proposal to parent — parent decides how to persist (API call / socket)
+    emit('propose-trade', { product: props.product, proposal: proposal.value });
+    // reset UI
+    proposal.value = { item: '', name: '', contact: '' };
+    closeProposeModal();
+  } catch (err) {
+    console.error(err);
+    // Notify user (parent can listen to errors)
+  } finally {
+    submitting.value = false;
+  }
 };
 
-// Función de ayuda para formatear la fecha
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('es-ES', options);
+const startCall = () => {
+  if (!props.product.contact_phone) return;
+  // for web: open tel: link
+  window.open(`tel:${props.product.contact_phone}`);
 };
+
+// accessibility: small focus trap implementation for modal (keeps focus inside modal while open)
+const focusTrap = () => {
+  // quick, minimal trap: focus first input after modal opens
+  setTimeout(() => {
+    const first = document.querySelector('input[required]');
+    if (first) first.focus();
+  }, 50);
+};
+
+// when product changes, set images
+watch(() => props.product, (p) => {
+  images.value = [];
+  currentIndex.value = 0;
+  if (!p) return;
+  // normalize images: accept array or comma-separated string or relative urls
+  if (Array.isArray(p.images) && p.images.length) images.value = p.images.map((i) => normalizeImageUrl(i));
+  else if (typeof p.images === 'string' && p.images.length) images.value = p.images.split(',').map((i) => normalizeImageUrl(i.trim()));
+  else if (p.image_url) images.value = [normalizeImageUrl(p.image_url)];
+}, { immediate: true });
+
+function normalizeImageUrl(url) {
+  if (!url) return placeholderImage;
+  if (/^https?:/i.test(url)) return url;
+  return `${props.apiBase}${url}`;
+}
+
+onMounted(() => {
+  // prefetch thumbnail images (improves perceived performance)
+  images.value.forEach((src) => { const i = new Image(); i.src = src; });
+});
 </script>
 
 <style scoped>
-/* Estilos y animaciones (Styles and Animations) */
-.animate-card-fade-in {
-  animation: cardFadeIn 0.5s ease-out forwards;
-  opacity: 0;
+.fade-enter-active, .fade-leave-active { transition: opacity .18s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* theme tokens (Tailwind should handle but we provide CSS variables for portability) */
+:root {
+  --brand-primary: #2563eb; /* blue-600 */
+  --brand-accent-pink: #ec4899; /* pink-500 */
 }
 
-@keyframes cardFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Base colors for brand if not defined in tailwind.config.js */
-/*
-If 'brand-primary' and 'brand-accentPink' are not defined in your Tailwind config,
-you might see issues. Consider adding them to your tailwind.config.js like this:
-
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          primary: '#yourPrimaryColor', // e.g., #EC4899 for a vibrant pink
-          accentPink: '#yourAccentPinkColor', // e.g., #D946EF for a purple-pink
-          accentBlue: '#yourAccentBlueColor', // e.g., #3B82F6 for a strong blue
-        },
-      },
-    },
-  },
-};
-*/
+/* small utility to keep ring consistent */
+.ring-brand-primary { box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
 </style>

@@ -28,6 +28,9 @@ import CookiesView from '../views/Cookies.vue';
 // === ✨ Importación para la nueva página de Términos ✨ ===
 import TermsView from '../views/TermsView.vue';
 
+// --- ✨ IMPORTACIÓN AÑADIDA PARA LA VISTA DE DETALLE DEL PRODUCTO ✨ ---
+import ProductCard from '../views/ProductCard.vue';
+
 
 const routes = [
   {
@@ -165,6 +168,17 @@ const routes = [
     component: TermsView,
     meta: {
       title: 'Términos y Condiciones | KambiaPe'
+    }
+  },
+  // === ✨ NUEVA RUTA AÑADIDA PARA EL DETALLE DEL PRODUCTO ✨ ===
+  {
+    path: '/product/:id',
+    name: 'ProductCard',
+    component: ProductCard,
+    // La función 'props' pasa el objeto de producto completo a la vista
+    props: route => ({ product: JSON.parse(route.query.product) }),
+    meta: {
+      title: 'Detalle del Producto | KambiaPe'
     }
   },
   // Catch-all route for unmatched paths

@@ -2,117 +2,22 @@
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 antialiased">
     <Transition name="fade-overlay">
       <div
-        v-if="activeProposal"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm"
+        v-if="selectedProduct"
+        class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="proposal-title"
-        aria-describedby="proposal-description"
-        @keydown.esc="cancelProposal"
-        @click.self="cancelProposal"
+        aria-labelledby="product-modal-title"
+        @keydown.esc="closeProductModal"
+        @click.self="closeProductModal"
       >
-        <div
-          class="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl max-w-3xl w-full text-center md:text-left animate-[pop-in] opacity-0"
-          ref="proposalRef"
-          tabindex="-1"
-          @keydown.tab.prevent="handleModalTab($event)"
-        >
-          <button
-            ref="closeBtnRef"
-            @click="cancelProposal"
-            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            aria-label="Cerrar modal"
-          >
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
-          <h3 id="proposal-title" class="text-2xl lg:text-3xl font-extrabold text-gray-900 dark:text-white mb-2 text-center leading-tight">
-            Propón un <span class="text-brand-primary animate-pulse">Intercambio</span> por:
-          </h3>
-
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 p-3 mb-6 bg-brand-light/60 dark:bg-gray-800 rounded-xl shadow-inner border border-brand-medium/60">
-            <div class="flex-shrink-0">
-              <img :src="`${API_BASE_URL}${activeProposal.thumbnail_image_url}`" :alt="activeProposal.title" class="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-xl shadow-md border-2 border-brand-medium/60" />
-            </div>
-            <div class="text-center sm:text-left">
-              <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ formatTitle(activeProposal.title) }}</p>
-              <p class="text-sm text-gray-600 dark:text-gray-400">{{ activeProposal.category_name }}</p>
-            </div>
-          </div>
-
-          <p id="proposal-description" class="text-gray-700 dark:text-gray-300 mb-6 text-center md:text-left">
-            Selecciona el producto de tu lista que te gustaría ofrecer:
-          </p>
-
-          <div class="max-h-64 overflow-y-auto p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-            <button
-              v-for="product in userProducts"
-              :key="product.id"
-              @click="selectProductForProposal(product)"
-              :class="[
-                'w-full flex items-center p-3 mb-2 bg-white dark:bg-gray-900 rounded-lg shadow-sm transition last:mb-0 border-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary',
-                isSelected(product) ? 'border-brand-primary ring-2 ring-brand-primary/40' : 'border-gray-200 dark:border-gray-700 hover:bg-brand-light/40'
-              ]"
-              :aria-pressed="isSelected(product)"
-            >
-              <img :src="`${API_BASE_URL}${product.thumbnail_image_url}`" :alt="product.title" class="w-16 h-16 object-cover rounded-md mr-4 border border-gray-200 dark:border-gray-600" />
-              <div class="flex-1">
-                <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">{{ formatTitle(product.title) }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ product.category_name }}</p>
-              </div>
-              <div v-if="isSelected(product)" class="text-brand-primary ml-3 animate-pulse">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </button>
-
-            <div v-if="!userStore.isLoggedIn" class="text-center text-gray-500 dark:text-gray-400 py-6">
-              <p class="mb-3">Inicia sesión para elegir uno de tus productos.</p>
-              <router-link to="/login" class="inline-flex items-center px-4 py-2.5 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-semibold shadow hover:opacity-95 transition">
-                Ir a Login
-              </router-link>
-            </div>
-
-            <div v-else-if="userProducts.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-6">
-              <p class="mb-4">Aún no tienes productos publicados.</p>
-              <router-link to="/publish" class="inline-flex items-center px-5 py-2.5 rounded-full bg-brand-primary text-white font-semibold shadow-md hover:brightness-110 transition focus:outline-none focus:ring-2 focus:ring-brand-primary/50">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path></svg>
-                Publicar un producto
-              </router-link>
-            </div>
-          </div>
-
-          <div class="flex flex-col sm:flex-row justify-end gap-3 mt-6">
-            <button
-              @click="cancelProposal"
-              class="px-5 py-2.5 rounded-full text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-            >
-              Cancelar
-            </button>
-            <button
-              @click="sendProposal"
-              :disabled="!selectedProductForProposal"
-              class="px-6 py-2.5 rounded-full bg-brand-primary text-white font-semibold shadow-md hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:ring-offset-2"
-            >
-              Enviar propuesta
-            </button>
-          </div>
+        <div class="max-w-md w-full animate-[pop-in] opacity-0">
+          <ProductCard 
+            :product="selectedProduct" 
+            @propose-trade="handleProposeTrade"
+          />
         </div>
       </div>
     </Transition>
-
-    <transition name="slide-in-right">
-      <div v-if="showNotification" class="fixed top-20 right-4 bg-success text-white px-4 py-3 rounded-xl shadow-xl z-[70] flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>¡Propuesta enviada!</span>
-      </div>
-    </transition>
-
     <section class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-3xl ring-1 ring-gray-200 dark:ring-gray-700">
       <div aria-hidden="true" class="pointer-events-none absolute inset-0">
         <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/15 to-brand-dark/15 blur-3xl"></div>
@@ -380,7 +285,6 @@
           :key="product.id"
           class="relative isolate flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 group border border-gray-100 dark:border-gray-700 focus-within:ring-2 focus-within:ring-brand-primary outline-none"
           tabindex="0"
-          @keydown.enter.prevent="openProposalModal(product)"
         >
           <div class="relative overflow-hidden rounded-t-xl">
             <img
@@ -426,7 +330,7 @@
             </div>
             <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
               <button
-                @click="openProposalModal(product)"
+                @click="openProductModal(product)"
                 class="bg-brand-primary text-white px-4 py-2 rounded-full text-sm font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
               >
                 Intercambiar
@@ -471,10 +375,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
 import axios from 'axios';
-import router from '@/router';
+// ============== IMPORTAMOS PRODUCTCARD ==============
+import ProductCard from './ProductCard.vue';
 
 /* =========================
    Config / Estado General
@@ -485,11 +390,8 @@ const API_BASE_URL = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:80
 const products = ref([]);
 const loading = ref(true);
 
-// Propuesta
-const activeProposal = ref(null);
-const selectedProductForProposal = ref(null);
-const userProducts = ref([]);
-const showNotification = ref(false);
+// ============== ESTADO DEL MODAL ==============
+const selectedProduct = ref(null);
 
 // Filtros
 const selectedCategory = ref('');
@@ -508,18 +410,11 @@ const catOptionRefs = ref([]);
 const sortOptionRefs = ref([]);
 let focusedIndex = { cat: 0, sort: 0 };
 
-// Modal focus trap
-const proposalRef = ref(null);
-const closeBtnRef = ref(null);
-
 // Infinite scroll
 const pageSize = 12;
 const page = ref(1);
 const sentinelRef = ref(null);
 let io = null;
-
-// Wishlist local (demo)
-const wished = ref(new Set());
 
 // UI Hero cards
 const cards = ref([
@@ -542,6 +437,24 @@ const sortOptions = ref([
   { value: 'name-asc', label: 'Nombre (A-Z)' },
   { value: 'name-desc', label: 'Nombre (Z-A)' },
 ]);
+
+/* =========================
+   FUNCIONES DEL MODAL
+========================= */
+const openProductModal = (product) => {
+  selectedProduct.value = product;
+};
+
+const closeProductModal = () => {
+  selectedProduct.value = null;
+};
+
+const handleProposeTrade = (product) => {
+  console.log('Proponer intercambio por:', product.title);
+  // Aquí puedes agregar la lógica para el siguiente paso,
+  // por ahora, solo cerramos el modal.
+  closeProductModal();
+};
 
 /* =========================
    Utilidades
@@ -580,13 +493,6 @@ const onSearchInput = (e) => {
   }, 250);
 };
 
-// Wishlist demo
-const isWished = (p) => wished.value.has(p.id);
-const toggleWish = (p) => {
-  if (isWished(p)) wished.value.delete(p.id);
-  else wished.value.add(p.id);
-};
-
 // Fetch productos (feed público)
 const fetchAllProducts = async () => {
   try {
@@ -600,33 +506,6 @@ const fetchAllProducts = async () => {
     console.error('Error fetching:', err);
   } finally {
     loading.value = false;
-  }
-};
-
-// Fetch productos del usuario
-const fetchLoggedInUserProducts = async () => {
-  const loggedId = userStore.user?.id;
-  const token = userStore.token;
-  if (!loggedId || !token) { userProducts.value = []; return; }
-  try {
-    const { data } = await axios.get(`${API_BASE_URL}/users/${loggedId}/products`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    userProducts.value = data;
-  } catch (error) {
-    console.error("Error al obtener productos del usuario:", error);
-    userProducts.value = [];
-    if (axios.isAxiosError(error) && error.response) {
-      if (error.response.status === 401) {
-        userStore.clearUser();
-        router.push('/login');
-        alert('Tu sesión ha expirado. Inicia sesión para ver tus productos.');
-      } else {
-        console.error("Detalle de error:", error.response.data);
-      }
-    } else {
-      alert(`Error al cargar tus productos: ${error.message}`);
-    }
   }
 };
 
@@ -666,36 +545,18 @@ const loadMore = () => { if (hasMore.value) page.value += 1; };
 /* =========================
    Dropdowns Accesibles
 ========================= */
-const toggleCategory = () => { isCategoryDropdownOpen.value = !isCategoryDropdownOpen.value; if (isCategoryDropdownOpen.value) nextTick(() => catListRef.value?.focus()); };
-const toggleSort = () => { isSortDropdownOpen.value = !isSortDropdownOpen.value; if (isSortDropdownOpen.value) nextTick(() => sortListRef.value?.focus()); };
-const openCategoryAndFocusFirst = () => { isCategoryDropdownOpen.value = true; nextTick(() => { catListRef.value?.focus(); focusedIndex.cat = 0; }); };
-const openSortAndFocusFirst = () => { isSortDropdownOpen.value = true; nextTick(() => { sortListRef.value?.focus(); focusedIndex.sort = 0; }); };
+const toggleCategory = () => { isCategoryDropdownOpen.value = !isCategoryDropdownOpen.value; };
+const toggleSort = () => { isSortDropdownOpen.value = !isSortDropdownOpen.value; };
 
-const selectCategory = (c) => { selectedCategory.value = c; isCategoryDropdownOpen.value = false; catBtnRef.value?.focus(); page.value = 1; };
-const selectSortBy = (v) => { sortBy.value = v; isSortDropdownOpen.value = false; sortBtnRef.value?.focus(); page.value = 1; };
-
-const focusNext = (which) => {
-  const refs = which === 'cat' ? catOptionRefs.value : sortOptionRefs.value;
-  if (!refs?.length) return;
-  focusedIndex[which] = (focusedIndex[which] + 1) % refs.length;
-  refs[focusedIndex[which]]?.focus();
+const selectCategory = (c) => {
+  selectedCategory.value = c;
+  isCategoryDropdownOpen.value = false;
+  page.value = 1;
 };
-const focusPrev = (which) => {
-  const refs = which === 'cat' ? catOptionRefs.value : sortOptionRefs.value;
-  if (!refs?.length) return;
-  focusedIndex[which] = (focusedIndex[which] - 1 + refs.length) % refs.length;
-  refs[focusedIndex[which]]?.focus();
-};
-const selectFocused = (which) => {
-  if (which === 'cat') {
-    const idx = focusedIndex.cat;
-    if (idx === 0) return selectCategory('');
-    const val = categories.value[idx - 1];
-    if (val) selectCategory(val);
-  } else {
-    const opt = sortOptions.value[focusedIndex.sort];
-    if (opt) selectSortBy(opt.value);
-  }
+const selectSortBy = (v) => {
+  sortBy.value = v;
+  isSortDropdownOpen.value = false;
+  page.value = 1;
 };
 
 /* =========================
@@ -706,64 +567,6 @@ const resetFilters = () => {
   sortBy.value = 'date-desc';
   searchQuery.value = '';
   page.value = 1;
-};
-
-/* =========================
-   Propuesta (modal)
-========================= */
-const openProposalModal = async (product) => {
-  activeProposal.value = product;
-  selectedProductForProposal.value = null;
-  if (userProducts.value.length === 0 && userStore.isLoggedIn) {
-    await fetchLoggedInUserProducts();
-  }
-  await nextTick();
-  proposalRef.value?.focus();
-};
-const cancelProposal = () => {
-  activeProposal.value = null;
-  selectedProductForProposal.value = null;
-};
-const isSelected = (p) => selectedProductForProposal.value && selectedProductForProposal.value.id === p.id;
-const selectProductForProposal = (p) => { selectedProductForProposal.value = p; };
-
-const sendProposal = async () => {
-  if (!selectedProductForProposal.value || !activeProposal.value) {
-    alert('Selecciona un producto para la propuesta.');
-    return;
-  }
-  try {
-    const token = userStore.token;
-    if (!token) throw new Error("Necesitas iniciar sesión.");
-    await axios.post(`${API_BASE_URL}/proposals`, {
-      offered_product_id: selectedProductForProposal.value.id,
-      requested_product_id: activeProposal.value.id,
-      proposer_user_id: userStore.user?.id,
-      owner_of_requested_product_id: activeProposal.value.user_id,
-    }, {
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-    });
-    showNotification.value = true;
-    setTimeout(() => { showNotification.value = false; }, 2500);
-    cancelProposal();
-  } catch (error) {
-    console.error('Error al enviar la propuesta:', error);
-    if (axios.isAxiosError(error) && error.response) {
-      alert(`No se pudo enviar: ${error.response.data.detail || error.message}`);
-    } else {
-      alert(`No se pudo enviar: ${error.message}`);
-    }
-  }
-};
-
-// Focus trap simple
-const handleModalTab = (e) => {
-  const focusables = proposalRef.value?.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-  if (!focusables || !focusables.length) return;
-  const first = focusables[0];
-  const last = focusables[focusables.length - 1];
-  if (!e.shiftKey && document.activeElement === last) { first.focus(); }
-  if (e.shiftKey && document.activeElement === first) { last.focus(); }
 };
 
 /* =========================
@@ -789,7 +592,6 @@ onMounted(() => {
   fetchAllProducts();
   startShuffleTimer();
 
-  // Intersección para cargar más
   io = new IntersectionObserver((entries) => {
     entries.forEach((e) => { if (e.isIntersecting) loadMore(); });
   }, { rootMargin: '300px' });
@@ -802,43 +604,40 @@ onBeforeUnmount(() => {
 });
 watch([autoShuffle, hovering], () => { startShuffleTimer(); });
 
-// Actualiza productos del usuario cuando inicie/cierre sesión
-watch(() => userStore.isLoggedIn, (v) => { v ? fetchLoggedInUserProducts() : userProducts.value = []; }, { immediate: true });
-
-// reinicia paginación cuando cambian filtros/búsqueda
 watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 </script>
 
 <style scoped>
-/* Transiciones y animaciones existentes */
-.fade-overlay-enter-active,
-.fade-overlay-leave-active { transition: opacity .25s ease }
-.fade-overlay-enter-from,
-.fade-overlay-leave-to { opacity: 0 }
-
-/* Lista productos (aparición) */
+/* Transiciones y animaciones */
 .product-list-enter-active,
 .product-list-leave-active { transition: all .35s ease }
 .product-list-enter-from,
 .product-list-leave-to { opacity: 0; transform: translateY(18px) }
 .product-list-leave-active { position: absolute }
 
-/* Toast */
-.slide-in-right-enter-active,
-.slide-in-right-leave-active { transition: all .5s cubic-bezier(.68,-.55,.27,1.55) }
-.slide-in-right-enter-from,
-.slide-in-right-leave-to { transform: translateX(100%); opacity: 0 }
-
 /* Clamp multi-línea */
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 
-/* ============== NUEVOS ESTILOS PARA BADGES ============== */
 .badge-sq{
   display:inline-flex; align-items:center; gap:.35rem;
   padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
   border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
 }
 .dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
-/* ======================================================== */
+
+/* Transición para el overlay del modal */
+.fade-overlay-enter-active,
+.fade-overlay-leave-active { transition: opacity .3s ease; }
+.fade-overlay-enter-from,
+.fade-overlay-leave-to { opacity: 0; }
+
+/* Animación para el contenido del modal */
+@keyframes pop-in {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-\[pop-in\] {
+  animation: pop-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
 </style>
