@@ -30,7 +30,6 @@ export const useUserStore = defineStore('user', {
       id: null,
       fullName: '',
       email: '',
-      // --- ✨ 3. ASIGNAMOS EL AVATAR POR DEFECTO AL ESTADO INICIAL ✨ ---
       profilePicture: defaultAvatar,
       phone: null,
       address: null,
@@ -42,6 +41,8 @@ export const useUserStore = defineStore('user', {
       agreed_terms: false,
       created_at: null,
       interests: [],
+      // ===== ✨ 1. AÑADIMOS CRÉDITOS AL ESTADO INICIAL ✨ =====
+      credits: 0,
     },
     loading: false,
     error: null,
@@ -61,6 +62,8 @@ export const useUserStore = defineStore('user', {
       return (names[0][0] + names[names.length - 1][0]).toUpperCase();
     },
     getUserProfile: (state) => state.user,
+    // ===== ✨ 2. AÑADIMOS UN GETTER PARA LOS CRÉDITOS ✨ =====
+    userCredits: (state) => state.user?.credits || 0,
   },
 
   actions: {
@@ -76,7 +79,6 @@ export const useUserStore = defineStore('user', {
         id: data.id || null,
         fullName: data.full_name || data.fullName || '',
         email: data.email || '',
-        // La normalización ahora se encarga de asignar el avatar por defecto
         profilePicture: normalizeImageUrl(data.profile_picture || data.profilePicture),
         phone: data.phone || null,
         address: data.address || null,
@@ -88,6 +90,8 @@ export const useUserStore = defineStore('user', {
         agreed_terms: data.agreed_terms || false,
         created_at: data.created_at || null,
         interests: data.interests || [],
+        // ===== ✨ 3. PROCESAMOS LOS CRÉDITOS QUE VIENEN DE LA API ✨ =====
+        credits: data.credits ?? 0, // Si 'credits' no viene, le asignamos 0.
       };
       return processedData;
     },
@@ -126,7 +130,7 @@ export const useUserStore = defineStore('user', {
       this.error = null;
       try {
         const response = await axios.get(`/profile/${userId}`);
-        const userData = this._processUserData(response.data);
+        const userData = this._processUserData(response.data); // Ya procesa los créditos
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(userData));
       } catch (err) {
@@ -157,7 +161,7 @@ export const useUserStore = defineStore('user', {
         delete dataToSend.interests;
 
         const response = await axios.put(`/profile/${userId}`, dataToSend);
-        const updatedUserData = this._processUserData(response.data);
+        const updatedUserData = this._processUserData(response.data); // Ya procesa los créditos
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
         return true;
@@ -195,7 +199,7 @@ export const useUserStore = defineStore('user', {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-        const updatedUserData = this._processUserData(response.data);
+        const updatedUserData = this._processUserData(response.data); // Ya procesa los créditos
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
         
@@ -213,7 +217,7 @@ export const useUserStore = defineStore('user', {
         id: null,
         fullName: '',
         email: '',
-        profilePicture: defaultAvatar, // Usamos el avatar por defecto al limpiar
+        profilePicture: defaultAvatar,
         phone: null,
         address: null,
         dateOfBirth: null,
@@ -224,6 +228,8 @@ export const useUserStore = defineStore('user', {
         agreed_terms: false,
         created_at: null,
         interests: [],
+        // ===== ✨ 4. RESETEAMOS LOS CRÉDITOS AL CERRAR SESIÓN ✨ =====
+        credits: 0,
       };
       localStorage.removeItem('user');
       localStorage.removeItem('access_token');
