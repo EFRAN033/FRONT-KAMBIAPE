@@ -1,7 +1,7 @@
 <template>
   <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
     <button @click="$emit('close')" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
-      <svg xmlns="http://www.w.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
       </svg>
     </button>
@@ -200,7 +200,21 @@ const formattedDate = computed(() => {
   return `${day}/${month}/${year}`;
 });
 
-const avatarSrc = computed(() => props.product?.user_avatar_url ? `${props.apiBase}${props.product.user_avatar_url}` : defaultAvatar);
+// --- CÓDIGO CORREGIDO ---
+const avatarSrc = computed(() => {
+  const url = props.product?.user_avatar_url;
+  if (!url) {
+    return defaultAvatar; // Usa el avatar por defecto si no hay URL
+  }
+  // Comprueba si la URL ya es absoluta (empieza con http, https, etc.) o es una data URL
+  if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) {
+    return url; // Usa la URL tal cual
+  }
+  // Si no, construye la URL completa con la base de la API
+  return `${props.apiBase}${url}`;
+});
+// --- FIN DEL CÓDIGO CORREGIDO ---
+
 const contactLabel = computed(() => formatUserName(props.product?.contact_name) || 'Contactar vendedor');
 
 const placeholderImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
