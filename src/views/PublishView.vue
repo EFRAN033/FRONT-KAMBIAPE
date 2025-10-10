@@ -11,12 +11,7 @@
 
       <div class="relative flex-1">
         <transition name="gif-fade">
-          <img 
-            v-if="showGif"
-            src="@/assets/imagenes/gif/Anamación-1.gif" 
-            alt="Animación decorativa" 
-            class="absolute top-4 right-4 w-48 h-48 z-20 pointer-events-none"
-          >
+          <img v-if="showGif" src="@/assets/imagenes/gif/Anamación-1.gif" alt="Animación decorativa" class="absolute top-4 right-4 w-64 h-64 z-20 pointer-events-none">
         </transition>
         
         <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
