@@ -10,6 +10,23 @@ const getRandomDefaultAvatar = () => {
   return new URL(`../assets/imagenes/defaul/${randomAvatarNumber}.svg`, import.meta.url).href;
 };
 
+// --- FUNCIÓN CORREGIDA ---
+// Función auxiliar para normalizar las URLs de las imágenes
+const normalizeImageUrl = (url) => {
+  if (!url) {
+    return getRandomDefaultAvatar();
+  }
+  // Si la URL ya es absoluta (http, https, data URI, blob), la devuelve tal cual.
+  if (/^(https?:\/\/|data:|blob:)/i.test(url)) {
+    return url;
+  }
+  // Si no, construye la URL completa con la base de la API/storage.
+  const baseUrl = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
+  // Evita dobles barras si la URL ya empieza con una
+  return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+// --- FIN FUNCIÓN CORREGIDA ---
+
 export const useUserStore = defineStore('user', {
   state: () => ({
     token: localStorage.getItem('access_token') || null,
@@ -63,9 +80,9 @@ export const useUserStore = defineStore('user', {
         id: data.id || null,
         fullName: data.full_name || data.fullName || '',
         email: data.email || '',
-        profilePicture: data.profile_picture 
-            ? `${import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000'}${data.profile_picture}` 
-            : data.profilePicture || getRandomDefaultAvatar(),
+        // --- LÍNEA MODIFICADA ---
+        profilePicture: normalizeImageUrl(data.profile_picture || data.profilePicture),
+        // --- FIN LÍNEA MODIFICADA ---
         phone: data.phone || null,
         address: data.address || null,
         dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES') : null,
@@ -142,11 +159,7 @@ export const useUserStore = defineStore('user', {
             delete dataToSend.dateOfBirth;
         }
         
-        // --- CORRECCIÓN (BUENA PRÁCTICA) ---
-        // Aseguramos que el campo `interests` (con los nombres) no se envíe al backend,
-        // ya que el frontend ahora envía `interest_ids` en su lugar.
         delete dataToSend.interests;
-        // --- FIN DE LA CORRECCIÓN ---
 
         const response = await axios.put(`/profile/${userId}`, dataToSend);
         const updatedUserData = this._processUserData(response.data);
@@ -179,7 +192,6 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    // Acción para subir la foto de perfil
     async uploadProfilePicture(formData) {
       this.loading = true;
       this.error = null;
@@ -223,7 +235,6 @@ export const useUserStore = defineStore('user', {
       this.token = null;
     },
 
-    // Acción para inicializar el estado del usuario desde localStorage
     async initializeUser() {
       const storedToken = localStorage.getItem('access_token');
       if (storedToken) {
