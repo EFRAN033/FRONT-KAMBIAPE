@@ -55,7 +55,7 @@
         </header>
 
         <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ product.description || 'No hay descripción disponible.' }}</p>
+          <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ formattedDescription }}</p>
         </div>
 
         <div class="mt-6 space-y-4 text-sm">
@@ -108,9 +108,26 @@
             </button>
           </div>
           <form @submit.prevent="submitProposal" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
             <div class="sm:col-span-2">
-              <label class="text-xs font-medium text-gray-600">Qué ofreces</label>
-              <input v-model="proposal.item" type="text" placeholder="Ej: 2 cajas de tornillos" class="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary/30" required />
+              <label class="text-xs font-medium text-gray-600">Selecciona un producto de tu inventario para ofrecer:</label>
+              
+              <div v-if="isLoadingInventory" class="mt-2 text-center p-4 text-gray-500">Cargando tu inventario...</div>
+
+              <div v-else-if="userInventory.length > 0" class="mt-2 h-48 overflow-y-auto rounded-lg border border-gray-200 p-2 space-y-2">
+                  <label v-for="item in userInventory" :key="item.id" class="flex items-center gap-4 p-2 rounded-md cursor-pointer transition-all duration-200 ease-in-out" :class="{ 'bg-blue-50 ring-2 ring-blue-400 shadow-sm': selectedProductId === item.id, 'hover:bg-gray-50 dark:hover:bg-gray-800': selectedProductId !== item.id }">
+                      <input type="radio" :value="item.id" v-model="selectedProductId" name="product-offer" class="sr-only">
+                      <img :src="normalizeImageUrl(item.images.length > 0 ? item.images[0].image_url : null)" :alt="item.title" class="w-12 h-12 object-cover rounded-md flex-shrink-0">
+                      <div class="flex-grow">
+                        <p class="font-semibold text-sm">{{ item.title }}</p>
+                        <p class="text-xs text-gray-500">{{ item.condition }}</p>
+                      </div>
+                  </label>
+              </div>
+
+              <div v-else class="mt-2 text-center p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+                  <p>No tienes otros productos en tu inventario para proponer un intercambio.</p>
+              </div>
             </div>
 
             <div>
@@ -128,13 +145,15 @@
             
             <div class="sm:col-span-2 flex items-center justify-end gap-2">
               <button type="button" @click="closeProposeModal" class="px-4 py-2 rounded-md">Cancelar</button>
-              <button :disabled="submitting" type="submit" class="px-5 py-3 rounded-md bg-brand-primary text-white font-semibold disabled:opacity-60">Enviar propuesta</button>
+              <button :disabled="submitting || !selectedProductId" type="submit" class="px-5 py-3 rounded-md bg-brand-primary text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed">
+                {{ submitting ? 'Enviando...' : 'Enviar propuesta' }}
+              </button>
             </div>
           </form>
         </div>
       </div>
     </transition>
-  </div>
+    </div>
 
   <div v-else class="animate-pulse p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl">
     <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
@@ -146,7 +165,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user';
-import defaultAvatar from '@/assets/imagenes/defaul/7.svg'; // Importa la imagen por defecto
+import axios from '@/axios';
+import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 
 const userStore = useUserStore();
 
@@ -158,86 +178,115 @@ const emit = defineEmits(['propose-trade', 'close', 'favorite']);
 
 const isModalOpen = ref(false);
 const submitting = ref(false);
-const proposal = ref({ item: '', name: '', contact: '' });
+const proposal = ref({ name: '', contact: '' });
+
+// --- NUEVOS REFS PARA EL INVENTARIO ---
+const userInventory = ref([]);
+const selectedProductId = ref(null);
+const isLoadingInventory = ref(false);
 
 const images = ref([]);
 const currentIndex = ref(0);
 const hasImages = computed(() => images.value.length > 0);
 const currentImage = computed(() => hasImages.value ? images.value[currentIndex.value] : placeholderImage);
 
+// --- FUNCIÓN PARA CARGAR EL INVENTARIO DEL USUARIO ---
+const fetchUserInventory = async () => {
+    if (!userStore.isLoggedIn) return;
+    isLoadingInventory.value = true;
+    try {
+        const response = await axios.get('/my-products', {
+            headers: { 'Authorization': `Bearer ${userStore.access_token}` }
+        });
+        // Filtrar para no poder ofrecer un producto por sí mismo
+        userInventory.value = response.data.filter(p => p.id !== props.product.id);
+    } catch (error) {
+        console.error("Error al cargar el inventario del usuario:", error);
+    } finally {
+        isLoadingInventory.value = false;
+    }
+};
+
+function capitalizeFirstLetter(string) {
+  if (!string) return '';
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+const formattedTitle = computed(() => capitalizeFirstLetter(props.product?.title));
+const formattedDescription = computed(() => capitalizeFirstLetter(props.product?.description || 'No hay descripción disponible.'));
+
 function formatUserName(name) {
   if (!name) return null;
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return null;
-  const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+  const firstName = capitalizeFirstLetter(parts[0].toLowerCase());
   if (parts.length === 1) return firstName;
   const initials = parts.slice(1).map(part => `${part.charAt(0).toUpperCase()}.`).join(' ');
   return `${firstName} ${initials}`;
 }
 
-const formattedTitle = computed(() => {
-  if (!props.product || !props.product.title) return '';
-  return props.product.title.charAt(0).toUpperCase() + props.product.title.slice(1);
-});
-
 const formattedUsername = computed(() => formatUserName(props.product?.user_username) || 'Usuario Anónimo');
 
 const daysAgo = computed(() => {
   if (!props.product?.created_at) return '?';
-  const today = new Date();
-  const date = new Date(props.product.created_at);
-  const diff = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
+  const diff = Math.ceil(Math.abs(new Date() - new Date(props.product.created_at)) / (1000 * 60 * 60 * 24));
   return diff;
 });
 
 const formattedDate = computed(() => {
   if (!props.product?.created_at) return '—';
   const date = new Date(props.product.created_at);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 });
 
 const avatarSrc = computed(() => {
   const url = props.product?.user_avatar_url;
-  if (!url) {
-    return defaultAvatar;
-  }
-  if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) {
-    return url;
-  }
+  if (!url) return defaultAvatar;
+  if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) return url;
   return `${props.apiBase}${url}`;
 });
 
-const contactLabel = computed(() => formatUserName(props.product?.contact_name) || 'Contactar vendedor');
-
 const placeholderImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
 
-const currentIndexSafe = (idx) => {
-  if (images.value.length === 0) return 0;
-  if (idx < 0) return images.value.length - 1;
-  if (idx >= images.value.length) return 0;
-  return idx;
-};
-const prevImage = () => { currentIndex.value = currentIndexSafe(currentIndex.value - 1); };
-const nextImage = () => { currentIndex.value = currentIndexSafe(currentIndex.value + 1); };
+const prevImage = () => { currentIndex.value = (currentIndex.value - 1 + images.value.length) % images.value.length; };
+const nextImage = () => { currentIndex.value = (currentIndex.value + 1) % images.value.length; };
 const goTo = (i) => { currentIndex.value = i; };
 
+// --- LÓGICA DE APERTURA/CIERRE DEL MODAL ACTUALIZADA ---
 const openProposeModal = () => { 
   isModalOpen.value = true;
   if (userStore.isLoggedIn) {
-    proposal.value.name = userStore.user.fullName;
+    proposal.value.name = userStore.user.fullName || '';
+    fetchUserInventory(); // Cargar inventario al abrir
   }
 };
-const closeProposeModal = () => { isModalOpen.value = false; };
+const closeProposeModal = () => {
+  isModalOpen.value = false;
+  userInventory.value = []; // Limpiar para la próxima vez
+  selectedProductId.value = null; // Resetear selección
+};
 
+// --- LÓGICA DE ENVÍO ACTUALIZADA ---
 const submitProposal = async () => {
-  if (!proposal.value.item || !proposal.value.name || !proposal.value.contact) return;
+  if (!selectedProductId.value || !proposal.value.name || !proposal.value.contact) {
+    console.error("Por favor, selecciona un producto y completa todos los campos.");
+    // Aquí podrías mostrar una notificación al usuario
+    return;
+  }
   submitting.value = true;
   try {
-    emit('propose-trade', { product: props.product, proposal: proposal.value });
-    proposal.value = { item: '', name: '', contact: '' };
+    // El payload ahora es más claro
+    emit('propose-trade', {
+      product_to_receive_id: props.product.id,
+      product_to_offer_id: selectedProductId.value,
+      proposal_details: {
+        name: proposal.value.name,
+        contact: proposal.value.contact
+      }
+    });
+    // Limpiamos los campos después de enviar
+    proposal.value.name = '';
+    proposal.value.contact = '';
     closeProposeModal();
   } catch (err) {
     console.error(err);
@@ -254,9 +303,6 @@ watch(() => props.product, (p) => {
   if (Array.isArray(p.images) && p.images.length) {
     images.value = p.images.map(imgObject => normalizeImageUrl(imgObject.image_url));
   } 
-  else if (typeof p.images === 'string' && p.images.length) {
-    images.value = p.images.split(',').map(i => normalizeImageUrl(i.trim()));
-  } 
   else if (p.image_url) {
     images.value = [normalizeImageUrl(p.image_url)];
   }
@@ -265,7 +311,7 @@ watch(() => props.product, (p) => {
 
 function normalizeImageUrl(url) {
   if (!url) return placeholderImage;
-  if (/^https?:/i.test(url)) return url;
+  if (/^https?:/i.test(url) || url.startsWith('data:image')) return url;
   return `${props.apiBase}${url}`;
 }
 

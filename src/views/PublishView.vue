@@ -119,7 +119,7 @@
                                 <button v-for="category in availableCategories" :key="category.id" type="button" class="tile" :class="exchangeInterests.has(category.name) && 'is-selected'" :aria-pressed="exchangeInterests.has(category.name)" @click="toggleInterest(category.name)">
                                     <span class="tile-check" aria-hidden="true">
                                         <svg v-if="exchangeInterests.has(category.name)" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 0 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 M10 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                         </svg>
                                     </span>
                                     <span class="tile-text">{{ category.name }}</span>
@@ -179,15 +179,41 @@
                       </div>
                     </transition-group>
                   </div>
-
-                  <div class="pt-4 flex items-center justify-between border-t border-dashed border-slate-300/70">
-                    <button type="button" @click="goToPreviousStep" class="px-5 py-2.5 rounded-full font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300/70 transition">Paso Anterior</button>
-                    <button type="button" @click="handleSubmit" :disabled="isSubmitting" class="px-7 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition">
-                      <span v-if="!isSubmitting">Publicar Producto</span>
-                      <span v-else>Publicando...</span>
-                    </button>
+                  
+                  <div class="pt-6 border-t border-dashed border-slate-300/70 space-y-6">
+                    <div>
+                      <h3 class="text-base font-semibold text-slate-800 mb-3">Resumen de Publicación</h3>
+                      <dl class="space-y-2 text-sm">
+                          <div class="flex justify-between items-center">
+                              <dt class="text-slate-600">Tus créditos actuales:</dt>
+                              <dd class="font-semibold text-lg" :class="userStore.user.credits > 0 ? 'text-slate-800' : 'text-rose-600'">{{ userStore.user.credits }}</dd>
+                          </div>
+                          <div class="flex justify-between items-center text-slate-600">
+                              <dt>Costo de esta publicación:</dt>
+                              <dd class="font-medium">- 1 crédito</dd>
+                          </div>
+                      </dl>
+                      
+                      <div v-if="userStore.user.credits <= 0" class="text-center mt-4">
+                          <p class="font-semibold text-rose-600 flex items-center justify-center gap-2">
+                              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                              <span>¡No tienes suficientes créditos!</span>
+                          </p>
+                          <router-link to="/my-profile" class="text-sm text-slate-600 hover:text-rose-600 transition underline underline-offset-2 decoration-dotted">
+                              Consigue más haciendo clic aquí.
+                          </router-link>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <button type="button" @click="goToPreviousStep" class="px-5 py-2.5 rounded-full font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300/70 transition">Paso Anterior</button>
+                        <button type="button" @click="handleSubmit" :disabled="isSubmitting || userStore.user.credits <= 0" class="px-7 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                          <span v-if="isSubmitting">Publicando...</span>
+                          <span v-else-if="userStore.user.credits <= 0">Créditos Insuficientes</span>
+                          <span v-else>Publicar Producto</span>
+                        </button>
+                    </div>
                   </div>
-
                   <transition name="fade">
                     <div v-if="errorMessage" class="mt-4 px-4 py-3 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-center animate-shake" role="alert">{{ errorMessage }}</div>
                   </transition>
@@ -455,8 +481,16 @@ const onDrop = (toIndex) => {
 
 const submitNow = async () => {
   errorMessage.value = ''
+  
+  if (userStore.user.credits <= 0) {
+    errorMessage.value = 'No tienes créditos suficientes para publicar.';
+    toast.error('No tienes créditos suficientes para publicar.');
+    return;
+  }
+
   if (!validateStep2()) { errorMessage.value = 'Por favor, sube al menos una imagen.'; return }
   if (!userStore.isLoggedIn) { errorMessage.value = 'Debes iniciar sesión para publicar.'; router.push('/login'); return }
+  
   isSubmitting.value = true
   try {
     const formData = new FormData()
@@ -479,23 +513,26 @@ const submitNow = async () => {
 
     product.photos.forEach(p => formData.append('photos', p))
     const response = await axios.post('/products', formData)
-      if (response.status === 201) {
-        toast.success('¡Producto publicado con éxito!');
-        
-        startAnimation(); 
-        setTimeout(() => {
-          stopAnimation();
-          router.push('/my-products');
-        }, 600000); // 10 minutos
 
+    if (response.status === 201) {
+      toast.success('¡Producto publicado con éxito!');
+      await userStore.fetchProfile(); // Actualiza los créditos
+      
+      startAnimation(); 
+      setTimeout(() => {
+        stopAnimation();
+        router.push('/my-products');
+      }, 3000); 
+
+    } else { 
+      errorMessage.value = response.data.detail || 'Error al publicar.' 
     }
-    else { errorMessage.value = response.data.detail || 'Error al publicar.' }
   } catch (error) {
     if (error.response) { console.error('Error del servidor:', error.response.data); errorMessage.value = error.response.data.detail || 'Error al publicar.'; if (error.response.status === 401) router.push('/login') }
     else if (error.request) { console.error('No se recibió respuesta:', error.request); errorMessage.value = 'No se pudo conectar al servidor. Inténtalo más tarde.' }
     else { console.error('Error:', error.message); errorMessage.value = `Error inesperado: ${error.message}.` }
   } finally { 
-    setTimeout(() => { isSubmitting.value = false; }, 600000); // 10 minutos
+    isSubmitting.value = false;
   }
 }
 
