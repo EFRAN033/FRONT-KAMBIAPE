@@ -147,6 +147,22 @@
                   <p>No tienes productos en tu inventario para proponer un intercambio.</p>
               </div>
             </div>
+
+            <div>
+              <label for="initial_message" class="text-sm font-medium text-gray-700 dark:text-gray-300">Añadir un mensaje (opcional):</label>
+              <textarea 
+                id="initial_message"
+                v-model="initialMessage"
+                rows="3"
+                placeholder="¿Quisieras intercambiar conmigo?"
+                class="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              ></textarea>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button v-for="suggestion in suggestedMessages" :key="suggestion" @click.prevent="initialMessage = suggestion" type="button" class="px-3 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200">
+                  {{ suggestion }}
+                </button>
+              </div>
+            </div>
             
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button type="button" @click="closeProposeModal" class="px-4 py-2 rounded-md text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cancelar</button>
@@ -176,8 +192,8 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
-const router = useRouter(); // Para la redirección
-const toast = useToast(); // Para mostrar notificaciones
+const router = useRouter();
+const toast = useToast();
 
 const props = defineProps({
   product: { type: Object, required: true },
@@ -196,6 +212,14 @@ const images = ref([]);
 const currentIndex = ref(0);
 const hasImages = computed(() => images.value.length > 0);
 const currentImage = computed(() => hasImages.value ? images.value[currentIndex.value] : placeholderImage);
+
+// ### MEJORA: State para el mensaje personalizable ###
+const initialMessage = ref('');
+const suggestedMessages = ref([
+  '¿Sigue disponible?',
+  '¡Hola! Me interesa tu producto.',
+  '¿Te interesa algo de mi perfil?'
+]);
 
 const fetchUserInventory = async () => {
     if (!userStore.isLoggedIn) return;
@@ -261,6 +285,7 @@ const closeProposeModal = () => {
   isModalOpen.value = false;
   userInventory.value = [];
   selectedProductId.value = null;
+  initialMessage.value = ''; // ### MEJORA: Limpiar el mensaje al cerrar ###
 };
 
 const submitProposal = async () => {
@@ -269,24 +294,21 @@ const submitProposal = async () => {
     return;
   }
 
-  // --- INICIO DE LA MODIFICACIÓN ---
+  // ### MEJORA: Lógica de envío de propuesta actualizada ###
   const payload = {
     offered_product_id: selectedProductId.value,
     requested_product_id: props.product.id,
-    // ¡Aquí está la magia! Añadimos el mensaje predeterminado.
-    initial_message: '¿Quisieras intercambiar conmigo?' 
+    // Enviamos el mensaje del textarea, o uno por defecto si está vacío
+    initial_message: initialMessage.value.trim() || '¿Quisieras intercambiar conmigo?'
   };
-  // --- FIN DE LA MODIFICACIÓN ---
 
   submitting.value = true;
   try {
-    // Usamos el 'payload' que acabamos de crear
     const response = await axios.post('/proposals', payload);
     
     if (response.status === 201) {
       toast.success('¡Propuesta enviada con éxito!');
       closeProposeModal();
-      // Redirige al usuario a su Inbox
       router.push({ name: 'Inbox' });
     }
   } catch (error) {

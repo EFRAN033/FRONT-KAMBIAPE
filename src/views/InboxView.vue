@@ -153,6 +153,7 @@
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('accepted')" class="p-2 text-green-700 bg-green-50 hover:bg-green-100" title="Aceptar"><CheckIcon class="h-5 w-5" /></button>
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('rejected')" class="p-2 text-red-700 bg-red-50 hover:bg-red-100" title="Rechazar"><XMarkIcon class="h-5 w-5" /></button>
                   <button v-if="canCancel" @click="updateProposalStatus('cancelled')" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
+                  <button v-if="canComplete" @click="updateProposalStatus('completed')" class="p-2 text-blue-700 bg-blue-50 hover:bg-blue-100" title="Completar y Valorar"><StarIcon class="h-5 w-5" /></button>
                   <button @click="showDetailsModal = true" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100" title="Detalles"><EyeIcon class="h-5 w-5" /></button>
                 </div>
               </div>
@@ -174,7 +175,9 @@
                       <div class="mt-1.5 flex items-center gap-1 text-[11px]" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
                         <span>{{ formatTime(message.timestamp) }}</span>
                         <span v-if="message.sender_id === userStore.user?.id">
-                          <CheckCircleIcon v-if="message.is_read" class="h-4 w-4 inline-block text-blue-400" title="Visto" />
+                          <ExclamationCircleIcon v-if="message.error" class="h-4 w-4 inline-block text-red-300" title="Error al enviar"/>
+                          <ClockIcon v-else-if="message.sending" class="h-4 w-4 inline-block animate-spin" title="Enviando..."/>
+                          <CheckCircleIcon v-else-if="message.is_read" class="h-4 w-4 inline-block text-blue-400" title="Visto" />
                           <CheckCircleIcon v-else class="h-4 w-4 inline-block" title="Entregado" />
                         </span>
                       </div>
@@ -185,10 +188,9 @@
 
               <div class="p-4 border-t border-slate-200 bg-slate-50">
                 <form @submit.prevent="sendMessage" class="flex items-center gap-3">
-                  <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" :disabled="sendingMessage || !isChatActive" />
-                  <button type="submit" :disabled="!newMessageText.trim() || sendingMessage || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() || sendingMessage || !isChatActive) ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
-                    <PaperAirplaneIcon v-if="!sendingMessage" class="h-5 w-5" />
-                    <svg v-else class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" :disabled="!isChatActive" />
+                  <button type="submit" :disabled="!newMessageText.trim() || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() || !isChatActive) ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
+                    <PaperAirplaneIcon class="h-5 w-5" />
                   </button>
                 </form>
                  <p v-if="!isChatActive" class="text-[12px] text-red-500 mt-2 text-center">
@@ -232,6 +234,26 @@
                     {{ selectedProfileUser.address || 'No especificada.' }}
                   </p>
                 </div>
+                
+                <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventario del Usuario</h4>
+                  <div v-if="loadingProfileInventory" class="mt-4 text-center">
+                    <svg class="animate-spin h-6 w-6 text-[#d7037b] mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  </div>
+                  <div v-else-if="profileUserInventory.length === 0" class="mt-4 text-center text-sm text-slate-500 italic">
+                    Este usuario no tiene productos en su inventario.
+                  </div>
+                  <div v-else class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <a v-for="product in profileUserInventory" :key="product.id" :href="`/product/${product.id}`" target="_blank" class="block group">
+                      <div class="aspect-square bg-slate-100 rounded-md overflow-hidden relative">
+                        <img :src="getAvatarUrl(product.thumbnail_image_url)" :alt="product.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-black/20"></div>
+                        <p class="absolute bottom-1.5 left-0 right-0 text-white text-[11px] font-semibold p-1.5 truncate text-center">{{ product.title }}</p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+
                 <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
                   <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Intereses</h4>
                   <div v-if="selectedProfileUser.interests && selectedProfileUser.interests.length > 0" class="flex flex-wrap gap-1.5 mt-2">
@@ -329,7 +351,7 @@ import { useToast } from 'vue-toastification';
 import { 
   ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, 
   EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
-  UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon
+  UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon
 } from '@heroicons/vue/24/outline';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
@@ -346,10 +368,13 @@ const filter = ref('all');
 const search = ref('');
 const loadingConversations = ref(true);
 const loadingMessages = ref(false);
-const sendingMessage = ref(false);
 const showDetailsModal = ref(false);
 const messagesContainer = ref(null);
 const selectedProfileUser = ref(null);
+
+// ### MEJORA: State para el inventario del perfil ###
+const profileUserInventory = ref([]);
+const loadingProfileInventory = ref(false);
 
 // State for Action Menus and Modals
 const activeMenuId = ref(null);
@@ -405,6 +430,13 @@ const canCancel = computed(() => {
     const ex = selectedConversation.value.exchange;
     return ex.status === 'pending' && ex.proposer_user_id === userStore.user.id;
 });
+
+const canComplete = computed(() => {
+    if (!selectedConversation.value || !userStore.user) return false;
+    const ex = selectedConversation.value.exchange;
+    return ex.status === 'accepted' && (ex.proposer_user_id === userStore.user.id || ex.request.user_id === userStore.user.id);
+});
+
 
 // --- Modal and Action Methods ---
 
@@ -522,19 +554,44 @@ const confirmUnblock = async (userToUnblock) => {
 };
 
 // --- Profile Panel Methods ---
-const openProfilePanel = (user) => selectedProfileUser.value = user;
-const closeProfilePanel = () => selectedProfileUser.value = null;
+// ### MEJORA: `openProfilePanel` ahora también busca el inventario del usuario ###
+const openProfilePanel = (user) => {
+  selectedProfileUser.value = user;
+  fetchProfileUserInventory(user.id);
+};
+
+const closeProfilePanel = () => {
+  selectedProfileUser.value = null;
+  profileUserInventory.value = []; // Limpiar el inventario al cerrar
+};
+
+// ### MEJORA: Nueva función para obtener el inventario del perfil ###
+const fetchProfileUserInventory = async (userId) => {
+  loadingProfileInventory.value = true;
+  try {
+    const { data } = await axios.get(`/users/${userId}/products`);
+    profileUserInventory.value = data;
+  } catch (error) {
+    console.error("Error al cargar el inventario del perfil:", error);
+    toast.error("No se pudo cargar el inventario del usuario.");
+    profileUserInventory.value = []; // Asegurarse de que esté vacío en caso de error
+  } finally {
+    loadingProfileInventory.value = false;
+  }
+};
+
 
 // --- Utility & Formatting Methods ---
 const formatUserName = (fullName) => {
   if (!fullName || typeof fullName !== 'string') return '';
   const parts = fullName.trim().split(' ').filter(p => p);
   if (parts.length === 0) return '';
-  if (parts.length === 1) return parts[0];
-  const firstName = parts[0];
-  const lastNameInitial = parts.length > 2 ? parts[2].charAt(0) : parts[1].charAt(0);
-  return `${firstName} ${lastNameInitial}.`;
+  const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+  if (parts.length === 1) return firstName;
+  const lastNameInitial = parts.length > 1 ? parts[1].charAt(0).toUpperCase() : '';
+  return `${firstName} ${lastNameInitial}.`.trim();
 };
+
 
 const getAvatarUrl = (path) => {
   if (!path) return defaultAvatar;
@@ -601,25 +658,50 @@ const selectConversation = async (conversation) => {
     loadingMessages.value = false;
   }
 };
+
 const sendMessage = async () => {
   if (!newMessageText.value.trim() || !isChatActive.value) return;
-  sendingMessage.value = true;
+
+  const textToSend = newMessageText.value.trim();
+  const tempId = `temp_${Date.now()}`;
+
+  messages.value.push({
+    id: tempId,
+    text: textToSend,
+    sender_id: userStore.user.id,
+    timestamp: new Date().toISOString(),
+    is_read: false,
+    sending: true,
+    error: false,
+  });
+
+  newMessageText.value = '';
+  scrollToBottom();
+
   try {
-    const { data: newMessage } = await axios.post('/messages', {
+    const { data: sentMessageData } = await axios.post('/messages', {
       proposal_id: selectedConversation.value.exchange.id,
-      text: newMessageText.value.trim(),
+      text: textToSend,
     });
-    messages.value.push(newMessage);
+
+    const messageIndex = messages.value.findIndex(m => m.id === tempId);
+    if (messageIndex !== -1) {
+      messages.value[messageIndex] = { ...messages.value[messageIndex], ...sentMessageData, sending: false };
+    }
+
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
-    if (convInList) convInList.last_message = newMessage;
-    newMessageText.value = '';
-    scrollToBottom();
+    if (convInList) convInList.last_message = sentMessageData;
+
   } catch (e) {
     toast.error('Error al enviar el mensaje.');
-  } finally {
-    sendingMessage.value = false;
+    const messageIndex = messages.value.findIndex(m => m.id === tempId);
+    if (messageIndex !== -1) {
+      messages.value[messageIndex].sending = false;
+      messages.value[messageIndex].error = true;
+    }
   }
 };
+
 const markMessagesAsRead = async (messagesToRead) => {
     const unreadMessages = messagesToRead.filter(m => !m.is_read && m.sender_id !== userStore.user.id);
     if (unreadMessages.length === 0) return;
@@ -633,8 +715,12 @@ const markMessagesAsRead = async (messagesToRead) => {
 };
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
-  const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada' };
+  const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
   try {
+    if (status === 'completed') {
+      toast.info("Aquí se abriría un modal para dejar una valoración.", { timeout: 5000 });
+    }
+
     await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
     toast.success(`Propuesta ${statusTextMap[status]}.`);
@@ -659,8 +745,8 @@ onBeforeUnmount(() => {
 });
 
 // --- Dynamic Classes ---
-const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-gray-400': status === 'cancelled', 'bg-slate-300': status === 'completed' });
-const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-gray-100 text-gray-700 ring-gray-200': status === 'cancelled', 'bg-slate-50 text-slate-800 ring-slate-200': status === 'completed' });
+const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-gray-400': status === 'cancelled', 'bg-blue-500': status === 'completed' });
+const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-gray-100 text-gray-700 ring-gray-200': status === 'cancelled', 'bg-blue-50 text-blue-800 ring-blue-200': status === 'completed' });
 const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', rejected: 'Rechazada', cancelled: 'Cancelada', completed: 'Completada' }[status] || 'Desconocido');
 
 </script>
