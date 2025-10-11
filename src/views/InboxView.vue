@@ -189,6 +189,18 @@
               <div class="p-4 border-t border-slate-200 bg-slate-50">
                 <form @submit.prevent="sendMessage" class="flex items-center gap-3">
                   <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" :disabled="!isChatActive" />
+                  
+                  <button
+                    type="button"
+                    @click="isLocationModalVisible = true"
+                    :disabled="!isChatActive"
+                    class="p-3 text-sm font-semibold text-white transition-transform"
+                    :class="!isChatActive ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#9e0154] hover:bg-[#d7037b] hover:scale-105 active:scale-95'"
+                    title="Sugerir lugar de encuentro"
+                  >
+                    <MapPinIcon class="h-5 w-5" />
+                  </button>
+                  
                   <button type="submit" :disabled="!newMessageText.trim() || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() || !isChatActive) ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
                     <PaperAirplaneIcon class="h-5 w-5" />
                   </button>
@@ -375,6 +387,36 @@
         </div>
       </div>
     </div>
+    
+    <div v-if="isLocationModalVisible" @click.self="isLocationModalVisible = false" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-0 relative">
+        <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/95">
+          <h3 class="text-lg font-bold text-slate-800">Sugerir un Lugar Seguro</h3>
+          <button @click="isLocationModalVisible = false" class="p-2 rounded-full hover:bg-slate-100">
+            <XMarkIcon class="w-6 h-6 text-slate-600" />
+          </button>
+        </div>
+        <div class="p-5">
+            <p class="text-sm text-slate-600 mb-4">Haz clic en un lugar para enviarlo como sugerencia en el chat. Recomendamos siempre lugares públicos y concurridos.</p>
+            <ul class="space-y-3">
+              <li
+                v-for="place in suggestedPlaces"
+                :key="place.name"
+                @click="sendSuggestedLocation(place)"
+                class="flex items-start p-3 rounded-lg border border-slate-200 hover:bg-pink-50 hover:border-pink-300 cursor-pointer transition-all duration-200"
+              >
+                <div class="p-2 bg-pink-100 rounded-full mr-4">
+                    <MapPinIcon class="h-5 w-5 text-[#d7037b]" />
+                </div>
+                <div>
+                  <p class="font-semibold text-[#9e0154]">{{ place.name }}</p>
+                  <p class="text-xs text-slate-500">{{ place.address }}</p>
+                </div>
+              </li>
+            </ul>
+        </div>
+      </div>
+    </div>
 
   </div>
 </template>
@@ -386,10 +428,11 @@ import axios from '@/axios';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import { useToast } from 'vue-toastification';
-import { 
-  ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, 
+import {
+  ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon,
   EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
-  UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon
+  UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon,
+  MapPinIcon // <-- NUEVA LÓGICA: Importar el ícono del mapa
 } from '@heroicons/vue/24/outline';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
@@ -423,13 +466,34 @@ const isBlockedUsersModalVisible = ref(false);
 const blockedUsers = ref([]);
 const loadingBlockedUsers = ref(false);
 
-const isCancelModalVisible = ref(false); // <-- NUEVO: State para el modal de cancelar
+const isCancelModalVisible = ref(false);
 
 let ws = null;
 const isOtherUserTyping = ref(false);
 
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
 const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
+
+// =================================================================
+// NUEVA LÓGICA: Para el modal de sugerencia de lugares
+// =================================================================
+const isLocationModalVisible = ref(false);
+
+const suggestedPlaces = ref([
+  { name: 'Jockey Plaza', address: 'Av. Javier Prado Este 4200, Santiago de Surco' },
+  { name: 'Plaza San Miguel', address: 'Av. la Marina 2000, San Miguel' },
+  { name: 'Real Plaza Salaverry', address: 'Av. Gral. Salaverry 2370, Jesús María' },
+  { name: 'Parque Kennedy', address: 'Miraflores, Lima' },
+  { name: 'Centro Cívico', address: 'Av. Garcilaso de la Vega 1330, Cercado de Lima' }
+]);
+
+const sendSuggestedLocation = (place) => {
+  const locationMessage = `¡Hola! Para mayor seguridad, te sugiero que nos encontremos en un lugar público. ¿Qué te parece en "${place.name}" (${place.address})?`;
+  newMessageText.value = locationMessage;
+  sendMessage();
+  isLocationModalVisible.value = false;
+};
+// =================================================================
 
 
 const filteredConversations = computed(() => {
@@ -474,7 +538,6 @@ const openDetailsModal = () => {
   showDetailsModal.value = true;
 };
 
-// --- NUEVAS FUNCIONES PARA EL MODAL DE CANCELAR ---
 const openCancelModal = () => {
   isCancelModalVisible.value = true;
 };
@@ -487,7 +550,6 @@ const confirmCancel = async () => {
   await updateProposalStatus('cancelled');
   closeCancelModal();
 };
-// --- FIN DE NUEVAS FUNCIONES ---
 
 const toggleActionMenu = (id) => {
   activeMenuId.value = activeMenuId.value === id ? null : id;
@@ -777,7 +839,7 @@ onMounted(() => {
     fetchConversations();
     connectWebSocket();
   } else {
-    router.push('/login'); 
+    router.push('/login');
   }
 });
 onBeforeUnmount(() => {
