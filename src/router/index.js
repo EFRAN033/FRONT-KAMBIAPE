@@ -170,17 +170,19 @@ const routes = [
       title: 'Términos y Condiciones | KambiaPe'
     }
   },
-  // === ✨ NUEVA RUTA AÑADIDA PARA EL DETALLE DEL PRODUCTO ✨ ===
+
+  // === ✨ RUTA DE DETALLES CORREGIDA ✨ ===
+  // Esta ruta ahora pasará el 'id' del producto como una propiedad al componente.
   {
     path: '/product/:id',
-    name: 'ProductCard',
+    name: 'ProductDetail', // Nombre de ruta corregido para mayor claridad
     component: ProductCard,
-    // La función 'props' pasa el objeto de producto completo a la vista
-    props: route => ({ product: JSON.parse(route.query.product) }),
+    props: true, // ¡Importante! Esto permite que el :id de la URL se pase como una prop al componente.
     meta: {
       title: 'Detalle del Producto | KambiaPe'
     }
   },
+
   // Catch-all route for unmatched paths
   {
     path: '/:pathMatch(.*)*',
