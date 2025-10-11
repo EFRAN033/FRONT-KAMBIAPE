@@ -183,7 +183,7 @@ const props = defineProps({
   product: { type: Object, required: true },
   apiBase: { type: String, default: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' }
 });
-const emit = defineEmits(['close', 'favorite']); // 'propose-trade' ya no es necesario
+const emit = defineEmits(['close', 'favorite']);
 
 const isModalOpen = ref(false);
 const submitting = ref(false);
@@ -263,30 +263,34 @@ const closeProposeModal = () => {
   selectedProductId.value = null;
 };
 
-// --- FUNCIÓN DE ENVÍO TOTALMENTE NUEVA ---
 const submitProposal = async () => {
   if (!selectedProductId.value) {
-    toast.error("Por favor, selecciona un producto para ofrecer.");
+    toast.error('Por favor, selecciona un producto para intercambiar.');
     return;
   }
+
+  // --- INICIO DE LA MODIFICACIÓN ---
+  const payload = {
+    offered_product_id: selectedProductId.value,
+    requested_product_id: props.product.id,
+    // ¡Aquí está la magia! Añadimos el mensaje predeterminado.
+    initial_message: '¿Quisieras intercambiar conmigo?' 
+  };
+  // --- FIN DE LA MODIFICACIÓN ---
+
   submitting.value = true;
   try {
-    const payload = {
-      offered_product_id: selectedProductId.value,
-      requested_product_id: props.product.id,
-    };
-
-    // Llamada directa a la API para crear la propuesta
+    // Usamos el 'payload' que acabamos de crear
     const response = await axios.post('/proposals', payload);
-
+    
     if (response.status === 201) {
-      toast.success("¡Propuesta enviada! Revisa tu bandeja de entrada.");
+      toast.success('¡Propuesta enviada con éxito!');
       closeProposeModal();
       // Redirige al usuario a su Inbox
       router.push({ name: 'Inbox' });
     }
   } catch (error) {
-    const errorMessage = error.response?.data?.detail || "Hubo un error al enviar la propuesta.";
+    const errorMessage = error.response?.data?.detail || 'Hubo un error al enviar la propuesta.';
     console.error("Error al crear la propuesta:", error.response || error);
     toast.error(errorMessage);
   } finally {
