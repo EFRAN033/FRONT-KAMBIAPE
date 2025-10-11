@@ -14,11 +14,9 @@
               <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
           </button>
-
           <h2 class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base font-bold text-white whitespace-nowrap">
             Perfil de Usuario
           </h2>
-
           <div class="w-9 h-9"></div>
         </div>
       </div>
@@ -52,8 +50,7 @@
               <template v-else>
                 <div class="avatar-fallback">
                   <span class="avatar-initials">{{ userStore.userInitials }}</span>
-                  <svg class="avatar-pattern" viewBox="0 0 60 60" aria-hidden="true">
-                    </svg>
+                  <svg class="avatar-pattern" viewBox="0 0 60 60" aria-hidden="true"></svg>
                 </div>
               </template>
 
@@ -86,9 +83,7 @@
                 </svg>
                 <span class="flag-text">Miembro</span>
               </span>
-
               <span class="line-sep" aria-hidden="true"></span>
-
               <span class="state-chip" title="Estado">
                 <span class="led" aria-hidden="true"></span>
                 <span class="sr-only">Estado:</span>
@@ -151,20 +146,8 @@
 
               <div>
                 <label class="label">Teléfono</label>
-                <p v-if="!editMode" class="display-field">
-                  {{ formatPhoneGroups(userProfile.phone) || '-' }}
-                </p>
-                <input
-                  v-else
-                  class="input"
-                  type="tel"
-                  inputmode="tel"
-                  :value="editableProfile.phone"
-                  @input="onPhoneInput"
-                  @paste.prevent="onPhonePaste"
-                  placeholder="+51 999 999 999"
-                  maxlength="21"
-                />
+                <p v-if="!editMode" class="display-field">{{ formatPhoneGroups(userProfile.phone) || '-' }}</p>
+                <input v-else class="input" type="tel" inputmode="tel" :value="editableProfile.phone" @input="onPhoneInput" @paste.prevent="onPhonePaste" placeholder="+51 999 999 999" maxlength="21" />
               </div>
 
               <div>
@@ -172,16 +155,32 @@
                 <p class="display-field">{{ formatDateForDisplay(userProfile.dateOfBirth) || '-' }}</p>
               </div>
 
-              <div>
-                <label class="label">Ciudad</label>
-                <p v-if="!editMode" class="display-field">{{ userProfile.ciudad || '-' }}</p>
-                <input v-else v-model="editableProfile.ciudad" type="text" class="input" placeholder="Tu ciudad" />
-              </div>
-
-              <div>
-                <label class="label">Provincia</label>
-                <p v-if="!editMode" class="display-field">{{ userProfile.provincia || '-' }}</p>
-                <input v-else v-model="editableProfile.provincia" type="text" class="input" placeholder="Tu provincia" />
+              <div class="md:col-span-2">
+                <label class="label">Ubicación</label>
+                <p v-if="!editMode" class="display-field">{{ formatUbicacionForDisplay(userProfile.ubicacion) || '-' }}</p>
+                <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label for="departamento" class="label text-xs">Departamento</label>
+                    <select id="departamento" v-model="selectedDepartamentoId" @change="onDepartamentoChange" class="input">
+                      <option disabled value="">Seleccione</option>
+                      <option v-for="depto in departamentos" :key="depto.id_ubigeo" :value="depto.id_ubigeo">{{ depto.nombre_ubigeo }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="provincia" class="label text-xs">Provincia</label>
+                    <select id="provincia" v-model="selectedProvinciaId" @change="onProvinciaChange" class="input" :disabled="!selectedDepartamentoId">
+                      <option disabled value="">Seleccione</option>
+                      <option v-for="prov in provincias" :key="prov.id_ubigeo" :value="prov.id_ubigeo">{{ prov.nombre_ubigeo }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="distrito" class="label text-xs">Distrito</label>
+                    <select id="distrito" v-model="editableProfile.ubicacion" class="input" :disabled="!selectedProvinciaId">
+                      <option disabled value="">Seleccione</option>
+                      <option v-for="dist in distritos" :key="dist.id_ubigeo" :value="dist.nombre_ubigeo">{{ dist.nombre_ubigeo }}</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div class="md:col-span-2">
@@ -192,7 +191,7 @@
 
               <div class="md:col-span-2">
                 <label class="label">Intereses</label>
-                <div v-if="!editMode">
+                 <div v-if="!editMode">
                   <p v-if="!userProfile.interests || userProfile.interests.length === 0" class="text-sm text-gray-500 dark:text-slate-400 mt-2">
                     Aún no has seleccionado intereses.
                   </p>
@@ -208,18 +207,9 @@
                       Selecciona tus intereses de la lista de abajo.
                     </p>
                     <div v-else class="flex flex-wrap gap-1.5">
-                      <span
-                        v-for="interestName in editableInterests"
-                        :key="`selected-${interestName}`"
-                        class="badge-sq badge-sq--active"
-                      >
+                      <span v-for="interestName in editableInterests" :key="`selected-${interestName}`" class="badge-sq badge-sq--active">
                         {{ interestName }}
-                        <button
-                          @click="toggleInterest(interestName)"
-                          type="button"
-                          class="badge-remove"
-                          :aria-label="`Quitar ${interestName}`"
-                        >
+                        <button @click="toggleInterest(interestName)" type="button" class="badge-remove" :aria-label="`Quitar ${interestName}`">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -230,15 +220,7 @@
                   <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Añadir Intereses:</p>
                     <div v-if="availableCategories.length > 0" class="tile-list">
-                      <button
-                        v-for="category in availableCategories"
-                        :key="category.id"
-                        type="button"
-                        class="tile"
-                        :class="editableInterests.has(category.name) && 'is-selected'"
-                        :aria-pressed="editableInterests.has(category.name)"
-                        @click="toggleInterest(category.name)"
-                      >
+                      <button v-for="category in availableCategories" :key="category.id" type="button" class="tile" :class="editableInterests.has(category.name) && 'is-selected'" :aria-pressed="editableInterests.has(category.name)" @click="toggleInterest(category.name)">
                         <span class="tile-check" aria-hidden="true">
                           <svg v-if="editableInterests.has(category.name)" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 0 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -304,9 +286,12 @@
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 import { ref, reactive, onMounted, watch, computed } from 'vue';
-import axios from '@/axios'; 
+import axios from '@/axios';
 
-// --- Lógica con <script setup> ---
+// --- IMPORTAMOS LOS NUEVOS ARCHIVOS JSON ---
+import departamentosData from '@/data/departamentos.json';
+import provinciasData from '@/data/provincias.json';
+import distritosData from '@/data/distritos.json';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -333,6 +318,13 @@ const editableProfile = ref({});
 const allCategories = ref([]);
 const editableInterests = ref(new Set());
 
+// --- ESTADOS PARA UBIGEO ---
+const departamentos = ref(departamentosData);
+const provincias = ref([]);
+const distritos = ref([]);
+const selectedDepartamentoId = ref('');
+const selectedProvinciaId = ref('');
+
 // --- Propiedades Computadas ---
 const userProfile = computed(() => userStore.getUserProfile);
 const indicatorStyle = computed(() => ({ transform: `translateX(calc(${activeTab.value === 'perfil' ? 0 : 1} * 100%))` }));
@@ -346,55 +338,80 @@ const availableCategories = computed(() => {
   return allCategories.value.filter(category => !editableInterests.value.has(category.name));
 });
 
-// --- Funciones de Utilidad ---
-const handleImageError = () => {
-  imageHasError.value = true;
+// --- LÓGICA DE UBIGEO ---
+const onDepartamentoChange = () => {
+  provincias.value = provinciasData[selectedDepartamentoId.value] || [];
+  selectedProvinciaId.value = '';
+  distritos.value = [];
+  editableProfile.value.ubicacion = '';
 };
 
-// ===== ✨ NUEVAS FUNCIONES PARA FORMATEAR LA FECHA ✨ =====
-/**
- * Formatea una fecha en formato local (ej: '1/12/2004') a 'dd/mm/yyyy'.
- * @param {String | null} localeDate La fecha del store.
- * @returns {String | null} La fecha formateada o null.
- */
+const onProvinciaChange = () => {
+  distritos.value = distritosData[selectedProvinciaId.value] || [];
+  editableProfile.value.ubicacion = '';
+};
+
+const findUbigeoInfo = (distritoName) => {
+  for (const provId in distritosData) {
+    const distrito = distritosData[provId].find(d => d.nombre_ubigeo === distritoName);
+    if (distrito) {
+      for (const depId in provinciasData) {
+        const provincia = provinciasData[depId].find(p => p.id_ubigeo === distrito.id_padre_ubigeo);
+        if (provincia) {
+          const departamento = departamentosData.find(d => d.id_ubigeo === provincia.id_padre_ubigeo);
+          return {
+            departamento: departamento,
+            provincia: provincia,
+            distrito: distrito
+          };
+        }
+      }
+    }
+  }
+  return null;
+};
+
+const setupUbigeoFromProfile = (ubicacionName) => {
+  if (!ubicacionName) return;
+  const info = findUbigeoInfo(ubicacionName);
+  if (info) {
+    selectedDepartamentoId.value = info.departamento.id_ubigeo;
+    provincias.value = provinciasData[info.departamento.id_ubigeo] || [];
+    selectedProvinciaId.value = info.provincia.id_ubigeo;
+    distritos.value = distritosData[info.provincia.id_ubigeo] || [];
+    editableProfile.value.ubicacion = info.distrito.nombre_ubigeo;
+  }
+};
+
+const formatUbicacionForDisplay = (distritoName) => {
+  if (!distritoName) return null;
+  const info = findUbigeoInfo(distritoName);
+  if (info) {
+    return `${info.distrito.nombre_ubigeo}, ${info.provincia.nombre_ubigeo}, ${info.departamento.nombre_ubigeo}`;
+  }
+  return distritoName;
+};
+
+// --- Funciones de Utilidad ---
+const handleImageError = () => { imageHasError.value = true; };
 const formatDateForDisplay = (localeDate) => {
   if (!localeDate) return null;
   const parts = localeDate.split('/');
-  if (parts.length !== 3) return localeDate; // Devuelve como está si el formato no es el esperado
-  
-  const day = parts[0].padStart(2, '0');
-  const month = parts[1].padStart(2, '0');
-  const year = parts[2];
-  
-  return `${day}/${month}/${year}`;
+  if (parts.length !== 3) return localeDate;
+  return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
 };
-
-/**
- * Convierte una fecha en formato local (ej: '1/12/2004') a 'yyyy-mm-dd'
- * para usarla en un <input type="date">.
- * @param {String | null} localeDate La fecha del store.
- * @returns {String} La fecha en formato ISO o una cadena vacía.
- */
 const formatDateForInput = (localeDate) => {
-    if (!localeDate) return '';
-    const parts = localeDate.split('/');
-    if (parts.length !== 3) return '';
-    
-    // El orden en `toLocaleDateString` es d/m/y
-    const day = parts[0].padStart(2, '0');
-    const month = parts[1].padStart(2, '0');
-    const year = parts[2];
-    
-    return `${year}-${month}-${day}`;
+  if (!localeDate) return '';
+  const parts = localeDate.split('/');
+  if (parts.length !== 3) return '';
+  return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
 };
-
 const showNotification = (message, type = 'info', duration = 3000) => {
   toastMessage.value = message;
   toastType.value = type;
   showToast.value = true;
   setTimeout(() => { showToast.value = false; }, duration);
 };
-
 const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 const setTab = (tab) => activeTab.value = tab;
 
@@ -410,13 +427,13 @@ const fetchCategories = async () => {
 };
 
 const enterEditMode = async () => {
-  // Hacemos una copia profunda para no mutar el estado del store directamente
   const profileCopy = JSON.parse(JSON.stringify(userProfile.value));
-  
-  // ✨ Convertimos la fecha al formato que necesita el input type="date"
   profileCopy.dateOfBirth = formatDateForInput(profileCopy.dateOfBirth);
-  
   editableProfile.value = profileCopy;
+  
+  // Inicializamos los selectores de ubicación
+  setupUbigeoFromProfile(userProfile.value.ubicacion);
+  
   editableInterests.value = new Set(userProfile.value.interests || []);
   if (editableProfile.value?.phone) {
     editableProfile.value.phone = formatPhoneGroups(onlyDigits(editableProfile.value.phone));
@@ -505,8 +522,7 @@ const onPhonePaste = (e) => {
   const formatted = formatPhoneGroups(text);
   const target = e.target;
   const start = target.selectionStart, end = target.selectionEnd;
-  const before = target.value.slice(0, start), after = target.value.slice(end);
-  const merged = before + formatted + after;
+  const merged = target.value.slice(0, start) + formatted + target.value.slice(end);
   target.value = formatPhoneGroups(merged);
   editableProfile.value.phone = target.value;
   requestAnimationFrame(() => { target.selectionStart = target.selectionEnd = target.value.length; });
@@ -543,6 +559,7 @@ watch(userProfile, (newProfile) => {
 }, { immediate: true, deep: true });
 </script>
 
+
 <style scoped>
 /* (Tus estilos se mantienen exactamente iguales, no es necesario copiarlos aquí de nuevo) */
 /* ---------- Branding ---------- */
@@ -556,7 +573,6 @@ watch(userProfile, (newProfile) => {
 }
 @keyframes aurora-float { 50% { transform: translateY(-18px); } }
 
-/* ... (el resto de tus estilos van aquí) ... */
 .icon-btn{ width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;transition:.25s; }
 .icon-btn:hover{ background:rgba(255,255,255,.22); transform:scale(1.08); }
 .icon-btn:focus-visible{ outline:2px solid rgba(255,255,255,.6); outline-offset:2px; }
