@@ -50,10 +50,27 @@
           
           <aside class="w-full lg:w-[34%] flex-shrink-0 border-r border-slate-200 overflow-y-auto custom-scrollbar-unique">
             <div class="sticky top-0 bg-white/90 backdrop-blur px-4 py-3 border-b border-slate-100 z-10 flex items-center justify-between">
-              <h2 class="text-[13px] tracking-wide font-semibold text-slate-700">Conversaciones</h2>
-              <span v-if="totalUnreadMessages>0" class="text-[11px] px-2 py-0.5 bg-red-50 text-red-700 border border-red-200">
-                {{ totalUnreadMessages }} sin leer
-              </span>
+              <div class="flex items-center gap-3">
+                <h2 class="text-[13px] tracking-wide font-semibold text-slate-700">Conversaciones</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <span v-if="totalUnreadMessages>0" class="text-[11px] px-2 py-0.5 bg-red-50 text-red-700 border border-red-200">
+                  {{ totalUnreadMessages }} sin leer
+                </span>
+                <div class="relative">
+                  <button @click="isConversationMenuOpen = !isConversationMenuOpen" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800" title="Más opciones">
+                    <EllipsisVerticalIcon class="h-5 w-5" />
+                  </button>
+                  <div v-if="isConversationMenuOpen" @click.away="isConversationMenuOpen = false" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
+                    <div class="py-1">
+                      <a @click.prevent="openBlockedUsersModal" href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                        <ShieldCheckIcon class="h-4 w-4 text-slate-500" />
+                        Gestionar bloqueados
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <ul v-if="filteredConversations.length" class="divide-y divide-slate-100">
               <li
@@ -198,27 +215,23 @@
                   <XMarkIcon class="w-5 h-5" />
                 </button>
               </div>
-
               <div class="flex flex-col p-6">
                 <div class="flex flex-col items-center text-center">
                   <img :src="getAvatarUrl(selectedProfileUser.avatar)" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover mb-4 ring-2 ring-offset-2 ring-[#d7037b]/50">
                   <h3 class="text-xl font-bold">{{ formatUserName(selectedProfileUser.full_name) }}</h3>
                 </div>
-                
                 <div class="mt-6 w-full text-left pt-4 border-t border-slate-200">
                   <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Biografía</h4>
                   <p class="text-sm text-slate-600 mt-2 italic">
                     {{ selectedProfileUser.bio || 'Este usuario aún no ha añadido una biografía.' }}
                   </p>
                 </div>
-
                 <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
                   <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ubicación</h4>
                   <p class="text-sm text-slate-600 mt-2">
                     {{ selectedProfileUser.address || 'No especificada.' }}
                   </p>
                 </div>
-
                 <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
                   <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Intereses</h4>
                   <div v-if="selectedProfileUser.interests && selectedProfileUser.interests.length > 0" class="flex flex-wrap gap-1.5 mt-2">
@@ -230,11 +243,9 @@
                     Este usuario no ha añadido intereses.
                   </p>
                 </div>
-
               </div>
             </aside>
           </transition>
-
         </div>
       </div>
     </main>
@@ -254,7 +265,7 @@
     <div v-if="isBlockModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-semibold text-slate-900">Bloquear Usuario</h3>
-        <p class="mt-2 text-sm text-slate-600">¿Seguro que quieres bloquear a <span class="font-bold">{{ conversationToActOn?.user.full_name }}</span>? No podrán enviarte más mensajes ni propuestas.</p>
+        <p class="mt-2 text-sm text-slate-600">¿Seguro que quieres bloquear a <span class="font-bold">{{ formatUserName(conversationToActOn?.user.full_name) }}</span>? No podrán enviarte más mensajes ni propuestas.</p>
         <div class="mt-5 flex justify-end gap-3">
           <button @click="closeBlockModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
           <button @click="confirmBlock" class="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md">Bloquear</button>
@@ -265,11 +276,42 @@
     <div v-if="isReportModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-semibold text-slate-900">Reportar y Bloquear Usuario</h3>
-        <p class="mt-2 text-sm text-slate-600">Estás a punto de reportar y bloquear a <span class="font-bold">{{ conversationToActOn?.user.full_name }}</span>. Por favor, danos un motivo.</p>
+        <p class="mt-2 text-sm text-slate-600">Estás a punto de reportar y bloquear a <span class="font-bold">{{ formatUserName(conversationToActOn?.user.full_name) }}</span>. Por favor, danos un motivo.</p>
         <textarea v-model="reportReason" rows="3" placeholder="Ej: Es un estafador, me está acosando, etc." class="mt-4 w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-[#d7037b] focus:border-transparent"></textarea>
         <div class="mt-5 flex justify-end gap-3">
           <button @click="closeReportModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
           <button @click="confirmBlockAndReport" :disabled="!reportReason.trim()" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:bg-red-300 disabled:cursor-not-allowed">Reportar y Bloquear</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isBlockedUsersModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-xl p-0 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-4 border-b border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900">Usuarios Bloqueados</h3>
+            <button @click="closeBlockedUsersModal" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200">
+                <XMarkIcon class="w-5 h-5" />
+            </button>
+        </div>
+        <div class="p-6 max-h-[60vh] overflow-y-auto">
+            <div v-if="loadingBlockedUsers" class="text-center py-8">
+                <svg class="animate-spin h-8 w-8 text-[#d7037b] mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </div>
+            <div v-else-if="blockedUsers.length === 0" class="text-center py-8 text-slate-500">
+                <NoSymbolIcon class="h-12 w-12 mx-auto text-slate-300 mb-2"/>
+                <p>No tienes a nadie bloqueado.</p>
+            </div>
+            <ul v-else class="space-y-3">
+                <li v-for="user in blockedUsers" :key="user.id" class="flex items-center justify-between p-2 rounded-md hover:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <img :src="getAvatarUrl(user.avatar)" :alt="user.full_name" class="h-10 w-10 rounded-full object-cover"/>
+                        <span class="font-medium text-sm">{{ formatUserName(user.full_name) }}</span>
+                    </div>
+                    <button @click="confirmUnblock(user)" class="px-3 py-1 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md">
+                        Desbloquear
+                    </button>
+                </li>
+            </ul>
         </div>
       </div>
     </div>
@@ -287,10 +329,9 @@ import { useToast } from 'vue-toastification';
 import { 
   ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, 
   EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
-  UserMinusIcon, ShieldExclamationIcon // Nuevos iconos
+  UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon
 } from '@heroicons/vue/24/outline';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
-import { useDebounceFn } from '@vueuse/core';
 import { useRouter } from 'vue-router';
 
 // --- State ---
@@ -310,18 +351,23 @@ const showDetailsModal = ref(false);
 const messagesContainer = ref(null);
 const selectedProfileUser = ref(null);
 
-// State for Action Menu and Modals
+// State for Action Menus and Modals
 const activeMenuId = ref(null);
 const isDeleteModalVisible = ref(false);
 const isBlockModalVisible = ref(false);
 const isReportModalVisible = ref(false);
-const conversationToActOn = ref(null); // Usado para delete, block y report
+const conversationToActOn = ref(null);
 const reportReason = ref('');
+const isConversationMenuOpen = ref(false);
+
+// State for Blocked Users Management
+const isBlockedUsersModalVisible = ref(false);
+const blockedUsers = ref([]);
+const loadingBlockedUsers = ref(false);
 
 // --- WebSocket & Real-time State ---
 let ws = null;
 const isOtherUserTyping = ref(false);
-let typingTimeout = null;
 
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
 const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
@@ -390,25 +436,89 @@ const closeReportModal = () => isReportModalVisible.value = false;
 
 const confirmDelete = async () => {
   if (!conversationToActOn.value) return;
-  // Lógica para llamar a la API de borrado
-  toast.success("Conversación eliminada (simulado).");
-  closeDeleteModal();
+  const idToDelete = conversationToActOn.value.exchange.id;
+  try {
+    await axios.delete(`/proposals/${idToDelete}`);
+    conversations.value = conversations.value.filter(c => c.exchange.id !== idToDelete);
+    if (selectedConversation.value?.exchange.id === idToDelete) {
+      selectedConversation.value = null;
+    }
+    toast.success("Conversación eliminada.");
+  } catch (error) {
+    toast.error("No se pudo eliminar la conversación.");
+  } finally {
+    closeDeleteModal();
+  }
 };
 
 const confirmBlock = async () => {
   if (!conversationToActOn.value) return;
-  // TODO: Implementar llamada a la API POST /api/users/{userId}/block
-  console.log(`Bloqueando al usuario: ${conversationToActOn.value.user.id}`);
-  toast.warning(`Has bloqueado a ${conversationToActOn.value.user.full_name} (simulado).`);
-  closeBlockModal();
+  const userToBlock = conversationToActOn.value.user;
+  try {
+    await axios.post(`/users/${userToBlock.id}/block`);
+    toast.warning(`Has bloqueado a ${formatUserName(userToBlock.full_name)}.`);
+    conversations.value = conversations.value.filter(c => c.user.id !== userToBlock.id);
+    if (selectedConversation.value?.user.id === userToBlock.id) {
+      selectedConversation.value = null;
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.detail || "No se pudo bloquear al usuario.");
+  } finally {
+    closeBlockModal();
+  }
 };
 
 const confirmBlockAndReport = async () => {
   if (!conversationToActOn.value || !reportReason.value.trim()) return;
-  // TODO: Implementar llamada a la API POST /api/users/{userId}/report con { reason: reportReason.value }
-  console.log(`Reportando y bloqueando al usuario: ${conversationToActOn.value.user.id} por motivo: "${reportReason.value}"`);
-  toast.error(`Has reportado y bloqueado a ${conversationToActOn.value.user.full_name} (simulado).`);
-  closeReportModal();
+  const userToReport = conversationToActOn.value.user;
+  try {
+    await axios.post(`/users/${userToReport.id}/report`, {
+      reason: reportReason.value.trim()
+    });
+    toast.error(`Has reportado y bloqueado a ${formatUserName(userToReport.full_name)}.`);
+    conversations.value = conversations.value.filter(c => c.user.id !== userToReport.id);
+    if (selectedConversation.value?.user.id === userToReport.id) {
+      selectedConversation.value = null;
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.detail || "No se pudo reportar al usuario.");
+  } finally {
+    closeReportModal();
+  }
+};
+
+// --- Blocked Users Management Methods ---
+const openBlockedUsersModal = async () => {
+  isConversationMenuOpen.value = false;
+  isBlockedUsersModalVisible.value = true;
+  await fetchBlockedUsers();
+};
+
+const closeBlockedUsersModal = () => {
+  isBlockedUsersModalVisible.value = false;
+};
+
+const fetchBlockedUsers = async () => {
+  loadingBlockedUsers.value = true;
+  try {
+    const { data } = await axios.get('/users/me/blocked');
+    blockedUsers.value = data;
+  } catch (error) {
+    toast.error("No se pudo cargar la lista de bloqueados.");
+  } finally {
+    loadingBlockedUsers.value = false;
+  }
+};
+
+const confirmUnblock = async (userToUnblock) => {
+  try {
+    await axios.delete(`/users/${userToUnblock.id}/block`);
+    toast.success(`${formatUserName(userToUnblock.full_name)} ha sido desbloqueado.`);
+    blockedUsers.value = blockedUsers.value.filter(u => u.id !== userToUnblock.id);
+    await fetchConversations();
+  } catch (error) {
+    toast.error("No se pudo desbloquear al usuario.");
+  }
 };
 
 // --- Profile Panel Methods ---
@@ -471,7 +581,6 @@ const fetchConversations = async () => {
     loadingConversations.value = false;
   }
 };
-
 const selectConversation = async (conversation) => {
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
@@ -492,7 +601,6 @@ const selectConversation = async (conversation) => {
     loadingMessages.value = false;
   }
 };
-
 const sendMessage = async () => {
   if (!newMessageText.value.trim() || !isChatActive.value) return;
   sendingMessage.value = true;
@@ -512,7 +620,6 @@ const sendMessage = async () => {
     sendingMessage.value = false;
   }
 };
-
 const markMessagesAsRead = async (messagesToRead) => {
     const unreadMessages = messagesToRead.filter(m => !m.is_read && m.sender_id !== userStore.user.id);
     if (unreadMessages.length === 0) return;
@@ -524,7 +631,6 @@ const markMessagesAsRead = async (messagesToRead) => {
         console.error("Error al marcar mensajes como leídos:", error);
     }
 };
-
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada' };
@@ -539,7 +645,6 @@ const updateProposalStatus = async (status) => {
   }
 };
 
-
 // --- Lifecycle & Watchers ---
 onMounted(() => {
   if(userStore.isLoggedIn){
@@ -549,7 +654,6 @@ onMounted(() => {
     router.push('/login'); 
   }
 });
-
 onBeforeUnmount(() => {
   if (ws) ws.close();
 });
