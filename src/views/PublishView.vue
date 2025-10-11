@@ -516,7 +516,7 @@ const submitNow = async () => {
 
     if (response.status === 201) {
       toast.success('¡Producto publicado con éxito!');
-      await userStore.fetchProfile(); // Actualiza los créditos
+      await userStore.fetchUserProfile(userStore.user.id);
       
       startAnimation(); 
       setTimeout(() => {

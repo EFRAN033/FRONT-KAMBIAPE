@@ -66,14 +66,14 @@
                 <span class="absolute inset-y-0 left-0 w-1" :class="statusStripeClass(c.exchange.status)"></span>
                 <div class="ml-2 flex items-start gap-3">
                   <div class="relative shrink-0">
-                    <img :src="c.user.avatar" :alt="c.user.full_name" class="h-11 w-11 object-cover rounded-full border border-slate-200"/>
+                    <img :src="getAvatarUrl(c.user.avatar)" :alt="c.user.full_name" class="h-11 w-11 object-cover rounded-full border border-slate-200"/>
                     <span v-if="c.unread_count>0" class="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 inline-flex items-center justify-center text-[11px] font-semibold text-white bg-red-500 rounded-full">
                       {{ c.unread_count }}
                     </span>
                   </div>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-baseline justify-between gap-2">
-                      <p class="text-[15px] font-semibold text-slate-900 truncate">{{ c.user.full_name }}</p>
+                      <p class="text-[15px] font-semibold text-slate-900 truncate" :title="c.user.full_name">{{ formatUserName(c.user.full_name) }}</p>
                       <span class="text-[11px] text-slate-500 whitespace-nowrap">{{ formatTime(c.last_message?.timestamp || c.exchange.created_at) }}</span>
                     </div>
                     <p class="text-[13px] text-slate-600 mt-0.5 truncate">
@@ -98,10 +98,11 @@
             <template v-if="selectedConversation">
               <div class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-3 min-w-0">
-                  <img :src="selectedConversation.user.avatar" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow" />
+                  <img :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow" />
                   <div class="min-w-0">
-                    <h3 class="font-semibold text-[15px] text-slate-900 truncate">{{ selectedConversation.user.full_name }}</h3>
-                    <p class="text-[12px] text-slate-600 flex items-center gap-1 flex-wrap">
+                    <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
+                    <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
+                    <p v-else class="text-[12px] text-slate-600 flex items-center gap-1 flex-wrap h-4">
                       <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.offer.title }}</span>
                       <ArrowRightIcon class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
                       <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.request.title }}</span>
@@ -126,14 +127,14 @@
                 
                 <div v-else class="h-full overflow-y-auto custom-scrollbar-unique space-y-4 p-5" ref="messagesContainer">
                   <div v-for="(message, index) in messages" :key="message.id" class="flex animate-fade-in-message" :style="{ animationDelay: `${index * 0.05}s` }" :class="message.sender_id === userStore.user?.id ? 'justify-end' : 'justify-start'">
-                    <img v-if="message.sender_id !== userStore.user?.id" :src="selectedConversation.user.avatar" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
+                    <img v-if="message.sender_id !== userStore.user?.id" :src="getAvatarUrl(selectedConversation.user.avatar)" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
                     <div class="max-w-[78%] px-4 py-3 rounded-[10px] shadow-[0_1px_0_rgba(0,0,0,0.04)]" :class="message.sender_id === userStore.user?.id ? 'bg-[#d7037b] text-white rounded-br-sm' : 'bg-slate-50 text-slate-800 border border-slate-200 rounded-bl-sm'">
                       <p class="text-[15px] leading-relaxed break-words">{{ message.text }}</p>
                       <div class="mt-1.5 flex items-center gap-1 text-[11px]" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
                         <span>{{ formatTime(message.timestamp) }}</span>
                         <span v-if="message.sender_id === userStore.user?.id">
-                          <CheckCircleIcon v-if="message.is_read" class="h-3.5 w-3.5 inline-block" />
-                          <ClockIcon v-else class="h-3.5 w-3.5 inline-block" />
+                          <CheckCircleIcon v-if="message.is_read" class="h-4 w-4 inline-block text-blue-400" title="Visto" />
+                          <CheckCircleIcon v-else class="h-4 w-4 inline-block" title="Entregado" />
                         </span>
                       </div>
                     </div>
@@ -178,6 +179,8 @@ import Header from './Header.vue';
 import Footer from './Footer.vue';
 import { useToast } from 'vue-toastification';
 import { ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, EyeIcon, PaperAirplaneIcon, ClockIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
+import { useDebounceFn } from '@vueuse/core';
 
 // --- State ---
 const userStore = useUserStore();
@@ -193,7 +196,14 @@ const loadingMessages = ref(false);
 const sendingMessage = ref(false);
 const showDetailsModal = ref(false);
 const messagesContainer = ref(null);
-let pollingInterval = null;
+
+// --- WebSocket & Real-time State ---
+let ws = null;
+const isOtherUserTyping = ref(false);
+let typingTimeout = null;
+
+const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
+const WS_BASE_URL = import.meta.env.VITE_APP_WS_URL || 'ws://localhost:8000/ws';
 
 // --- Computed Properties ---
 const filteredConversations = computed(() => {
@@ -212,8 +222,23 @@ const totalUnreadMessages = computed(() => conversations.value.reduce((sum, c) =
 const isChatActive = computed(() => selectedConversation.value && ['pending', 'accepted'].includes(selectedConversation.value.exchange.status));
 const canAcceptOrReject = computed(() => selectedConversation.value && selectedConversation.value.exchange.status === 'pending' && selectedConversation.value.exchange.request.user_id === userStore.user?.id);
 
-// --- Methods ---
-const formatDate = (s) => s ? new Date(s).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+// --- Utility & Formatting Methods ---
+const formatUserName = (fullName) => {
+  if (!fullName || typeof fullName !== 'string') return '';
+  const parts = fullName.trim().split(' ').filter(p => p);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0];
+  const firstName = parts[0];
+  const lastNameInitial = parts.length > 2 ? parts[2].charAt(0) : parts[1].charAt(0);
+  return `${firstName} ${lastNameInitial}.`;
+};
+
+const getAvatarUrl = (path) => {
+  if (!path) return defaultAvatar;
+  if (path.startsWith('http') || path.startsWith('data:')) return path;
+  return `${API_BASE_URL}${path}`;
+};
+
 const formatTime = (s) => s ? new Date(s).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
 
 const scrollToBottom = () => {
@@ -224,6 +249,60 @@ const scrollToBottom = () => {
   });
 };
 
+// --- WebSocket Logic ---
+const connectWebSocket = () => {
+  if (!userStore.user?.id) return;
+  if (ws) ws.close();
+
+  const wsUrl = `${WS_BASE_URL}/${userStore.user.id}`;
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => console.log("WebSocket conectado.");
+  ws.onclose = () => {
+    console.log("WebSocket desconectado.");
+    ws = null;
+    // Opcional: Implementar lógica de reconexión aquí
+  };
+  ws.onerror = (error) => console.error("Error de WebSocket:", error);
+  ws.onmessage = (event) => {
+    const response = JSON.parse(event.data);
+    
+    if (response.type === 'new_message' && selectedConversation.value?.exchange.id === response.data.proposal_id) {
+      messages.value.push(response.data);
+      scrollToBottom();
+      markMessagesAsRead([response.data]);
+    }
+
+    if (response.type === 'typing' && selectedConversation.value?.user.id === response.sender_id) {
+      isOtherUserTyping.value = response.is_typing;
+      if (response.is_typing) {
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => { isOtherUserTyping.value = false; }, 3000);
+      }
+    }
+    
+    if (response.type === 'messages_read' && selectedConversation.value?.exchange.id === response.proposal_id) {
+        response.message_ids.forEach(read_id => {
+            const msg = messages.value.find(m => m.id === read_id);
+            if (msg) msg.is_read = true;
+        });
+    }
+  };
+};
+
+const sendTypingEvent = (isTyping) => {
+  if (ws?.readyState === WebSocket.OPEN && selectedConversation.value) {
+    ws.send(JSON.stringify({
+      type: "typing",
+      is_typing: isTyping,
+      recipient_id: selectedConversation.value.user.id
+    }));
+  }
+};
+
+const debouncedSendTyping = useDebounceFn(sendTypingEvent, 300);
+
+// --- API Methods ---
 const fetchConversations = async () => {
   loadingConversations.value = true;
   try {
@@ -231,7 +310,6 @@ const fetchConversations = async () => {
     conversations.value = data;
   } catch (e) {
     toast.error('Error al cargar las conversaciones.');
-    console.error(e);
   } finally {
     loadingConversations.value = false;
   }
@@ -242,7 +320,7 @@ const selectConversation = async (conversation) => {
   
   selectedConversation.value = conversation;
   messages.value = [];
-  stopPolling();
+  isOtherUserTyping.value = false;
   
   loadingMessages.value = true;
   try {
@@ -253,10 +331,9 @@ const selectConversation = async (conversation) => {
     if (convInList) convInList.unread_count = 0;
     
     scrollToBottom();
-    startPolling();
+    markMessagesAsRead(messages.value);
   } catch (e) {
     toast.error("No se pudieron cargar los mensajes.");
-    console.error(e);
   } finally {
     loadingMessages.value = false;
   }
@@ -270,7 +347,8 @@ const sendMessage = async () => {
       proposal_id: selectedConversation.value.exchange.id,
       text: newMessageText.value.trim(),
     });
-    messages.value.push(newMessage);
+    // Ya no añadimos el mensaje aquí, esperamos que el WebSocket lo envíe de vuelta.
+    // messages.value.push(newMessage); 
     
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
     if (convInList) convInList.last_message = newMessage;
@@ -279,10 +357,27 @@ const sendMessage = async () => {
     scrollToBottom();
   } catch (e) {
     toast.error('Error al enviar el mensaje.');
-    console.error(e);
   } finally {
     sendingMessage.value = false;
   }
+};
+
+const markMessagesAsRead = async (messagesToRead) => {
+    const unreadMessages = messagesToRead.filter(m => !m.is_read && m.sender_id !== userStore.user.id);
+    if (unreadMessages.length === 0) return;
+
+    unreadMessages.forEach(m => m.is_read = true); // Actualización optimista en la UI
+
+    const messageIds = unreadMessages.map(m => m.id);
+    try {
+        await axios.patch('/messages/read_status', { 
+            message_ids: messageIds, 
+            is_read: true 
+        });
+        // El backend notificará al otro usuario por WebSocket
+    } catch (error) {
+        console.error("Error al marcar mensajes como leídos:", error);
+    }
 };
 
 const updateProposalStatus = async (status) => {
@@ -295,52 +390,33 @@ const updateProposalStatus = async (status) => {
     await fetchConversations();
   } catch (e) {
     toast.error(e.response?.data?.detail || 'Error al actualizar la propuesta.');
-    console.error(e);
   }
 };
 
-const pollForNewMessages = async () => {
-    if (!selectedConversation.value || document.hidden) return;
-    try {
-        const lastMessageId = messages.value.length > 0 ? messages.value[messages.value.length - 1].id : 0;
-        const { data: newMessages } = await axios.get(`/proposals/${selectedConversation.value.exchange.id}/messages?since=${lastMessageId}`);
-
-        if (newMessages.length > 0) {
-            const currentIds = new Set(messages.value.map(m => m.id));
-            const trulyNew = newMessages.filter(m => !currentIds.has(m.id));
-            if (trulyNew.length > 0) {
-                messages.value.push(...trulyNew);
-                scrollToBottom();
-            }
-        }
-    } catch (error) {
-        console.error("Error en polling:", error);
-    }
-};
-
-const startPolling = () => {
-  stopPolling();
-  pollingInterval = setInterval(pollForNewMessages, 10000); // Cada 10 segundos
-};
-
-const stopPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-    pollingInterval = null;
+// --- Watchers ---
+watch(newMessageText, (newValue, oldValue) => {
+  if (!selectedConversation.value) return;
+  if (newValue.trim().length > 0 && oldValue.trim().length === 0) {
+    sendTypingEvent(true);
   }
-};
+  debouncedSendTyping(true);
+  if (newValue.trim().length === 0 && oldValue.trim().length > 0) {
+    sendTypingEvent(false);
+  }
+});
 
 // --- Lifecycle Hooks ---
 onMounted(() => {
   if(userStore.isLoggedIn){
     fetchConversations();
+    connectWebSocket();
   } else {
     router.push('/login');
   }
 });
 
 onBeforeUnmount(() => {
-  stopPolling();
+  if (ws) ws.close();
 });
 
 // --- Dynamic Classes ---
@@ -350,7 +426,6 @@ const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', re
 </script>
 
 <style>
-/* Animaciones y estilos de scrollbar (sin cambios) */
 @keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .animate-spin-slow{animation:spin-slow 8s linear infinite}
 @keyframes fade-in-message{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}

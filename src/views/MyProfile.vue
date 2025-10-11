@@ -142,13 +142,11 @@
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               <div>
                 <label class="label">Nombre Completo</label>
-                <p v-if="!editMode" class="display-field">{{ capitalizeFirstLetter(userProfile.fullName) || '-' }}</p>
-                <input v-else v-model="editableProfile.fullName" type="text" class="input" placeholder="Tu nombre y apellido" />
+                <p class="display-field">{{ capitalizeFirstLetter(userProfile.fullName) || '-' }}</p>
               </div>
               <div>
                 <label class="label">DNI / Documento</label>
-                <p v-if="!editMode" class="display-field">{{ userProfile.dni || '-' }}</p>
-                <input v-else v-model="editableProfile.dni" type="text" maxlength="12" inputmode="numeric" class="input" placeholder="12345678" />
+                <p class="display-field">{{ userProfile.dni || '-' }}</p>
               </div>
 
               <div>
@@ -171,8 +169,7 @@
 
               <div>
                 <label class="label">Fecha de Nacimiento</label>
-                <p v-if="!editMode" class="display-field">{{ formatDateForDisplay(userProfile.dateOfBirth) || '-' }}</p>
-                <input v-else v-model="editableProfile.dateOfBirth" type="date" class="input" />
+                <p class="display-field">{{ formatDateForDisplay(userProfile.dateOfBirth) || '-' }}</p>
               </div>
 
               <div class="md:col-span-2">

@@ -103,7 +103,7 @@
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.5 4.5 0 00-1.879 3.487c-.024.143-.024.287 0 .431.133.791.436 1.53.86 2.185.341.52.768.963 1.228 1.328V15a1 1 0 102 0v-2.083c.46-.365.887-.808 1.228-1.328.424-.655.727-1.394.86-2.185.024-.144.024-.288 0-.431A4.5 4.5 0 0011 5.092V5z" clip-rule="evenodd" />
                 </svg>
                 <span class="credits-text">{{ userStore.userCredits }}</span>
-                <span class="credits-label hidden sm:inline">Créditos</span>
+                <span class="credits-label hidden sm:inline">Kambitos</span>
               </div>
 
               <div class="relative">
