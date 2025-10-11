@@ -172,10 +172,16 @@
                 <p class="display-field">{{ formatDateForDisplay(userProfile.dateOfBirth) || '-' }}</p>
               </div>
 
-              <div class="md:col-span-2">
-                <label class="label">Dirección de Casa</label>
-                <p v-if="!editMode" class="display-field">{{ userProfile.address || '-' }}</p>
-                <input v-else v-model="editableProfile.address" type="text" class="input" placeholder="Av. Principal 123, tu ciudad" />
+              <div>
+                <label class="label">Ciudad</label>
+                <p v-if="!editMode" class="display-field">{{ userProfile.ciudad || '-' }}</p>
+                <input v-else v-model="editableProfile.ciudad" type="text" class="input" placeholder="Tu ciudad" />
+              </div>
+
+              <div>
+                <label class="label">Provincia</label>
+                <p v-if="!editMode" class="display-field">{{ userProfile.provincia || '-' }}</p>
+                <input v-else v-model="editableProfile.provincia" type="text" class="input" placeholder="Tu provincia" />
               </div>
 
               <div class="md:col-span-2">
