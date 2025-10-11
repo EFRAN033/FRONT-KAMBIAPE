@@ -91,8 +91,17 @@
                   <button @click.stop="toggleActionMenu(c.exchange.id)" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-700">
                     <EllipsisVerticalIcon class="h-5 w-5" />
                   </button>
-                  <div v-if="activeMenuId === c.exchange.id" class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
+                  <div v-if="activeMenuId === c.exchange.id" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
                     <div class="py-1">
+                      <a @click.prevent="openBlockModal(c)" href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                        <UserMinusIcon class="h-4 w-4 text-slate-500" />
+                        Bloquear usuario
+                      </a>
+                      <a @click.prevent="openReportModal(c)" href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                        <ShieldExclamationIcon class="h-4 w-4 text-slate-500" />
+                        Reportar y Bloquear
+                      </a>
+                      <div class="my-1 h-px bg-slate-200"></div>
                       <a @click.prevent="openDeleteModal(c)" href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-red-700 hover:bg-red-50">
                         <TrashIcon class="h-4 w-4" />
                         Eliminar chat
@@ -213,15 +222,16 @@
                 <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
                   <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Intereses</h4>
                   <div v-if="selectedProfileUser.interests && selectedProfileUser.interests.length > 0" class="flex flex-wrap gap-1.5 mt-2">
-                    <span v-for="interest in selectedProfileUser.interests" :key="interest" class="badge-sq">
-                      {{ interest }}
+                    <span v-for="interest in selectedProfileUser.interests" :key="interest.id" class="badge-sq">
+                      {{ interest.name }}
                     </span>
                   </div>
                   <p v-else class="text-sm text-slate-500 mt-2 italic">
                     Este usuario no ha añadido intereses.
                   </p>
                 </div>
-                </div>
+
+              </div>
             </aside>
           </transition>
 
@@ -233,18 +243,33 @@
     <div v-if="isDeleteModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-semibold text-slate-900">Eliminar conversación</h3>
-        <div class="mt-2">
-          <p class="text-sm text-slate-600">
-            ¿Seguro que quieres eliminar permanentemente esta conversación? Esta acción no se puede deshacer.
-          </p>
-        </div>
+        <p class="mt-2 text-sm text-slate-600">¿Seguro que quieres eliminar esta conversación? Esta acción es irreversible.</p>
         <div class="mt-5 flex justify-end gap-3">
-          <button @click="closeDeleteModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">
-            Cancelar
-          </button>
-          <button @click="confirmDelete" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">
-            Eliminar
-          </button>
+          <button @click="closeDeleteModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
+          <button @click="confirmDelete" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">Eliminar</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isBlockModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-slate-900">Bloquear Usuario</h3>
+        <p class="mt-2 text-sm text-slate-600">¿Seguro que quieres bloquear a <span class="font-bold">{{ conversationToActOn?.user.full_name }}</span>? No podrán enviarte más mensajes ni propuestas.</p>
+        <div class="mt-5 flex justify-end gap-3">
+          <button @click="closeBlockModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
+          <button @click="confirmBlock" class="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md">Bloquear</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isReportModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-slate-900">Reportar y Bloquear Usuario</h3>
+        <p class="mt-2 text-sm text-slate-600">Estás a punto de reportar y bloquear a <span class="font-bold">{{ conversationToActOn?.user.full_name }}</span>. Por favor, danos un motivo.</p>
+        <textarea v-model="reportReason" rows="3" placeholder="Ej: Es un estafador, me está acosando, etc." class="mt-4 w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-[#d7037b] focus:border-transparent"></textarea>
+        <div class="mt-5 flex justify-end gap-3">
+          <button @click="closeReportModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
+          <button @click="confirmBlockAndReport" :disabled="!reportReason.trim()" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:bg-red-300 disabled:cursor-not-allowed">Reportar y Bloquear</button>
         </div>
       </div>
     </div>
@@ -261,12 +286,14 @@ import Footer from './Footer.vue';
 import { useToast } from 'vue-toastification';
 import { 
   ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, 
-  EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon 
+  EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
+  UserMinusIcon, ShieldExclamationIcon // Nuevos iconos
 } from '@heroicons/vue/24/outline';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useDebounceFn } from '@vueuse/core';
 import { useRouter } from 'vue-router';
 
+// --- State ---
 const userStore = useUserStore();
 const toast = useToast();
 const router = useRouter();
@@ -282,10 +309,16 @@ const sendingMessage = ref(false);
 const showDetailsModal = ref(false);
 const messagesContainer = ref(null);
 const selectedProfileUser = ref(null);
+
+// State for Action Menu and Modals
 const activeMenuId = ref(null);
 const isDeleteModalVisible = ref(false);
-const conversationToDelete = ref(null);
+const isBlockModalVisible = ref(false);
+const isReportModalVisible = ref(false);
+const conversationToActOn = ref(null); // Usado para delete, block y report
+const reportReason = ref('');
 
+// --- WebSocket & Real-time State ---
 let ws = null;
 const isOtherUserTyping = ref(false);
 let typingTimeout = null;
@@ -293,6 +326,8 @@ let typingTimeout = null;
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
 const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
 
+
+// --- Computed Properties ---
 const filteredConversations = computed(() => {
   let list = conversations.value;
   if (filter.value === 'unread') {
@@ -325,14 +360,62 @@ const canCancel = computed(() => {
     return ex.status === 'pending' && ex.proposer_user_id === userStore.user.id;
 });
 
-const openProfilePanel = (user) => {
-  selectedProfileUser.value = user;
+// --- Modal and Action Methods ---
+
+const toggleActionMenu = (id) => {
+  activeMenuId.value = activeMenuId.value === id ? null : id;
 };
 
-const closeProfilePanel = () => {
-  selectedProfileUser.value = null;
+const openDeleteModal = (conversation) => {
+  conversationToActOn.value = conversation;
+  isDeleteModalVisible.value = true;
+  activeMenuId.value = null;
+};
+const closeDeleteModal = () => isDeleteModalVisible.value = false;
+
+const openBlockModal = (conversation) => {
+  conversationToActOn.value = conversation;
+  isBlockModalVisible.value = true;
+  activeMenuId.value = null;
+};
+const closeBlockModal = () => isBlockModalVisible.value = false;
+
+const openReportModal = (conversation) => {
+  conversationToActOn.value = conversation;
+  isReportModalVisible.value = true;
+  reportReason.value = '';
+  activeMenuId.value = null;
+};
+const closeReportModal = () => isReportModalVisible.value = false;
+
+const confirmDelete = async () => {
+  if (!conversationToActOn.value) return;
+  // Lógica para llamar a la API de borrado
+  toast.success("Conversación eliminada (simulado).");
+  closeDeleteModal();
 };
 
+const confirmBlock = async () => {
+  if (!conversationToActOn.value) return;
+  // TODO: Implementar llamada a la API POST /api/users/{userId}/block
+  console.log(`Bloqueando al usuario: ${conversationToActOn.value.user.id}`);
+  toast.warning(`Has bloqueado a ${conversationToActOn.value.user.full_name} (simulado).`);
+  closeBlockModal();
+};
+
+const confirmBlockAndReport = async () => {
+  if (!conversationToActOn.value || !reportReason.value.trim()) return;
+  // TODO: Implementar llamada a la API POST /api/users/{userId}/report con { reason: reportReason.value }
+  console.log(`Reportando y bloqueando al usuario: ${conversationToActOn.value.user.id} por motivo: "${reportReason.value}"`);
+  toast.error(`Has reportado y bloqueado a ${conversationToActOn.value.user.full_name} (simulado).`);
+  closeReportModal();
+};
+
+// --- Profile Panel Methods ---
+const openProfilePanel = (user) => selectedProfileUser.value = user;
+const closeProfilePanel = () => selectedProfileUser.value = null;
+
+// --- Utility & Formatting Methods ---
 const formatUserName = (fullName) => {
   if (!fullName || typeof fullName !== 'string') return '';
   const parts = fullName.trim().split(' ').filter(p => p);
@@ -353,60 +436,30 @@ const formatTime = (s) => s ? new Date(s).toLocaleTimeString('es-ES', { hour: '2
 
 const scrollToBottom = () => {
   nextTick(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-    }
+    if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   });
 };
 
+// --- WebSocket Logic ---
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
   if (ws) ws.close();
-  
   const wsUrl = `${WS_BASE_URL}/${userStore.user.id}?token=${userStore.token}`;
   ws = new WebSocket(wsUrl);
-
   ws.onopen = () => console.log("WebSocket conectado.");
-  ws.onclose = () => { ws = null; };
+  ws.onclose = () => ws = null;
   ws.onerror = (error) => console.error("Error de WebSocket:", error);
   ws.onmessage = (event) => {
     const response = JSON.parse(event.data);
-    
     if (response.type === 'new_message' && selectedConversation.value?.exchange.id === response.data.proposal_id) {
       messages.value.push(response.data);
       scrollToBottom();
       markMessagesAsRead([response.data]);
     }
-
-    if (response.type === 'typing' && selectedConversation.value?.user.id === response.sender_id) {
-      isOtherUserTyping.value = response.is_typing;
-      if (response.is_typing) {
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => { isOtherUserTyping.value = false; }, 3000);
-      }
-    }
-    
-    if (response.type === 'messages_read' && selectedConversation.value?.exchange.id === response.proposal_id) {
-        response.message_ids.forEach(read_id => {
-            const msg = messages.value.find(m => m.id === read_id);
-            if (msg) msg.is_read = true;
-        });
-    }
   };
 };
 
-const sendTypingEvent = (isTyping) => {
-  if (ws?.readyState === WebSocket.OPEN && selectedConversation.value) {
-    ws.send(JSON.stringify({
-      type: "typing",
-      is_typing: isTyping,
-      recipient_id: selectedConversation.value.user.id
-    }));
-  }
-};
-
-const debouncedSendTyping = useDebounceFn(sendTypingEvent, 300);
-
+// --- API Methods ---
 const fetchConversations = async () => {
   loadingConversations.value = true;
   try {
@@ -420,24 +473,17 @@ const fetchConversations = async () => {
 };
 
 const selectConversation = async (conversation) => {
-  if (selectedProfileUser.value) {
-    closeProfilePanel();
-  }
-  
+  if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
   
   selectedConversation.value = conversation;
   messages.value = [];
-  isOtherUserTyping.value = false;
-  
   loadingMessages.value = true;
   try {
     const { data } = await axios.get(`/proposals/${conversation.exchange.id}/messages`);
     messages.value = data;
-    
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
-    
     scrollToBottom();
     markMessagesAsRead(messages.value);
   } catch (e) {
@@ -455,12 +501,9 @@ const sendMessage = async () => {
       proposal_id: selectedConversation.value.exchange.id,
       text: newMessageText.value.trim(),
     });
-    
     messages.value.push(newMessage);
-    
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
     if (convInList) convInList.last_message = newMessage;
-    
     newMessageText.value = '';
     scrollToBottom();
   } catch (e) {
@@ -473,9 +516,7 @@ const sendMessage = async () => {
 const markMessagesAsRead = async (messagesToRead) => {
     const unreadMessages = messagesToRead.filter(m => !m.is_read && m.sender_id !== userStore.user.id);
     if (unreadMessages.length === 0) return;
-
     unreadMessages.forEach(m => m.is_read = true);
-
     const messageIds = unreadMessages.map(m => m.id);
     try {
         await axios.patch('/messages/read_status', { message_ids: messageIds, is_read: true });
@@ -491,63 +532,15 @@ const updateProposalStatus = async (status) => {
     await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
     toast.success(`Propuesta ${statusTextMap[status]}.`);
-    
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
     if (convInList) convInList.exchange.status = status;
-
   } catch (e) {
     toast.error(e.response?.data?.detail || `Error al ${statusTextMap[status]} la propuesta.`);
   }
 };
 
-const toggleActionMenu = (id) => {
-  if (activeMenuId.value === id) {
-    activeMenuId.value = null;
-  } else {
-    activeMenuId.value = id;
-  }
-};
 
-const openDeleteModal = (conversation) => {
-  conversationToDelete.value = conversation;
-  isDeleteModalVisible.value = true;
-  activeMenuId.value = null;
-};
-
-const closeDeleteModal = () => {
-  isDeleteModalVisible.value = false;
-  conversationToDelete.value = null;
-};
-
-const confirmDelete = async () => {
-  if (!conversationToDelete.value) return;
-  const idToDelete = conversationToDelete.value.exchange.id;
-  try {
-    await axios.delete(`/proposals/${idToDelete}`);
-    
-    conversations.value = conversations.value.filter(c => c.exchange.id !== idToDelete);
-    
-    if (selectedConversation.value?.exchange.id === idToDelete) {
-      selectedConversation.value = null;
-      messages.value = [];
-    }
-    
-    toast.success("Conversación eliminada.");
-  } catch (error) {
-    toast.error("No se pudo eliminar la conversación.");
-    console.error("Error al eliminar la conversación:", error);
-  } finally {
-    closeDeleteModal();
-  }
-};
-
-watch(newMessageText, (newValue, oldValue) => {
-  if (!selectedConversation.value) return;
-  if (newValue.trim().length > 0 && oldValue.trim().length === 0) sendTypingEvent(true);
-  debouncedSendTyping(true);
-  if (newValue.trim().length === 0 && oldValue.trim().length > 0) sendTypingEvent(false);
-});
-
+// --- Lifecycle & Watchers ---
 onMounted(() => {
   if(userStore.isLoggedIn){
     fetchConversations();
@@ -561,6 +554,7 @@ onBeforeUnmount(() => {
   if (ws) ws.close();
 });
 
+// --- Dynamic Classes ---
 const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-gray-400': status === 'cancelled', 'bg-slate-300': status === 'completed' });
 const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-gray-100 text-gray-700 ring-gray-200': status === 'cancelled', 'bg-slate-50 text-slate-800 ring-slate-200': status === 'completed' });
 const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', rejected: 'Rechazada', cancelled: 'Cancelada', completed: 'Completada' }[status] || 'Desconocido');
@@ -572,13 +566,11 @@ const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', re
 .slide-fade-leave-active {
   transition: all 0.3s ease-out;
 }
-
 .slide-fade-enter-from,
 .slide-fade-leave-to {
   transform: translateX(100%);
   opacity: 0;
 }
-
 @keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .animate-spin-slow{animation:spin-slow 8s linear infinite}
 @keyframes fade-in-message{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -587,13 +579,10 @@ const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', re
 .custom-scrollbar-unique::-webkit-scrollbar-track{background:rgba(226,232,240,.4)}
 .custom-scrollbar-unique::-webkit-scrollbar-thumb{background:rgba(215,3,123,.4);border-radius:10px;border:1px solid rgba(215,3,123,.25)}
 .custom-scrollbar-unique::-webkit-scrollbar-thumb:hover{background:rgba(215,3,123,.65)}
-
-/* === INICIO: NUEVOS ESTILOS COPIADOS DE MYPROFILE.VUE === */
 .badge-sq{
   display:inline-flex; align-items:center; gap:.35rem;
   padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
   border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
 }
 .dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
-/* === FIN: NUEVOS ESTILOS COPIADOS DE MYPROFILE.VUE === */
 </style>
