@@ -147,17 +147,17 @@
               <div>
                 <label class="label">Teléfono</label>
                 <p v-if="!editMode" class="display-field">{{ formatPhoneGroups(userProfile.phone) || '-' }}</p>
-                <input v-else class="input" type="tel" inputmode="tel" :value="editableProfile.phone" @input="onPhoneInput" @paste.prevent="onPhonePaste" placeholder="+51 999 999 999" maxlength="21" />
+                <input v-else v-model="editableProfile.phone" class="input" type="tel" inputmode="tel" @input="onPhoneInput" placeholder="+51 999 999 999" maxlength="21" />
               </div>
 
               <div>
                 <label class="label">Fecha de Nacimiento</label>
-                <p class="display-field">{{ formatDateForDisplay(userProfile.dateOfBirth) || '-' }}</p>
+                <p class="display-field">{{ userProfile.dateOfBirth || '-' }}</p>
               </div>
 
               <div class="md:col-span-2">
                 <label class="label">Ubicación</label>
-                <p v-if="!editMode" class="display-field">{{ formatUbicacionForDisplay(userProfile.ubicacion) || '-' }}</p>
+                <p v-if="!editMode" class="display-field">{{ formatUbicacionForDisplay(userProfile.address) || '-' }}</p>
                 <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label for="departamento" class="label text-xs">Departamento</label>
@@ -175,7 +175,7 @@
                   </div>
                   <div>
                     <label for="distrito" class="label text-xs">Distrito</label>
-                    <select id="distrito" v-model="editableProfile.ubicacion" class="input" :disabled="!selectedProvinciaId">
+                    <select id="distrito" v-model="editableProfile.address" class="input" :disabled="!selectedProvinciaId">
                       <option disabled value="">Seleccione</option>
                       <option v-for="dist in distritos" :key="dist.id_ubigeo" :value="dist.nombre_ubigeo">{{ dist.nombre_ubigeo }}</option>
                     </select>
@@ -299,9 +299,6 @@ const router = useRouter();
 // --- Estados para la UI ---
 const editMode = ref(false);
 const activeTab = ref('perfil');
-const showToast = ref(false);
-const toastMessage = ref('');
-const toastType = ref('info');
 const fileInput = ref(null);
 const isDragOver = ref(false);
 const MAX_SIZE_MB = 2;
@@ -331,7 +328,7 @@ const indicatorStyle = computed(() => ({ transform: `translateX(calc(${activeTab
 
 const displayPhotoUrl = computed(() => {
   imageHasError.value = false;
-  return userStore.user?.profilePicture;
+  return userProfile.value.profilePicture;
 });
 
 const availableCategories = computed(() => {
@@ -343,15 +340,16 @@ const onDepartamentoChange = () => {
   provincias.value = provinciasData[selectedDepartamentoId.value] || [];
   selectedProvinciaId.value = '';
   distritos.value = [];
-  // editableProfile.value.ubicacion = ''; // <-- CORRECCIÓN: Línea eliminada
+  editableProfile.value.address = ''; // <-- CORRECCIÓN: Usar 'address' y reiniciar
 };
 
 const onProvinciaChange = () => {
   distritos.value = distritosData[selectedProvinciaId.value] || [];
-  // editableProfile.value.ubicacion = ''; // <-- CORRECCIÓN: Línea eliminada
+  editableProfile.value.address = ''; // <-- CORRECCIÓN: Usar 'address' y reiniciar
 };
 
 const findUbigeoInfo = (distritoName) => {
+  if (!distritoName) return null;
   for (const provId in distritosData) {
     const distrito = distritosData[provId].find(d => d.nombre_ubigeo === distritoName);
     if (distrito) {
@@ -359,11 +357,7 @@ const findUbigeoInfo = (distritoName) => {
         const provincia = provinciasData[depId].find(p => p.id_ubigeo === distrito.id_padre_ubigeo);
         if (provincia) {
           const departamento = departamentosData.find(d => d.id_ubigeo === provincia.id_padre_ubigeo);
-          return {
-            departamento: departamento,
-            provincia: provincia,
-            distrito: distrito
-          };
+          return { departamento, provincia, distrito };
         }
       }
     }
@@ -371,15 +365,15 @@ const findUbigeoInfo = (distritoName) => {
   return null;
 };
 
-const setupUbigeoFromProfile = (ubicacionName) => {
-  if (!ubicacionName) return;
-  const info = findUbigeoInfo(ubicacionName);
+const setupUbigeoFromProfile = (addressName) => {
+  if (!addressName) return;
+  const info = findUbigeoInfo(addressName);
   if (info) {
     selectedDepartamentoId.value = info.departamento.id_ubigeo;
     provincias.value = provinciasData[info.departamento.id_ubigeo] || [];
     selectedProvinciaId.value = info.provincia.id_ubigeo;
     distritos.value = distritosData[info.provincia.id_ubigeo] || [];
-    editableProfile.value.ubicacion = info.distrito.nombre_ubigeo;
+    editableProfile.value.address = info.distrito.nombre_ubigeo;
   }
 };
 
@@ -394,24 +388,13 @@ const formatUbicacionForDisplay = (distritoName) => {
 
 // --- Funciones de Utilidad ---
 const handleImageError = () => { imageHasError.value = true; };
-const formatDateForDisplay = (localeDate) => {
-  if (!localeDate) return null;
-  const parts = localeDate.split('/');
-  if (parts.length !== 3) return localeDate;
-  return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
+
+// Helper para notificaciones (si tienes un componente Toast)
+const showNotification = (message, type = 'info') => {
+  console.log(`[${type.toUpperCase()}] Notification: ${message}`);
+  // Aquí iría la lógica para mostrar un componente de notificación real
 };
-const formatDateForInput = (localeDate) => {
-  if (!localeDate) return '';
-  const parts = localeDate.split('/');
-  if (parts.length !== 3) return '';
-  return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-};
-const showNotification = (message, type = 'info', duration = 3000) => {
-  toastMessage.value = message;
-  toastType.value = type;
-  showToast.value = true;
-  setTimeout(() => { showToast.value = false; }, duration);
-};
+
 const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 const setTab = (tab) => activeTab.value = tab;
 
@@ -427,17 +410,21 @@ const fetchCategories = async () => {
 };
 
 const enterEditMode = async () => {
-  const profileCopy = JSON.parse(JSON.stringify(userProfile.value));
-  profileCopy.dateOfBirth = formatDateForInput(profileCopy.dateOfBirth);
-  editableProfile.value = profileCopy;
+  // Clon profundo para evitar mutaciones no deseadas
+  editableProfile.value = JSON.parse(JSON.stringify(userProfile.value));
   
-  // Inicializamos los selectores de ubicación
-  setupUbigeoFromProfile(userProfile.value.ubicacion);
+  // Convertir fecha de 'dd/mm/yyyy' a 'yyyy-mm-dd' para el input
+  if (editableProfile.value.dateOfBirth) {
+    const parts = editableProfile.value.dateOfBirth.split('/');
+    if (parts.length === 3) {
+      editableProfile.value.dateOfBirth = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+  }
+
+  setupUbigeoFromProfile(userProfile.value.address);
   
   editableInterests.value = new Set(userProfile.value.interests || []);
-  if (editableProfile.value?.phone) {
-    editableProfile.value.phone = formatPhoneGroups(onlyDigits(editableProfile.value.phone));
-  }
+  
   editMode.value = true;
   showNotification('Modo de edición activado.', 'info');
   if (allCategories.value.length === 0) {
@@ -451,15 +438,31 @@ const cancelEdit = () => {
 };
 
 const saveProfile = async () => {
-  if (!userStore.user?.id) return showNotification('Error: ID de usuario no encontrado.', 'error');
+  if (!userStore.user?.id) {
+      showNotification('Error: ID de usuario no encontrado.', 'error');
+      return;
+  }
+
   showNotification('Guardando cambios...', 'info');
+
   const selectedInterestIds = Array.from(editableInterests.value)
     .map(name => allCategories.value.find(cat => cat.name === name)?.id)
-    .filter(id => id !== null);
-  const payload = { ...editableProfile.value, interest_ids: selectedInterestIds };
+    .filter(id => id != null);
+
+  // Prepara el payload final con los nombres de campo que espera el backend
+  const payload = {
+    ...editableProfile.value,
+    interest_ids: selectedInterestIds,
+  };
+  
+  // Limpia campos que no deben enviarse directamente
   delete payload.interests;
-  if (typeof payload.phone === 'string') payload.phone = onlyDigits(payload.phone);
+  delete payload.profilePicture; // La foto se actualiza por otra ruta
+  delete payload.created_at;
+  delete payload.email; // El email no debería ser editable aquí
+
   const success = await userStore.updateProfile(userStore.user.id, payload);
+  
   if (success) {
     editMode.value = false;
     showNotification('Perfil actualizado con éxito.', 'success');
@@ -468,10 +471,10 @@ const saveProfile = async () => {
   }
 };
 
+
 const logout = async () => {
   showNotification('Cerrando sesión...', 'info');
-  await new Promise(r => setTimeout(r, 600));
-  userStore.clearUser();
+  await userStore.clearUser();
   router.push('/login');
 };
 
@@ -481,8 +484,14 @@ const openChangePasswordModal = () => {
 };
 
 const handlePasswordChange = async () => {
-  if (passwordFields.new_password !== passwordFields.confirm_new_password) return showNotification('Las nuevas contraseñas no coinciden.', 'error');
-  if (passwordFields.new_password.length < 6) return showNotification('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+  if (passwordFields.new_password !== passwordFields.confirm_new_password) {
+      showNotification('Las nuevas contraseñas no coinciden.', 'error');
+      return;
+  }
+  if (passwordFields.new_password.length < 6) {
+      showNotification('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+      return;
+  }
   const result = await userStore.changePassword(passwordFields);
   if (result.success) {
     showPasswordModal.value = false;
@@ -496,12 +505,21 @@ const changeProfilePicture = () => fileInput.value?.click();
 
 const handleFile = async (file) => {
   if (!file) return;
-  if (!file.type.startsWith('image/')) return showNotification('Solo se permiten archivos de imagen.', 'error');
-  if (file.size > MAX_SIZE_MB * 1024 * 1024) return showNotification(`La imagen no debe superar ${MAX_SIZE_MB}MB.`, 'error');
+  if (!file.type.startsWith('image/')) {
+      showNotification('Solo se permiten archivos de imagen.', 'error');
+      return;
+  }
+  if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      showNotification(`La imagen no debe superar ${MAX_SIZE_MB}MB.`, 'error');
+      return;
+  }
+  
   const formData = new FormData();
   formData.append('file', file);
   showNotification('Subiendo imagen...', 'info');
+  
   const result = await userStore.uploadProfilePicture(formData);
+  
   if (result.success) {
     showNotification('Foto de perfil actualizada.', 'success');
   } else {
@@ -514,18 +532,15 @@ const onDragOver = (e) => { e.preventDefault(); isDragOver.value = true; };
 const onDragLeave = () => { isDragOver.value = false; };
 const onDrop = (e) => { e.preventDefault(); isDragOver.value = false; handleFile(e.dataTransfer?.files?.[0]); };
 
-const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
-const formatPhoneGroups = (value) => { const digits = onlyDigits(value); return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim(); };
-const onPhoneInput = (e) => { const raw = e.target.value; e.target.value = formatPhoneGroups(raw); editableProfile.value.phone = e.target.value; };
-const onPhonePaste = (e) => {
-  const text = (e.clipboardData || window.clipboardData).getData('text');
-  const formatted = formatPhoneGroups(text);
-  const target = e.target;
-  const start = target.selectionStart, end = target.selectionEnd;
-  const merged = target.value.slice(0, start) + formatted + target.value.slice(end);
-  target.value = formatPhoneGroups(merged);
-  editableProfile.value.phone = target.value;
-  requestAnimationFrame(() => { target.selectionStart = target.selectionEnd = target.value.length; });
+const formatPhoneGroups = (value) => { 
+  if (!value) return '';
+  const digits = value.replace(/\D+/g, ''); 
+  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim(); 
+};
+const onPhoneInput = (e) => { 
+  const formatted = formatPhoneGroups(e.target.value);
+  editableProfile.value.phone = formatted;
+  e.target.value = formatted;
 };
 
 const openDevicesModal = () => {
@@ -553,15 +568,16 @@ onMounted(async () => {
 });
 
 watch(userProfile, (newProfile) => {
-  if (!editMode.value) {
-    editableProfile.value = { ...newProfile };
+  if (newProfile && !editMode.value) {
+    // Sincroniza el editableProfile cuando el perfil del store cambia (y no estamos en modo edición)
+    editableProfile.value = JSON.parse(JSON.stringify(newProfile));
   }
 }, { immediate: true, deep: true });
 </script>
 
 
 <style scoped>
-/* (Tus estilos se mantienen exactamente iguales, no es necesario copiarlos aquí de nuevo) */
+/* (Tus estilos se mantienen exactamente iguales) */
 /* ---------- Branding ---------- */
 .brand-header { background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%); }
 .aurora {
