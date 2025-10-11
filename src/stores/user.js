@@ -3,22 +3,17 @@ import { defineStore } from 'pinia';
 import axios from '@/axios';
 
 // --- ✨ 1. IMPORTAMOS TU AVATAR POR DEFECTO ÚNICO ✨ ---
-// Esta línea importa la imagen SVG directamente.
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 
 // Función auxiliar para normalizar las URLs de las imágenes.
 const normalizeImageUrl = (url) => {
   if (!url) {
-    // --- ✨ 2. SI NO HAY URL, USAMOS TU AVATAR POR DEFECTO ✨ ---
     return defaultAvatar;
   }
-  // Si la URL ya es absoluta (http, https, data URI, blob), la devuelve tal cual.
   if (/^(https?:\/\/|data:|blob:)/i.test(url)) {
     return url;
   }
-  // Si no, construye la URL completa con la base de la API/storage.
   const baseUrl = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
-  // Evita dobles barras si la URL ya empieza con una
   return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
@@ -41,7 +36,6 @@ export const useUserStore = defineStore('user', {
       agreed_terms: false,
       created_at: null,
       interests: [],
-      // ===== ✨ 1. AÑADIMOS CRÉDITOS AL ESTADO INICIAL ✨ =====
       credits: 0,
     },
     loading: false,
@@ -62,7 +56,6 @@ export const useUserStore = defineStore('user', {
       return (names[0][0] + names[names.length - 1][0]).toUpperCase();
     },
     getUserProfile: (state) => state.user,
-    // ===== ✨ 2. AÑADIMOS UN GETTER PARA LOS CRÉDITOS ✨ =====
     userCredits: (state) => state.user?.credits || 0,
   },
 
@@ -73,7 +66,6 @@ export const useUserStore = defineStore('user', {
       document.documentElement.classList.toggle('dark', this.isDarkMode);
     },
 
-    // Procesa los datos del usuario que vienen del backend de manera consistente
     _processUserData(data) {
       const processedData = {
         id: data.id || null,
@@ -90,8 +82,7 @@ export const useUserStore = defineStore('user', {
         agreed_terms: data.agreed_terms || false,
         created_at: data.created_at || null,
         interests: data.interests || [],
-        // ===== ✨ 3. PROCESAMOS LOS CRÉDITOS QUE VIENEN DE LA API ✨ =====
-        credits: data.credits ?? 0, // Si 'credits' no viene, le asignamos 0.
+        credits: data.credits ?? 0,
       };
       return processedData;
     },
@@ -129,8 +120,9 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
+        // --- ✅ RUTA CORREGIDA SEGÚN TU BACKEND ---
         const response = await axios.get(`/profile/${userId}`);
-        const userData = this._processUserData(response.data); // Ya procesa los créditos
+        const userData = this._processUserData(response.data);
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(userData));
       } catch (err) {
@@ -160,8 +152,9 @@ export const useUserStore = defineStore('user', {
         
         delete dataToSend.interests;
 
+        // --- ✅ RUTA CORREGIDA SEGÚN TU BACKEND ---
         const response = await axios.put(`/profile/${userId}`, dataToSend);
-        const updatedUserData = this._processUserData(response.data); // Ya procesa los créditos
+        const updatedUserData = this._processUserData(response.data);
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
         return true;
@@ -180,6 +173,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
+        // Asumiendo que esta ruta es correcta, si no, también hay que verificarla en main.py
         await axios.put('/users/change-password', passwordData);
         return { success: true, message: 'Contraseña actualizada con éxito.' };
       } catch (err) {
@@ -195,11 +189,12 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
+        // --- ✅ RUTA CORREGIDA SEGÚN TU BACKEND ---
         const response = await axios.post('/profile/picture', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-        const updatedUserData = this._processUserData(response.data); // Ya procesa los créditos
+        const updatedUserData = this._processUserData(response.data);
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
         
@@ -228,7 +223,6 @@ export const useUserStore = defineStore('user', {
         agreed_terms: false,
         created_at: null,
         interests: [],
-        // ===== ✨ 4. RESETEAMOS LOS CRÉDITOS AL CERRAR SESIÓN ✨ =====
         credits: 0,
       };
       localStorage.removeItem('user');
