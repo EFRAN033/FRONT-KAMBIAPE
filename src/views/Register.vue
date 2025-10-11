@@ -296,6 +296,7 @@ export default {
       this.errorMessage = '';
       this.isLoading = true;
 
+      // Validación de Frontend antes de enviar
       if (this.password !== this.confirmPassword) {
         this.errorMessage = 'Las contraseñas no coinciden.';
         this.toast.error(this.errorMessage);
@@ -330,13 +331,17 @@ export default {
         this.$router.push('/login');
 
       } catch (error) {
+        // Manejo de errores que incluye la validación de DNI del Backend (FastAPI)
         if (error.response) {
+          // Captura el mensaje 'detail' de FastAPI (ej: DNI no coincide, email ya existe)
           this.errorMessage = error.response.data.detail || 'Error en el registro. Verifica tus datos.';
           console.error('Error de registro desde el servidor:', error.response.data);
         } else if (error.request) {
+            // Error de red o servidor no responde
             this.errorMessage = 'No se pudo conectar al servidor. Por favor, inténtalo más tarde.';
             console.error('No se recibió respuesta del servidor:', error.request);
         } else {
+          // Otro error inesperado
           this.errorMessage = 'Ocurrió un error inesperado al procesar tu solicitud.';
           console.error('Error inesperado:', error.message);
         }
