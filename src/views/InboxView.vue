@@ -46,8 +46,8 @@
           <p class="ml-3 text-sm font-medium text-[#9e0154]">Cargando tus conversaciones…</p>
         </div>
 
-        <div v-else class="flex flex-col lg:flex-row h-[75vh] max-h-[850px] border border-slate-200">
-
+        <div v-else class="flex flex-row h-[75vh] max-h-[850px] border border-slate-200">
+          
           <aside class="w-full lg:w-[34%] flex-shrink-0 border-r border-slate-200 overflow-y-auto custom-scrollbar-unique">
             <div class="sticky top-0 bg-white/90 backdrop-blur px-4 py-3 border-b border-slate-100 z-10 flex items-center justify-between">
               <h2 class="text-[13px] tracking-wide font-semibold text-slate-700">Conversaciones</h2>
@@ -108,14 +108,14 @@
             </div>
           </aside>
 
-          <section class="w-full lg:w-[66%] flex flex-col bg-white">
+          <section class="flex-1 flex flex-col bg-white overflow-hidden">
             <template v-if="selectedConversation">
-              <div class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between">
+              <div @click="openProfilePanel(selectedConversation.user)" class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
                 <div class="flex items-center gap-3 min-w-0">
                   <img :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow" />
                   <div class="min-w-0">
                     <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
-                    <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
+                     <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
                     <p v-else class="text-[12px] text-slate-600 flex items-center gap-1 flex-wrap h-4">
                       <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.offer.title }}</span>
                       <ArrowRightIcon class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
@@ -123,7 +123,7 @@
                     </p>
                   </div>
                 </div>
-                <div class="flex gap-1.5 flex-shrink-0">
+                <div @click.stop class="flex gap-1.5 flex-shrink-0">
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('accepted')" class="p-2 text-green-700 bg-green-50 hover:bg-green-100" title="Aceptar"><CheckIcon class="h-5 w-5" /></button>
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('rejected')" class="p-2 text-red-700 bg-red-50 hover:bg-red-100" title="Rechazar"><XMarkIcon class="h-5 w-5" /></button>
                   <button v-if="canCancel" @click="updateProposalStatus('cancelled')" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
@@ -131,7 +131,7 @@
                 </div>
               </div>
 
-              <div class="relative flex-1 overflow-hidden">
+               <div class="relative flex-1 overflow-hidden">
                 <div v-if="loadingMessages" class="absolute inset-0 flex items-center justify-center bg-white/50 z-20">
                     <svg class="animate-spin h-8 w-8 text-[#d7037b]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                 </div>
@@ -165,7 +165,7 @@
                     <svg v-else class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   </button>
                 </form>
-                <p v-if="!isChatActive" class="text-[12px] text-red-500 mt-2 text-center">
+                 <p v-if="!isChatActive" class="text-[12px] text-red-500 mt-2 text-center">
                   No puedes enviar mensajes a propuestas que han sido {{ statusText(selectedConversation.exchange.status).toLowerCase() }}s.
                 </p>
               </div>
@@ -180,6 +180,51 @@
               </div>
             </template>
           </section>
+
+          <transition name="slide-fade">
+            <aside v-if="selectedProfileUser" class="w-full lg:w-[30%] flex-shrink-0 bg-white border-l border-slate-200 overflow-y-auto custom-scrollbar-unique">
+              <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-sm z-10">
+                <h2 class="text-base font-semibold">Perfil del Usuario</h2>
+                <button @click="closeProfilePanel" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800">
+                  <XMarkIcon class="w-5 h-5" />
+                </button>
+              </div>
+
+              <div class="flex flex-col p-6">
+                <div class="flex flex-col items-center text-center">
+                  <img :src="getAvatarUrl(selectedProfileUser.avatar)" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover mb-4 ring-2 ring-offset-2 ring-[#d7037b]/50">
+                  <h3 class="text-xl font-bold">{{ formatUserName(selectedProfileUser.full_name) }}</h3>
+                </div>
+                
+                <div class="mt-6 w-full text-left pt-4 border-t border-slate-200">
+                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Biografía</h4>
+                  <p class="text-sm text-slate-600 mt-2 italic">
+                    {{ selectedProfileUser.bio || 'Este usuario aún no ha añadido una biografía.' }}
+                  </p>
+                </div>
+
+                <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ubicación</h4>
+                  <p class="text-sm text-slate-600 mt-2">
+                    {{ selectedProfileUser.address || 'No especificada.' }}
+                  </p>
+                </div>
+
+                <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Intereses</h4>
+                  <div v-if="selectedProfileUser.interests && selectedProfileUser.interests.length > 0" class="flex flex-wrap gap-1.5 mt-2">
+                    <span v-for="interest in selectedProfileUser.interests" :key="interest" class="badge-sq">
+                      {{ interest }}
+                    </span>
+                  </div>
+                  <p v-else class="text-sm text-slate-500 mt-2 italic">
+                    Este usuario no ha añadido intereses.
+                  </p>
+                </div>
+                </div>
+            </aside>
+          </transition>
+
         </div>
       </div>
     </main>
@@ -222,7 +267,6 @@ import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useDebounceFn } from '@vueuse/core';
 import { useRouter } from 'vue-router';
 
-// --- State ---
 const userStore = useUserStore();
 const toast = useToast();
 const router = useRouter();
@@ -237,14 +281,11 @@ const loadingMessages = ref(false);
 const sendingMessage = ref(false);
 const showDetailsModal = ref(false);
 const messagesContainer = ref(null);
-
-// --- State for Delete Functionality ---
+const selectedProfileUser = ref(null);
 const activeMenuId = ref(null);
 const isDeleteModalVisible = ref(false);
 const conversationToDelete = ref(null);
 
-
-// --- WebSocket & Real-time State ---
 let ws = null;
 const isOtherUserTyping = ref(false);
 let typingTimeout = null;
@@ -252,8 +293,6 @@ let typingTimeout = null;
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
 const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
 
-
-// --- Computed Properties ---
 const filteredConversations = computed(() => {
   let list = conversations.value;
   if (filter.value === 'unread') {
@@ -286,7 +325,14 @@ const canCancel = computed(() => {
     return ex.status === 'pending' && ex.proposer_user_id === userStore.user.id;
 });
 
-// --- Utility & Formatting Methods ---
+const openProfilePanel = (user) => {
+  selectedProfileUser.value = user;
+};
+
+const closeProfilePanel = () => {
+  selectedProfileUser.value = null;
+};
+
 const formatUserName = (fullName) => {
   if (!fullName || typeof fullName !== 'string') return '';
   const parts = fullName.trim().split(' ').filter(p => p);
@@ -313,7 +359,6 @@ const scrollToBottom = () => {
   });
 };
 
-// --- WebSocket Logic ---
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
   if (ws) ws.close();
@@ -362,7 +407,6 @@ const sendTypingEvent = (isTyping) => {
 
 const debouncedSendTyping = useDebounceFn(sendTypingEvent, 300);
 
-// --- API Methods ---
 const fetchConversations = async () => {
   loadingConversations.value = true;
   try {
@@ -376,6 +420,10 @@ const fetchConversations = async () => {
 };
 
 const selectConversation = async (conversation) => {
+  if (selectedProfileUser.value) {
+    closeProfilePanel();
+  }
+  
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
   
   selectedConversation.value = conversation;
@@ -452,8 +500,6 @@ const updateProposalStatus = async (status) => {
   }
 };
 
-
-// --- Delete Conversation Logic ---
 const toggleActionMenu = (id) => {
   if (activeMenuId.value === id) {
     activeMenuId.value = null;
@@ -465,7 +511,7 @@ const toggleActionMenu = (id) => {
 const openDeleteModal = (conversation) => {
   conversationToDelete.value = conversation;
   isDeleteModalVisible.value = true;
-  activeMenuId.value = null; // Cierra el menú
+  activeMenuId.value = null;
 };
 
 const closeDeleteModal = () => {
@@ -495,7 +541,6 @@ const confirmDelete = async () => {
   }
 };
 
-// --- Watchers ---
 watch(newMessageText, (newValue, oldValue) => {
   if (!selectedConversation.value) return;
   if (newValue.trim().length > 0 && oldValue.trim().length === 0) sendTypingEvent(true);
@@ -503,7 +548,6 @@ watch(newMessageText, (newValue, oldValue) => {
   if (newValue.trim().length === 0 && oldValue.trim().length > 0) sendTypingEvent(false);
 });
 
-// --- Lifecycle Hooks ---
 onMounted(() => {
   if(userStore.isLoggedIn){
     fetchConversations();
@@ -517,7 +561,6 @@ onBeforeUnmount(() => {
   if (ws) ws.close();
 });
 
-// --- Dynamic Classes ---
 const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-gray-400': status === 'cancelled', 'bg-slate-300': status === 'completed' });
 const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-gray-100 text-gray-700 ring-gray-200': status === 'cancelled', 'bg-slate-50 text-slate-800 ring-slate-200': status === 'completed' });
 const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', rejected: 'Rechazada', cancelled: 'Cancelada', completed: 'Completada' }[status] || 'Desconocido');
@@ -525,6 +568,17 @@ const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', re
 </script>
 
 <style>
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
 @keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .animate-spin-slow{animation:spin-slow 8s linear infinite}
 @keyframes fade-in-message{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -533,4 +587,13 @@ const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', re
 .custom-scrollbar-unique::-webkit-scrollbar-track{background:rgba(226,232,240,.4)}
 .custom-scrollbar-unique::-webkit-scrollbar-thumb{background:rgba(215,3,123,.4);border-radius:10px;border:1px solid rgba(215,3,123,.25)}
 .custom-scrollbar-unique::-webkit-scrollbar-thumb:hover{background:rgba(215,3,123,.65)}
+
+/* === INICIO: NUEVOS ESTILOS COPIADOS DE MYPROFILE.VUE === */
+.badge-sq{
+  display:inline-flex; align-items:center; gap:.35rem;
+  padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
+  border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
+}
+.dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
+/* === FIN: NUEVOS ESTILOS COPIADOS DE MYPROFILE.VUE === */
 </style>
