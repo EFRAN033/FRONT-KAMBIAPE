@@ -13,14 +13,20 @@ export default defineConfig({
   server: {
     historyApiFallback: true,
     proxy: {
+      // Proxy para la API (peticiones HTTP)
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
-        // ✨ CORRECCIÓN CLAVE: Esta línea elimina '/api' de la ruta antes de enviarla al backend
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
-      // La configuración para las imágenes debe mantenerse igual
-      '/uploads': { 
+      // ✨ Proxy para los WebSockets ✨ (¡ESTA PARTE FALTABA!)
+      '/ws': {
+        target: 'ws://localhost:8000', // Apunta a tu backend de FastAPI
+        ws: true, // Habilita el proxy para WebSockets
+        changeOrigin: true,
+      },
+      // Proxy para las imágenes (el nombre correcto es 'uploaded_images' según tu main.py)
+      '/uploaded_images': { 
         target: 'http://localhost:8000',
         changeOrigin: true,
       },

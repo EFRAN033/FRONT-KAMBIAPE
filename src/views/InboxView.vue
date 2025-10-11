@@ -206,7 +206,10 @@ const isOtherUserTyping = ref(false);
 let typingTimeout = null;
 
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
-const WS_BASE_URL = import.meta.env.VITE_APP_WS_URL || 'ws://localhost:8000/ws';
+// --- CORRECCIÓN 1: URL del WebSocket ---
+// Usa una ruta relativa para que el proxy de Vite la maneje.
+const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
+
 
 // --- Computed Properties ---
 const filteredConversations = computed(() => {
@@ -235,10 +238,12 @@ const canAcceptOrReject = computed(() => {
     return ex.status === 'pending' && ex.request.user_id === userStore.user.id;
 });
 
+// --- CORRECCIÓN 2: Lógica de `canCancel` ---
+// Se corrige la referencia `ex.proposer.id` por `ex.proposer_user_id` para que coincida con los datos del backend.
 const canCancel = computed(() => {
     if (!selectedConversation.value || !userStore.user) return false;
     const ex = selectedConversation.value.exchange;
-    return ex.status === 'pending' && ex.proposer.id === userStore.user.id;
+    return ex.status === 'pending' && ex.proposer_user_id === userStore.user.id;
 });
 
 // --- Utility & Formatting Methods ---
