@@ -34,6 +34,21 @@
             <p class="mt-2 max-w-2xl text-[15px] sm:text-base text-slate-600">Completa los detalles y ponlo en circulación para un trueque.</p>
           </section>
 
+          <div v-if="!isProfileComplete" class="my-10 text-center">
+              <div class="h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent"></div>
+              <div class="py-4 flex justify-center items-center gap-3 text-slate-600">
+                  <svg class="h-6 w-6 flex-shrink-0 text-rose-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                  </svg>
+                  <p>
+                      Para publicar un producto, necesitas
+                      <router-link to="/profile" class="font-bold text-rose-600 underline decoration-dotted underline-offset-4 hover:text-rose-700">
+                          completar tu información de perfil
+                      </router-link>.
+                  </p>
+              </div>
+              <div class="h-px bg-gradient-to-r from-transparent via-sky-200 to-transparent"></div>
+          </div>
           <div class="grid lg:grid-cols-[minmax(0,1fr),380px] gap-12 items-start">
             <section class="space-y-10">
               <nav class="flex items-center gap-4 text-sm select-none" aria-label="Progreso">
@@ -207,9 +222,14 @@
                     
                     <div class="flex items-center justify-between">
                         <button type="button" @click="goToPreviousStep" class="px-5 py-2.5 rounded-full font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300/70 transition">Paso Anterior</button>
-                        <button type="button" @click="handleSubmit" :disabled="isSubmitting || userStore.user.credits <= 0" class="px-7 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                        <button 
+                          type="button" 
+                          @click="handleSubmit" 
+                          :disabled="isSubmitting || !isProfileComplete" 
+                          class="px-7 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
                           <span v-if="isSubmitting">Publicando...</span>
-                          <span v-else-if="userStore.user.credits <= 0">Créditos Insuficientes</span>
+                          <span v-else-if="!isProfileComplete">Perfil Incompleto</span>
                           <span v-else>Publicar Producto</span>
                         </button>
                     </div>
@@ -317,12 +337,10 @@ import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification';
 
-// --- NUEVO: Importa las imágenes para la animación ---
 import image1 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
 import image2 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
 import image3 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
 
-// --- NUEVO: Lógica para la animación de imágenes ---
 const showAnimation = ref(false);
 const animationImages = [image1, image2, image3];
 const currentImageIndex = ref(0);
@@ -332,7 +350,7 @@ const startAnimation = () => {
   showAnimation.value = true;
   animationInterval = setInterval(() => {
     currentImageIndex.value = (currentImageIndex.value + 1) % animationImages.length;
-  }, 500); // Cambia la imagen cada 500ms
+  }, 500); 
 };
 
 const stopAnimation = () => {
@@ -343,7 +361,6 @@ const stopAnimation = () => {
   }
   currentImageIndex.value = 0;
 };
-// --- FIN DE LA NUEVA LÓGICA ---
 
 const currentStep = ref(1)
 const isSubmitting = ref(false)
@@ -364,6 +381,11 @@ const draggedIndex = ref(null);
 const dragOverIndex = ref(null);
 const dragging = ref(false);
 
+const isProfileComplete = computed(() => {
+  const user = userStore.user;
+  return !!user.phone && !!user.address;
+});
+
 const availableCategories = computed(() => {
   return allCategories.value.filter(category => !exchangeInterests.value.has(category.name));
 });
@@ -372,7 +394,7 @@ const fetchCategories = async () => {
     try {
         const response = await axios.get('/categories');
         allCategories.value = response.data;
-    } catch (error) { // <-- ESTA ES LA LÍNEA CORREGIDA
+    } catch (error) { 
         console.error("Error al cargar las categorías:", error);
         errorMessage.value = 'No se pudieron cargar las categorías de intereses.';
     }
@@ -481,6 +503,12 @@ const onDrop = (toIndex) => {
 
 const submitNow = async () => {
   errorMessage.value = ''
+
+  if (!isProfileComplete.value) {
+    toast.warning("Para poder publicar, por favor completa tu información de perfil (teléfono y dirección).");
+    router.push('/profile');
+    return;
+  }
   
   if (userStore.user.credits <= 0) {
     errorMessage.value = 'No tienes créditos suficientes para publicar.';
@@ -541,6 +569,11 @@ const handleSubmit = submitNow
 const keydown = (e) => { if ((e.ctrlKey||e.metaKey) && e.key==='Enter' && currentStep.value===2) submitNow(); if (e.key==='Escape' && currentStep.value===2) goToPreviousStep() }
 
 onMounted(()=> {
+  if (!isProfileComplete.value) {
+    toast.info("Necesitas completar tu perfil para poder publicar un producto.", {
+      timeout: 4000,
+    });
+  }
   window.addEventListener('keydown',keydown);
   fetchCategories();
 })
@@ -559,7 +592,6 @@ onBeforeUnmount(()=> {
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease }
 .fade-enter-from, .fade-leave-to { opacity: 0 }
 
-/* ===== ESTILOS PARA LA ANIMACIÓN DE IMÁGENES (antes gif) ===== */
 .gif-fade-enter-active, .gif-fade-leave-active {
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -567,7 +599,6 @@ onBeforeUnmount(()=> {
   opacity: 0;
 }
 
-/* Animación para la lista de imágenes */
 .list-move {
   transition: transform 0.3s ease;
 }
@@ -613,7 +644,6 @@ select {
 .tile-check{ width:18px; height:18px; border-radius:3px; display:inline-grid; place-items:center; border:1px solid #CBD5E1; background:#F8FAFC; }
 .dark .tile-check{ border-color:#475569; background:#0f172a; }
 
-/* Estilo para el switch */
 .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
