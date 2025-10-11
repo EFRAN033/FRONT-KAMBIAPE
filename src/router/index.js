@@ -93,7 +93,7 @@ const routes = [
   },
   {
     path: '/buzon',
-    name: 'inbox',
+    name: 'Inbox',
     component: InboxView,
     meta: {
       title: 'Buzón | KambiaPe'

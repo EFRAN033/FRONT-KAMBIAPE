@@ -112,6 +112,7 @@
                 <div class="flex gap-1.5 flex-shrink-0">
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('accepted')" class="p-2 text-green-700 bg-green-50 hover:bg-green-100" title="Aceptar"><CheckIcon class="h-5 w-5" /></button>
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('rejected')" class="p-2 text-red-700 bg-red-50 hover:bg-red-100" title="Rechazar"><XMarkIcon class="h-5 w-5" /></button>
+                  <button v-if="canCancel" @click="updateProposalStatus('cancelled')" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
                   <button @click="showDetailsModal = true" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100" title="Detalles"><EyeIcon class="h-5 w-5" /></button>
                 </div>
               </div>
@@ -150,7 +151,9 @@
                     <svg v-else class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   </button>
                 </form>
-                <p v-if="!isChatActive" class="text-[12px] text-red-500 mt-2 text-center">No puedes enviar mensajes a propuestas que no estén pendientes o aceptadas.</p>
+                <p v-if="!isChatActive" class="text-[12px] text-red-500 mt-2 text-center">
+                  No puedes enviar mensajes a propuestas que han sido {{ statusText(selectedConversation.exchange.status).toLowerCase() }}s.
+                </p>
               </div>
             </template>
 
@@ -178,7 +181,7 @@ import axios from '@/axios';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import { useToast } from 'vue-toastification';
-import { ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, EyeIcon, PaperAirplaneIcon, ClockIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, EyeIcon, PaperAirplaneIcon, ClockIcon, CheckCircleIcon, NoSymbolIcon } from '@heroicons/vue/24/outline';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useDebounceFn } from '@vueuse/core';
 
@@ -219,8 +222,24 @@ const filteredConversations = computed(() => {
 });
 
 const totalUnreadMessages = computed(() => conversations.value.reduce((sum, c) => sum + (c.unread_count > 0 ? 1 : 0), 0));
-const isChatActive = computed(() => selectedConversation.value && ['pending', 'accepted'].includes(selectedConversation.value.exchange.status));
-const canAcceptOrReject = computed(() => selectedConversation.value && selectedConversation.value.exchange.status === 'pending' && selectedConversation.value.exchange.request.user_id === userStore.user?.id);
+
+const isChatActive = computed(() => {
+    if (!selectedConversation.value) return false;
+    const inactive_statuses = ['rejected', 'cancelled', 'completed'];
+    return !inactive_statuses.includes(selectedConversation.value.exchange.status);
+});
+
+const canAcceptOrReject = computed(() => {
+    if (!selectedConversation.value || !userStore.user) return false;
+    const ex = selectedConversation.value.exchange;
+    return ex.status === 'pending' && ex.request.user_id === userStore.user.id;
+});
+
+const canCancel = computed(() => {
+    if (!selectedConversation.value || !userStore.user) return false;
+    const ex = selectedConversation.value.exchange;
+    return ex.status === 'pending' && ex.proposer.id === userStore.user.id;
+});
 
 // --- Utility & Formatting Methods ---
 const formatUserName = (fullName) => {
@@ -258,11 +277,7 @@ const connectWebSocket = () => {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => console.log("WebSocket conectado.");
-  ws.onclose = () => {
-    console.log("WebSocket desconectado.");
-    ws = null;
-    // Opcional: Implementar lógica de reconexión aquí
-  };
+  ws.onclose = () => { ws = null; };
   ws.onerror = (error) => console.error("Error de WebSocket:", error);
   ws.onmessage = (event) => {
     const response = JSON.parse(event.data);
@@ -347,8 +362,6 @@ const sendMessage = async () => {
       proposal_id: selectedConversation.value.exchange.id,
       text: newMessageText.value.trim(),
     });
-    // Ya no añadimos el mensaje aquí, esperamos que el WebSocket lo envíe de vuelta.
-    // messages.value.push(newMessage); 
     
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
     if (convInList) convInList.last_message = newMessage;
@@ -366,15 +379,11 @@ const markMessagesAsRead = async (messagesToRead) => {
     const unreadMessages = messagesToRead.filter(m => !m.is_read && m.sender_id !== userStore.user.id);
     if (unreadMessages.length === 0) return;
 
-    unreadMessages.forEach(m => m.is_read = true); // Actualización optimista en la UI
+    unreadMessages.forEach(m => m.is_read = true);
 
     const messageIds = unreadMessages.map(m => m.id);
     try {
-        await axios.patch('/messages/read_status', { 
-            message_ids: messageIds, 
-            is_read: true 
-        });
-        // El backend notificará al otro usuario por WebSocket
+        await axios.patch('/messages/read_status', { message_ids: messageIds, is_read: true });
     } catch (error) {
         console.error("Error al marcar mensajes como leídos:", error);
     }
@@ -382,27 +391,30 @@ const markMessagesAsRead = async (messagesToRead) => {
 
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
+  const statusTextMap = {
+      accepted: 'aceptada',
+      rejected: 'rechazada',
+      cancelled: 'cancelada'
+  }
   try {
     await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
-    toast.success(`Propuesta ${status === 'accepted' ? 'aceptada' : 'rechazada'}.`);
-    showDetailsModal.value = false;
-    await fetchConversations();
+    toast.success(`Propuesta ${statusTextMap[status]}.`);
+    
+    const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
+    if (convInList) convInList.exchange.status = status;
+
   } catch (e) {
-    toast.error(e.response?.data?.detail || 'Error al actualizar la propuesta.');
+    toast.error(e.response?.data?.detail || `Error al ${statusTextMap[status]} la propuesta.`);
   }
 };
 
 // --- Watchers ---
 watch(newMessageText, (newValue, oldValue) => {
   if (!selectedConversation.value) return;
-  if (newValue.trim().length > 0 && oldValue.trim().length === 0) {
-    sendTypingEvent(true);
-  }
+  if (newValue.trim().length > 0 && oldValue.trim().length === 0) sendTypingEvent(true);
   debouncedSendTyping(true);
-  if (newValue.trim().length === 0 && oldValue.trim().length > 0) {
-    sendTypingEvent(false);
-  }
+  if (newValue.trim().length === 0 && oldValue.trim().length > 0) sendTypingEvent(false);
 });
 
 // --- Lifecycle Hooks ---
@@ -420,9 +432,10 @@ onBeforeUnmount(() => {
 });
 
 // --- Dynamic Classes ---
-const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-slate-300': status === 'completed' });
-const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-slate-50 text-slate-800 ring-slate-200': status === 'completed' });
-const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', rejected: 'Rechazada', completed: 'Completada' }[status] || 'Desconocido');
+const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-gray-400': status === 'cancelled', 'bg-slate-300': status === 'completed' });
+const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-gray-100 text-gray-700 ring-gray-200': status === 'cancelled', 'bg-slate-50 text-slate-800 ring-slate-200': status === 'completed' });
+const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', rejected: 'Rechazada', cancelled: 'Cancelada', completed: 'Completada' }[status] || 'Desconocido');
+
 </script>
 
 <style>
