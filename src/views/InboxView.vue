@@ -152,9 +152,9 @@
                 <div @click.stop class="flex gap-1.5 flex-shrink-0">
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('accepted')" class="p-2 text-green-700 bg-green-50 hover:bg-green-100" title="Aceptar"><CheckIcon class="h-5 w-5" /></button>
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('rejected')" class="p-2 text-red-700 bg-red-50 hover:bg-red-100" title="Rechazar"><XMarkIcon class="h-5 w-5" /></button>
-                  <button v-if="canCancel" @click="updateProposalStatus('cancelled')" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
+                  <button v-if="canCancel" @click="openCancelModal" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
                   <button v-if="canComplete" @click="updateProposalStatus('completed')" class="p-2 text-blue-700 bg-blue-50 hover:bg-blue-100" title="Completar y Valorar"><StarIcon class="h-5 w-5" /></button>
-                  <button @click="showDetailsModal = true" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100" title="Detalles"><EyeIcon class="h-5 w-5" /></button>
+                  <button @click="openDetailsModal" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100" title="Detalles"><EyeIcon class="h-5 w-5" /></button>
                 </div>
               </div>
 
@@ -272,6 +272,44 @@
       </div>
     </main>
     <Footer />
+    
+    <div v-if="showDetailsModal" @click.self="showDetailsModal = false" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative">
+        <button @click="showDetailsModal = false" class="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-100">
+          <XMarkIcon class="w-6 h-6 text-slate-600" />
+        </button>
+        <h3 class="text-xl font-bold text-slate-800 mb-4">Detalles del Intercambio</h3>
+        <div v-if="selectedConversation" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-semibold text-slate-700 mb-2">Producto Ofrecido</h4>
+            <div class="border rounded-lg p-4">
+              <img :src="getAvatarUrl(selectedConversation.exchange.offer.thumbnail_image_url)" class="w-full h-48 object-cover rounded-md mb-3"/>
+              <p class="font-bold">{{selectedConversation.exchange.offer.title}}</p>
+              <p class="text-sm text-slate-600">{{selectedConversation.exchange.offer.description}}</p>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-semibold text-slate-700 mb-2">Producto Solicitado</h4>
+            <div class="border rounded-lg p-4">
+              <img :src="getAvatarUrl(selectedConversation.exchange.request.thumbnail_image_url)" class="w-full h-48 object-cover rounded-md mb-3"/>
+              <p class="font-bold">{{selectedConversation.exchange.request.title}}</p>
+              <p class="text-sm text-slate-600">{{selectedConversation.exchange.request.description}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isCancelModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-slate-900">Confirmar Cancelación</h3>
+        <p class="mt-2 text-sm text-slate-600">¿Estás seguro de que quieres cancelar esta propuesta de intercambio? Esta acción no se puede deshacer.</p>
+        <div class="mt-5 flex justify-end gap-3">
+          <button @click="closeCancelModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">No, mantener</button>
+          <button @click="confirmCancel" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">Sí, cancelar</button>
+        </div>
+      </div>
+    </div>
 
     <div v-if="isDeleteModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
@@ -356,7 +394,6 @@ import {
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
 
-// --- State ---
 const userStore = useUserStore();
 const toast = useToast();
 const router = useRouter();
@@ -371,12 +408,9 @@ const loadingMessages = ref(false);
 const showDetailsModal = ref(false);
 const messagesContainer = ref(null);
 const selectedProfileUser = ref(null);
-
-// ### MEJORA: State para el inventario del perfil ###
 const profileUserInventory = ref([]);
 const loadingProfileInventory = ref(false);
 
-// State for Action Menus and Modals
 const activeMenuId = ref(null);
 const isDeleteModalVisible = ref(false);
 const isBlockModalVisible = ref(false);
@@ -385,12 +419,12 @@ const conversationToActOn = ref(null);
 const reportReason = ref('');
 const isConversationMenuOpen = ref(false);
 
-// State for Blocked Users Management
 const isBlockedUsersModalVisible = ref(false);
 const blockedUsers = ref([]);
 const loadingBlockedUsers = ref(false);
 
-// --- WebSocket & Real-time State ---
+const isCancelModalVisible = ref(false); // <-- NUEVO: State para el modal de cancelar
+
 let ws = null;
 const isOtherUserTyping = ref(false);
 
@@ -398,7 +432,6 @@ const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:80
 const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
 
 
-// --- Computed Properties ---
 const filteredConversations = computed(() => {
   let list = conversations.value;
   if (filter.value === 'unread') {
@@ -437,8 +470,24 @@ const canComplete = computed(() => {
     return ex.status === 'accepted' && (ex.proposer_user_id === userStore.user.id || ex.request.user_id === userStore.user.id);
 });
 
+const openDetailsModal = () => {
+  showDetailsModal.value = true;
+};
 
-// --- Modal and Action Methods ---
+// --- NUEVAS FUNCIONES PARA EL MODAL DE CANCELAR ---
+const openCancelModal = () => {
+  isCancelModalVisible.value = true;
+};
+
+const closeCancelModal = () => {
+  isCancelModalVisible.value = false;
+};
+
+const confirmCancel = async () => {
+  await updateProposalStatus('cancelled');
+  closeCancelModal();
+};
+// --- FIN DE NUEVAS FUNCIONES ---
 
 const toggleActionMenu = (id) => {
   activeMenuId.value = activeMenuId.value === id ? null : id;
@@ -519,7 +568,6 @@ const confirmBlockAndReport = async () => {
   }
 };
 
-// --- Blocked Users Management Methods ---
 const openBlockedUsersModal = async () => {
   isConversationMenuOpen.value = false;
   isBlockedUsersModalVisible.value = true;
@@ -553,8 +601,6 @@ const confirmUnblock = async (userToUnblock) => {
   }
 };
 
-// --- Profile Panel Methods ---
-// ### MEJORA: `openProfilePanel` ahora también busca el inventario del usuario ###
 const openProfilePanel = (user) => {
   selectedProfileUser.value = user;
   fetchProfileUserInventory(user.id);
@@ -562,10 +608,9 @@ const openProfilePanel = (user) => {
 
 const closeProfilePanel = () => {
   selectedProfileUser.value = null;
-  profileUserInventory.value = []; // Limpiar el inventario al cerrar
+  profileUserInventory.value = [];
 };
 
-// ### MEJORA: Nueva función para obtener el inventario del perfil ###
 const fetchProfileUserInventory = async (userId) => {
   loadingProfileInventory.value = true;
   try {
@@ -574,14 +619,12 @@ const fetchProfileUserInventory = async (userId) => {
   } catch (error) {
     console.error("Error al cargar el inventario del perfil:", error);
     toast.error("No se pudo cargar el inventario del usuario.");
-    profileUserInventory.value = []; // Asegurarse de que esté vacío en caso de error
+    profileUserInventory.value = [];
   } finally {
     loadingProfileInventory.value = false;
   }
 };
 
-
-// --- Utility & Formatting Methods ---
 const formatUserName = (fullName) => {
   if (!fullName || typeof fullName !== 'string') return '';
   const parts = fullName.trim().split(' ').filter(p => p);
@@ -591,7 +634,6 @@ const formatUserName = (fullName) => {
   const lastNameInitial = parts.length > 1 ? parts[1].charAt(0).toUpperCase() : '';
   return `${firstName} ${lastNameInitial}.`.trim();
 };
-
 
 const getAvatarUrl = (path) => {
   if (!path) return defaultAvatar;
@@ -607,7 +649,6 @@ const scrollToBottom = () => {
   });
 };
 
-// --- WebSocket Logic ---
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
   if (ws) ws.close();
@@ -626,7 +667,6 @@ const connectWebSocket = () => {
   };
 };
 
-// --- API Methods ---
 const fetchConversations = async () => {
   loadingConversations.value = true;
   try {
@@ -713,6 +753,7 @@ const markMessagesAsRead = async (messagesToRead) => {
         console.error("Error al marcar mensajes como leídos:", error);
     }
 };
+
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
@@ -731,7 +772,6 @@ const updateProposalStatus = async (status) => {
   }
 };
 
-// --- Lifecycle & Watchers ---
 onMounted(() => {
   if(userStore.isLoggedIn){
     fetchConversations();
@@ -744,7 +784,6 @@ onBeforeUnmount(() => {
   if (ws) ws.close();
 });
 
-// --- Dynamic Classes ---
 const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-gray-400': status === 'cancelled', 'bg-blue-500': status === 'completed' });
 const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-gray-100 text-gray-700 ring-gray-200': status === 'cancelled', 'bg-blue-50 text-blue-800 ring-blue-200': status === 'completed' });
 const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', rejected: 'Rechazada', cancelled: 'Cancelada', completed: 'Completada' }[status] || 'Desconocido');
