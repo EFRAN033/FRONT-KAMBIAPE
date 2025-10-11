@@ -59,30 +59,44 @@
               <li
                 v-for="c in filteredConversations"
                 :key="c.exchange.id"
-                @click="selectConversation(c)"
-                class="relative px-4 py-3 cursor-pointer transition-colors group hover:bg-slate-50"
-                :class="selectedConversation && selectedConversation.exchange.id===c.exchange.id ? 'bg-slate-50' : ''"
+                class="relative"
+                :class="selectedConversation && selectedConversation.exchange.id === c.exchange.id ? 'bg-slate-50' : ''"
               >
-                <span class="absolute inset-y-0 left-0 w-1" :class="statusStripeClass(c.exchange.status)"></span>
-                <div class="ml-2 flex items-start gap-3">
-                  <div class="relative shrink-0">
-                    <img :src="getAvatarUrl(c.user.avatar)" :alt="c.user.full_name" class="h-11 w-11 object-cover rounded-full border border-slate-200"/>
-                    <span v-if="c.unread_count>0" class="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 inline-flex items-center justify-center text-[11px] font-semibold text-white bg-red-500 rounded-full">
-                      {{ c.unread_count }}
-                    </span>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-baseline justify-between gap-2">
-                      <p class="text-[15px] font-semibold text-slate-900 truncate" :title="c.user.full_name">{{ formatUserName(c.user.full_name) }}</p>
-                      <span class="text-[11px] text-slate-500 whitespace-nowrap">{{ formatTime(c.last_message?.timestamp || c.exchange.created_at) }}</span>
+                <div @click="selectConversation(c)" class="pl-4 pr-12 py-3 cursor-pointer transition-colors hover:bg-slate-50">
+                    <span class="absolute inset-y-0 left-0 w-1" :class="statusStripeClass(c.exchange.status)"></span>
+                    <div class="ml-2 flex items-start gap-3">
+                      <div class="relative shrink-0">
+                        <img :src="getAvatarUrl(c.user.avatar)" :alt="c.user.full_name" class="h-11 w-11 object-cover rounded-full border border-slate-200"/>
+                        <span v-if="c.unread_count > 0" class="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 inline-flex items-center justify-center text-[11px] font-semibold text-white bg-red-500 rounded-full">
+                          {{ c.unread_count }}
+                        </span>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-baseline justify-between gap-2">
+                          <p class="text-[15px] font-semibold text-slate-900 truncate" :title="c.user.full_name">{{ formatUserName(c.user.full_name) }}</p>
+                          <span class="text-[11px] text-slate-500 whitespace-nowrap">{{ formatTime(c.last_message?.timestamp || c.exchange.created_at) }}</span>
+                        </div>
+                        <p class="text-[13px] text-slate-600 mt-0.5 truncate">
+                          <span v-if="c.last_message?.sender_id === userStore.user?.id">Tú: </span>{{ c.last_message?.text || 'Propuesta iniciada...' }}
+                        </p>
+                        <div class="mt-1">
+                          <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium capitalize ring-1" :class="statusBadgeClass(c.exchange.status)">
+                            {{ statusText(c.exchange.status) }}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <p class="text-[13px] text-slate-600 mt-0.5 truncate">
-                      <span v-if="c.last_message?.sender_id === userStore.user?.id">Tú: </span>{{ c.last_message?.text || 'Propuesta iniciada...' }}
-                    </p>
-                    <div class="mt-1">
-                      <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium capitalize ring-1" :class="statusBadgeClass(c.exchange.status)">
-                        {{ statusText(c.exchange.status) }}
-                      </span>
+                </div>
+                <div class="absolute top-1/2 -translate-y-1/2 right-2 z-10">
+                  <button @click.stop="toggleActionMenu(c.exchange.id)" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-700">
+                    <EllipsisVerticalIcon class="h-5 w-5" />
+                  </button>
+                  <div v-if="activeMenuId === c.exchange.id" class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
+                    <div class="py-1">
+                      <a @click.prevent="openDeleteModal(c)" href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-red-700 hover:bg-red-50">
+                        <TrashIcon class="h-4 w-4" />
+                        Eliminar chat
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -156,7 +170,6 @@
                 </p>
               </div>
             </template>
-
             <template v-else>
               <div class="flex-1 flex items-center justify-center p-8 text-center text-slate-500">
                 <div class="flex flex-col items-center gap-3">
@@ -171,6 +184,26 @@
       </div>
     </main>
     <Footer />
+
+    <div v-if="isDeleteModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-slate-900">Eliminar conversación</h3>
+        <div class="mt-2">
+          <p class="text-sm text-slate-600">
+            ¿Seguro que quieres eliminar permanentemente esta conversación? Esta acción no se puede deshacer.
+          </p>
+        </div>
+        <div class="mt-5 flex justify-end gap-3">
+          <button @click="closeDeleteModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">
+            Cancelar
+          </button>
+          <button @click="confirmDelete" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -181,13 +214,18 @@ import axios from '@/axios';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import { useToast } from 'vue-toastification';
-import { ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, EyeIcon, PaperAirplaneIcon, ClockIcon, CheckCircleIcon, NoSymbolIcon } from '@heroicons/vue/24/outline';
+import { 
+  ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon, 
+  EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon 
+} from '@heroicons/vue/24/outline';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useDebounceFn } from '@vueuse/core';
+import { useRouter } from 'vue-router';
 
 // --- State ---
 const userStore = useUserStore();
 const toast = useToast();
+const router = useRouter();
 const conversations = ref([]);
 const selectedConversation = ref(null);
 const messages = ref([]);
@@ -200,14 +238,18 @@ const sendingMessage = ref(false);
 const showDetailsModal = ref(false);
 const messagesContainer = ref(null);
 
+// --- State for Delete Functionality ---
+const activeMenuId = ref(null);
+const isDeleteModalVisible = ref(false);
+const conversationToDelete = ref(null);
+
+
 // --- WebSocket & Real-time State ---
 let ws = null;
 const isOtherUserTyping = ref(false);
 let typingTimeout = null;
 
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
-// --- CORRECCIÓN 1: URL del WebSocket ---
-// Usa una ruta relativa para que el proxy de Vite la maneje.
 const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
 
 
@@ -238,8 +280,6 @@ const canAcceptOrReject = computed(() => {
     return ex.status === 'pending' && ex.request.user_id === userStore.user.id;
 });
 
-// --- CORRECCIÓN 2: Lógica de `canCancel` ---
-// Se corrige la referencia `ex.proposer.id` por `ex.proposer_user_id` para que coincida con los datos del backend.
 const canCancel = computed(() => {
     if (!selectedConversation.value || !userStore.user) return false;
     const ex = selectedConversation.value.exchange;
@@ -275,10 +315,10 @@ const scrollToBottom = () => {
 
 // --- WebSocket Logic ---
 const connectWebSocket = () => {
-  if (!userStore.user?.id) return;
+  if (!userStore.user?.id || !userStore.token) return;
   if (ws) ws.close();
-
-  const wsUrl = `${WS_BASE_URL}/${userStore.user.id}`;
+  
+  const wsUrl = `${WS_BASE_URL}/${userStore.user.id}?token=${userStore.token}`;
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => console.log("WebSocket conectado.");
@@ -368,6 +408,8 @@ const sendMessage = async () => {
       text: newMessageText.value.trim(),
     });
     
+    messages.value.push(newMessage);
+    
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
     if (convInList) convInList.last_message = newMessage;
     
@@ -396,11 +438,7 @@ const markMessagesAsRead = async (messagesToRead) => {
 
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
-  const statusTextMap = {
-      accepted: 'aceptada',
-      rejected: 'rechazada',
-      cancelled: 'cancelada'
-  }
+  const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada' };
   try {
     await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
@@ -411,6 +449,49 @@ const updateProposalStatus = async (status) => {
 
   } catch (e) {
     toast.error(e.response?.data?.detail || `Error al ${statusTextMap[status]} la propuesta.`);
+  }
+};
+
+
+// --- Delete Conversation Logic ---
+const toggleActionMenu = (id) => {
+  if (activeMenuId.value === id) {
+    activeMenuId.value = null;
+  } else {
+    activeMenuId.value = id;
+  }
+};
+
+const openDeleteModal = (conversation) => {
+  conversationToDelete.value = conversation;
+  isDeleteModalVisible.value = true;
+  activeMenuId.value = null; // Cierra el menú
+};
+
+const closeDeleteModal = () => {
+  isDeleteModalVisible.value = false;
+  conversationToDelete.value = null;
+};
+
+const confirmDelete = async () => {
+  if (!conversationToDelete.value) return;
+  const idToDelete = conversationToDelete.value.exchange.id;
+  try {
+    await axios.delete(`/proposals/${idToDelete}`);
+    
+    conversations.value = conversations.value.filter(c => c.exchange.id !== idToDelete);
+    
+    if (selectedConversation.value?.exchange.id === idToDelete) {
+      selectedConversation.value = null;
+      messages.value = [];
+    }
+    
+    toast.success("Conversación eliminada.");
+  } catch (error) {
+    toast.error("No se pudo eliminar la conversación.");
+    console.error("Error al eliminar la conversación:", error);
+  } finally {
+    closeDeleteModal();
   }
 };
 
@@ -428,7 +509,7 @@ onMounted(() => {
     fetchConversations();
     connectWebSocket();
   } else {
-    router.push('/login');
+    router.push('/login'); 
   }
 });
 
