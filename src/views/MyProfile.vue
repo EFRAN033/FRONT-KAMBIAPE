@@ -343,12 +343,12 @@ const onDepartamentoChange = () => {
   provincias.value = provinciasData[selectedDepartamentoId.value] || [];
   selectedProvinciaId.value = '';
   distritos.value = [];
-  editableProfile.value.ubicacion = '';
+  // editableProfile.value.ubicacion = ''; // <-- CORRECCIÓN: Línea eliminada
 };
 
 const onProvinciaChange = () => {
   distritos.value = distritosData[selectedProvinciaId.value] || [];
-  editableProfile.value.ubicacion = '';
+  // editableProfile.value.ubicacion = ''; // <-- CORRECCIÓN: Línea eliminada
 };
 
 const findUbigeoInfo = (distritoName) => {
