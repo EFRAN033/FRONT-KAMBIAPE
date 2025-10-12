@@ -495,26 +495,14 @@ const sendSuggestedLocation = (place) => {
   isLocationModalVisible.value = false;
 };
 
-// ===== INICIO DE LA CORRECCIÓN #2: Función mejorada para formatear la ubicación =====
 const formatUbicacion = (ubicacion) => {
-  // Si no hay ubicación, retorna un texto por defecto.
   if (!ubicacion) {
     return 'Ubicación no especificada.';
   }
-
-  // Se asume que el backend guarda la ubicación como "Departamento, Provincia, Distrito".
-  // La función split(',') separará el texto en un array usando la coma como delimitador.
-  // Ejemplo: "Lima, Lima, Miraflores" se convierte en ["Lima", " Lima", " Miraflores"]
   const parts = ubicacion.split(',').map(part => part.trim());
-
-  // Si el texto se pudo dividir en 3 partes, las unimos con guiones para que se vea bien.
-  // Ejemplo: "Lima - Lima - Miraflores"
   if (parts.length >= 3) {
     return parts.join(' - ');
   }
-
-  // Si la ubicación no tiene el formato esperado (no tiene comas),
-  // simplemente devolvemos el texto original para no mostrar un error.
   return ubicacion;
 };
 
@@ -729,9 +717,22 @@ const formatTime = (s) => s ? new Date(s).toLocaleTimeString('es-ES', { hour: '2
 
 const scrollToBottom = () => {
   nextTick(() => {
-    if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    }
   });
 };
+
+// ===== INICIO DE LA CORRECCIÓN =====
+// Se centraliza la lógica del scroll en un "watcher" que observa la lista de mensajes.
+// Cada vez que la lista de mensajes cambia (se carga, se añade uno nuevo, etc.),
+// se ejecuta automáticamente la función para ir hasta el final del chat.
+watch(messages, () => {
+  scrollToBottom();
+}, {
+  deep: true // Esto es importante para detectar cuando se añaden nuevos mensajes a la lista.
+});
+// ===== FIN DE LA CORRECCIÓN =====
 
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
@@ -745,7 +746,7 @@ const connectWebSocket = () => {
     const response = JSON.parse(event.data);
     if (response.type === 'new_message' && selectedConversation.value?.exchange.id === response.data.proposal_id) {
       messages.value.push(response.data);
-      scrollToBottom();
+      // La llamada a scrollToBottom() se elimina de aquí porque el "watcher" ya lo hace.
       markMessagesAsRead([response.data]);
     }
   };
@@ -774,7 +775,7 @@ const selectConversation = async (conversation) => {
     messages.value = data;
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
-    scrollToBottom();
+    // La llamada a scrollToBottom() se elimina de aquí porque el "watcher" ya lo hace.
     markMessagesAsRead(messages.value);
   } catch (e) {
     toast.error("No se pudieron cargar los mensajes.");
@@ -800,7 +801,7 @@ const sendMessage = async () => {
   });
 
   newMessageText.value = '';
-  scrollToBottom();
+  // La llamada a scrollToBottom() se elimina de aquí porque el "watcher" ya lo hace.
 
   try {
     const { data: sentMessageData } = await axios.post('/messages', {
