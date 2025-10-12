@@ -141,7 +141,8 @@
                   <img :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow" />
                   <div class="min-w-0">
                     <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
-                     <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
+                    <p class="text-[12px] text-slate-500" v-if="selectedConversation.user.ubicacion">{{ formatUbicacion(selectedConversation.user.ubicacion) }}</p>
+                    <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
                     <p v-else class="text-[12px] text-slate-600 flex items-center gap-1 flex-wrap h-4">
                       <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.offer.title }}</span>
                       <ArrowRightIcon class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
@@ -246,7 +247,7 @@
                     Ubicación
                   </h4>
                   <p class="text-sm text-slate-600 mt-2">
-                    {{ selectedProfileUser.address || 'No especificada.' }}
+                    {{ formatUbicacion(selectedProfileUser.ubicacion) }}
                   </p>
                 </div>
                 
@@ -494,6 +495,29 @@ const sendSuggestedLocation = (place) => {
   isLocationModalVisible.value = false;
 };
 
+// ===== INICIO DE LA CORRECCIÓN #2: Función mejorada para formatear la ubicación =====
+const formatUbicacion = (ubicacion) => {
+  // Si no hay ubicación, retorna un texto por defecto.
+  if (!ubicacion) {
+    return 'Ubicación no especificada.';
+  }
+
+  // Se asume que el backend guarda la ubicación como "Departamento, Provincia, Distrito".
+  // La función split(',') separará el texto en un array usando la coma como delimitador.
+  // Ejemplo: "Lima, Lima, Miraflores" se convierte en ["Lima", " Lima", " Miraflores"]
+  const parts = ubicacion.split(',').map(part => part.trim());
+
+  // Si el texto se pudo dividir en 3 partes, las unimos con guiones para que se vea bien.
+  // Ejemplo: "Lima - Lima - Miraflores"
+  if (parts.length >= 3) {
+    return parts.join(' - ');
+  }
+
+  // Si la ubicación no tiene el formato esperado (no tiene comas),
+  // simplemente devolvemos el texto original para no mostrar un error.
+  return ubicacion;
+};
+
 const filteredConversations = computed(() => {
   let list = conversations.value;
   if (filter.value === 'unread') {
@@ -517,7 +541,7 @@ const isChatActive = computed(() => {
 const canAcceptOrReject = computed(() => {
     if (!selectedConversation.value || !userStore.user) return false;
     const ex = selectedConversation.value.exchange;
-    return ex.status === 'pending' && ex.request.user_id === userStore.user.id;
+    return ex.status === 'pending' && ex.proposer_user_id !== userStore.user.id;
 });
 
 const canCancel = computed(() => {
@@ -529,7 +553,7 @@ const canCancel = computed(() => {
 const canComplete = computed(() => {
     if (!selectedConversation.value || !userStore.user) return false;
     const ex = selectedConversation.value.exchange;
-    return ex.status === 'accepted' && (ex.proposer_user_id === userStore.user.id || ex.request.user_id === userStore.user.id);
+    return ex.status === 'accepted';
 });
 
 const openDetailsModal = () => {
