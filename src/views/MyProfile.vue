@@ -152,7 +152,7 @@
 
               <div>
                 <label class="label">Fecha de Nacimiento</label>
-                <p class="display-field">{{ userProfile.dateOfBirth || '-' }}</p>
+                <p class="display-field">{{ formatDateForDisplay(userProfile.dateOfBirth) }}</p>
               </div>
 
               <div class="md:col-span-2">
@@ -331,13 +331,11 @@ const onDepartamentoChange = () => {
   provincias.value = provinciasData[selectedDepartamentoId.value] || [];
   selectedProvinciaId.value = '';
   distritos.value = [];
-  // ======================== CAMBIO CLAVE ========================
   editableProfile.value.ubicacion = '';
 };
 
 const onProvinciaChange = () => {
   distritos.value = distritosData[selectedProvinciaId.value] || [];
-  // ======================== CAMBIO CLAVE ========================
   editableProfile.value.ubicacion = '';
 };
 
@@ -358,7 +356,6 @@ const findUbigeoInfoByName = (distritoName) => {
   return null;
 };
 
-// ======================== CAMBIO CLAVE ========================
 const setupUbigeoFromProfile = (ubicacionName) => {
   if (!ubicacionName) return;
   const info = findUbigeoInfoByName(ubicacionName);
@@ -371,7 +368,6 @@ const setupUbigeoFromProfile = (ubicacionName) => {
   }
 };
 
-// ======================== CAMBIO CLAVE ========================
 const formatUbicacionForDisplay = (ubicacionName) => {
   if (!ubicacionName) return '-';
   const info = findUbigeoInfoByName(ubicacionName);
@@ -388,6 +384,16 @@ const showNotification = (message, type = 'info') => {
 };
 
 const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+// ======================== CAMBIO CLAVE ========================
+const formatDateForDisplay = (dateStr) => {
+  if (!dateStr) return '-';
+  const parts = dateStr.split('/');
+  if (parts.length !== 3) return dateStr; // Devuelve el original si no está en formato D/M/AAAA
+  const [day, month, year] = parts;
+  return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+};
+
 const setTab = (tab) => activeTab.value = tab;
 
 const fetchCategories = async () => {
@@ -410,7 +416,6 @@ const enterEditMode = async () => {
     }
   }
 
-  // ======================== CAMBIO CLAVE ========================
   setupUbigeoFromProfile(userProfile.value.ubicacion);
 
   editableInterests.value = new Set(userProfile.value.interests || []);
@@ -438,9 +443,17 @@ const saveProfile = async () => {
     .map(name => allCategories.value.find(cat => cat.name === name)?.id)
     .filter(id => id != null);
 
-  // ======================== CAMBIO CLAVE ========================
+  const profileDataToSend = JSON.parse(JSON.stringify(editableProfile.value));
+
+  if (profileDataToSend.ubicacion && distritos.value.length > 0) {
+    const selectedDistrict = distritos.value.find(d => d.id_ubigeo === profileDataToSend.ubicacion);
+    if (selectedDistrict) {
+      profileDataToSend.ubicacion = selectedDistrict.nombre_ubigeo;
+    }
+  }
+
   const payload = {
-    ...editableProfile.value,
+    ...profileDataToSend,
     interest_ids: selectedInterestIds,
   };
 
