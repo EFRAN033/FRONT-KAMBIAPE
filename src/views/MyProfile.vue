@@ -177,7 +177,7 @@
                     <label for="distrito" class="label text-xs">Distrito</label>
                     <select id="distrito" v-model="editableProfile.address" class="input" :disabled="!selectedProvinciaId">
                       <option disabled value="">Seleccione</option>
-                      <option v-for="dist in distritos" :key="dist.id_ubigeo" :value="dist.nombre_ubigeo">{{ dist.nombre_ubigeo }}</option>
+                      <option v-for="dist in distritos" :key="dist.id_ubigeo" :value="dist.id_ubigeo">{{ dist.nombre_ubigeo }}</option>
                     </select>
                   </div>
                 </div>
@@ -335,20 +335,28 @@ const availableCategories = computed(() => {
   return allCategories.value.filter(category => !editableInterests.value.has(category.name));
 });
 
-// --- LÓGICA DE UBIGEO ---
+// --- LÓGICA DE UBIGEO (CORREGIDA) ---
 const onDepartamentoChange = () => {
   provincias.value = provinciasData[selectedDepartamentoId.value] || [];
   selectedProvinciaId.value = '';
   distritos.value = [];
-  // editableProfile.value.address = ''; // <-- CORRECCIÓN: LÍNEA ELIMINADA
+  // ===============================================================================
+  // CAMBIO CLAVE: Limpiamos la dirección al cambiar el departamento.
+  //               Asumimos que el campo `address` ahora contendrá el ID del distrito.
+  // ===============================================================================
+  editableProfile.value.address = '';
 };
 
 const onProvinciaChange = () => {
   distritos.value = distritosData[selectedProvinciaId.value] || [];
-  // editableProfile.value.address = ''; // <-- CORRECCIÓN: LÍNEA ELIMINADA
+  // ===============================================================================
+  // CAMBIO CLAVE: Limpiamos la dirección al cambiar la provincia.
+  // ===============================================================================
+  editableProfile.value.address = '';
 };
 
-const findUbigeoInfo = (distritoName) => {
+// Busca por nombre de distrito (útil para la carga inicial)
+const findUbigeoInfoByName = (distritoName) => {
   if (!distritoName) return null;
   for (const provId in distritosData) {
     const distrito = distritosData[provId].find(d => d.nombre_ubigeo === distritoName);
@@ -365,26 +373,51 @@ const findUbigeoInfo = (distritoName) => {
   return null;
 };
 
+// Busca por ID de distrito (útil para mostrar el texto después de guardar)
+const findUbigeoInfoById = (distritoId) => {
+  if (!distritoId) return null;
+  for (const provId in distritosData) {
+    const distrito = distritosData[provId].find(d => d.id_ubigeo === distritoId);
+    if (distrito) {
+      for (const depId in provinciasData) {
+        const provincia = provinciasData[depId].find(p => p.id_ubigeo === distrito.id_padre_ubigeo);
+        if (provincia) {
+          const departamento = departamentosData.find(d => d.id_ubigeo === provincia.id_padre_ubigeo);
+          return { departamento, provincia, distrito };
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// Configura los selects de Ubigeo a partir del nombre del distrito guardado en el perfil
 const setupUbigeoFromProfile = (addressName) => {
   if (!addressName) return;
-  const info = findUbigeoInfo(addressName);
+  const info = findUbigeoInfoByName(addressName);
   if (info) {
     selectedDepartamentoId.value = info.departamento.id_ubigeo;
     provincias.value = provinciasData[info.departamento.id_ubigeo] || [];
     selectedProvinciaId.value = info.provincia.id_ubigeo;
     distritos.value = distritosData[info.provincia.id_ubigeo] || [];
-    editableProfile.value.address = info.distrito.nombre_ubigeo;
+    // ===============================================================================
+    // CAMBIO CLAVE: Asignamos el ID del distrito a `editableProfile.address`.
+    //               Este campo se enviará al backend.
+    // ===============================================================================
+    editableProfile.value.address = info.distrito.id_ubigeo;
   }
 };
 
+// Formatea el texto de la ubicación para mostrar (recibe el nombre del distrito)
 const formatUbicacionForDisplay = (distritoName) => {
   if (!distritoName) return null;
-  const info = findUbigeoInfo(distritoName);
+  const info = findUbigeoInfoByName(distritoName);
   if (info) {
     return `${info.distrito.nombre_ubigeo}, ${info.provincia.nombre_ubigeo}, ${info.departamento.nombre_ubigeo}`;
   }
-  return distritoName;
+  return distritoName; // Devuelve el nombre si no se encuentra info completa
 };
+
 
 // --- Funciones de Utilidad ---
 const handleImageError = () => { imageHasError.value = true; };
@@ -412,7 +445,9 @@ const fetchCategories = async () => {
 const enterEditMode = async () => {
   // Clon profundo para evitar mutaciones no deseadas
   editableProfile.value = JSON.parse(JSON.stringify(userProfile.value));
-
+  
+  // La propiedad 'address' de editableProfile se poblará con el ID en setupUbigeoFromProfile
+  
   // Convertir fecha de 'dd/mm/yyyy' a 'yyyy-mm-dd' para el input
   if (editableProfile.value.dateOfBirth) {
     const parts = editableProfile.value.dateOfBirth.split('/');
@@ -421,6 +456,9 @@ const enterEditMode = async () => {
     }
   }
 
+  // ===============================================================================
+  // CAMBIO CLAVE: Esta función ahora configurará el ID correcto en `editableProfile.address`.
+  // ===============================================================================
   setupUbigeoFromProfile(userProfile.value.address);
 
   editableInterests.value = new Set(userProfile.value.interests || []);
@@ -449,7 +487,10 @@ const saveProfile = async () => {
     .map(name => allCategories.value.find(cat => cat.name === name)?.id)
     .filter(id => id != null);
 
-  // Prepara el payload final con los nombres de campo que espera el backend
+  // ===============================================================================
+  // CAMBIO CLAVE: El payload ahora contiene `address` con el ID del distrito.
+  //               El backend debe esperar un número (ID) para este campo.
+  // ===============================================================================
   const payload = {
     ...editableProfile.value,
     interest_ids: selectedInterestIds,
