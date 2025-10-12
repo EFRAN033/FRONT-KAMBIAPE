@@ -846,9 +846,32 @@ onBeforeUnmount(() => {
   if (ws) ws.close();
 });
 
-const statusStripeClass = (status) => ({ 'bg-yellow-400': status === 'pending', 'bg-green-500': status === 'accepted', 'bg-red-500': status === 'rejected', 'bg-gray-400': status === 'cancelled', 'bg-blue-500': status === 'completed' });
-const statusBadgeClass = (status) => ({ 'bg-yellow-50 text-yellow-800 ring-yellow-200': status === 'pending', 'bg-green-50 text-green-800 ring-green-200': status === 'accepted', 'bg-red-50 text-red-800 ring-red-200': status === 'rejected', 'bg-gray-100 text-gray-700 ring-gray-200': status === 'cancelled', 'bg-blue-50 text-blue-800 ring-blue-200': status === 'completed' });
-const statusText = (status) => ({ pending: 'Pendiente', accepted: 'Aceptada', rejected: 'Rechazada', cancelled: 'Cancelada', completed: 'Completada' }[status] || 'Desconocido');
+// Opción 3: Paleta Integrada a la Marca KambiaPe
+const statusStripeClass = (status) => ({
+  'bg-sky-400': status === 'pending',
+  'bg-green-500': status === 'accepted',
+  'bg-red-500': status === 'rejected',
+  'bg-slate-400': status === 'cancelled',
+  'bg-[#d7037b]': status === 'completed', // Color de tu marca
+});
+
+const statusBadgeClass = (status) => ({
+  // Un diseño limpio con borde y texto de color
+  'bg-white text-sky-700 border border-sky-300': status === 'pending',
+  'bg-white text-green-700 border border-green-300': status === 'accepted',
+  'bg-white text-red-700 border border-red-300': status === 'rejected',
+  'bg-white text-slate-600 border border-slate-300': status === 'cancelled',
+  // El estado completado es especial para que destaque
+  'bg-[#9e0154] text-white ring-1 ring-[#d7037b]/50': status === 'completed',
+});
+
+const statusText = (status) => ({
+  pending: 'Pendiente',
+  accepted: 'Aceptada',
+  rejected: 'Rechazada',
+  cancelled: 'Cancelada',
+  completed: 'Completada'
+}[status] || 'Desconocido');
 
 </script>
 
