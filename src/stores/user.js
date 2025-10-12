@@ -120,7 +120,6 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        // --- ✅ RUTA CORREGIDA SEGÚN TU BACKEND ---
         const response = await axios.get(`/profile/${userId}`);
         const userData = this._processUserData(response.data);
         this.user = userData;
@@ -135,29 +134,43 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    // --- ✅ ESTA ES LA FUNCIÓN CORREGIDA Y CLAVE ---
     async updateProfile(userId, updateData) {
       this.loading = true;
       this.error = null;
       try {
-        const dataToSend = { ...updateData };
-        if (dataToSend.fullName) {
-          dataToSend.full_name = dataToSend.fullName;
-          delete dataToSend.fullName;
-        }
-        if (dataToSend.dateOfBirth) {
-            const d = new Date(dataToSend.dateOfBirth);
-            dataToSend.date_of_birth = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-            delete dataToSend.dateOfBirth;
-        }
-        
-        delete dataToSend.interests;
+        // Objeto temporal con los datos del formulario
+        const dataToFilter = { ...updateData };
 
-        // --- ✅ RUTA CORREGIDA SEGÚN TU BACKEND ---
-        const response = await axios.put(`/profile/${userId}`, dataToSend);
+        // Renombrar campos para que coincidan con el backend (camelCase a snake_case)
+        if (dataToFilter.fullName) {
+          dataToFilter.full_name = dataToFilter.fullName;
+          delete dataToFilter.fullName;
+        }
+        if (dataToFilter.dateOfBirth) {
+            const d = new Date(dataToFilter.dateOfBirth);
+            dataToFilter.date_of_birth = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+            delete dataToFilter.dateOfBirth;
+        }
+
+        // Lista con los ÚNICOS campos que el backend acepta para la actualización
+        const allowedKeys = ['full_name', 'phone', 'address', 'date_of_birth', 'gender', 'occupation', 'bio', 'interest_ids'];
+        
+        // Creamos el payload final, incluyendo solo los campos permitidos
+        const finalPayload = {};
+        for (const key of allowedKeys) {
+            if (dataToFilter[key] !== undefined && dataToFilter[key] !== null) {
+                finalPayload[key] = dataToFilter[key];
+            }
+        }
+
+        // Enviamos el payload "limpio" al backend
+        const response = await axios.put(`/profile/${userId}`, finalPayload);
         const updatedUserData = this._processUserData(response.data);
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
         return true;
+
       } catch (err) {
         this.error = err.response?.data?.detail || 'Error al actualizar el perfil.';
         if (err.response?.status === 401) {
@@ -173,7 +186,6 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        // Asumiendo que esta ruta es correcta, si no, también hay que verificarla en main.py
         await axios.put('/users/change-password', passwordData);
         return { success: true, message: 'Contraseña actualizada con éxito.' };
       } catch (err) {
@@ -189,7 +201,6 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        // --- ✅ RUTA CORREGIDA SEGÚN TU BACKEND ---
         const response = await axios.post('/profile/picture', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -244,6 +255,7 @@ export const useUserStore = defineStore('user', {
                 this.clearUser();
             }
         } catch (e) {
+            console.error("Error al inicializar el usuario desde el token:", e);
             this.clearUser();
         }
       } else {

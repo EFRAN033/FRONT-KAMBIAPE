@@ -39,12 +39,12 @@
               <div class="avatar-glow" aria-hidden="true"></div>
 
               <template v-if="displayPhotoUrl && !imageHasError">
-                <img 
-                  class="avatar-img" 
-                  :src="displayPhotoUrl" 
-                  alt="Foto de perfil" 
+                <img
+                  class="avatar-img"
+                  :src="displayPhotoUrl"
+                  alt="Foto de perfil"
                   draggable="false"
-                  @error="handleImageError" 
+                  @error="handleImageError"
                 />
               </template>
               <template v-else>
@@ -77,7 +77,7 @@
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
 
             <div class="status-line mt-4" role="status" aria-label="Estado de cuenta">
-              <span class="flag-role" title="Rol"> 
+              <span class="flag-role" title="Rol">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 -mt-[1px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z"/>
                 </svg>
@@ -340,12 +340,12 @@ const onDepartamentoChange = () => {
   provincias.value = provinciasData[selectedDepartamentoId.value] || [];
   selectedProvinciaId.value = '';
   distritos.value = [];
-  editableProfile.value.address = ''; // <-- CORRECCIÓN: Usar 'address' y reiniciar
+  // editableProfile.value.address = ''; // <-- CORRECCIÓN: LÍNEA ELIMINADA
 };
 
 const onProvinciaChange = () => {
   distritos.value = distritosData[selectedProvinciaId.value] || [];
-  editableProfile.value.address = ''; // <-- CORRECCIÓN: Usar 'address' y reiniciar
+  // editableProfile.value.address = ''; // <-- CORRECCIÓN: LÍNEA ELIMINADA
 };
 
 const findUbigeoInfo = (distritoName) => {
@@ -412,7 +412,7 @@ const fetchCategories = async () => {
 const enterEditMode = async () => {
   // Clon profundo para evitar mutaciones no deseadas
   editableProfile.value = JSON.parse(JSON.stringify(userProfile.value));
-  
+
   // Convertir fecha de 'dd/mm/yyyy' a 'yyyy-mm-dd' para el input
   if (editableProfile.value.dateOfBirth) {
     const parts = editableProfile.value.dateOfBirth.split('/');
@@ -422,9 +422,9 @@ const enterEditMode = async () => {
   }
 
   setupUbigeoFromProfile(userProfile.value.address);
-  
+
   editableInterests.value = new Set(userProfile.value.interests || []);
-  
+
   editMode.value = true;
   showNotification('Modo de edición activado.', 'info');
   if (allCategories.value.length === 0) {
@@ -454,7 +454,7 @@ const saveProfile = async () => {
     ...editableProfile.value,
     interest_ids: selectedInterestIds,
   };
-  
+
   // Limpia campos que no deben enviarse directamente
   delete payload.interests;
   delete payload.profilePicture; // La foto se actualiza por otra ruta
@@ -462,7 +462,7 @@ const saveProfile = async () => {
   delete payload.email; // El email no debería ser editable aquí
 
   const success = await userStore.updateProfile(userStore.user.id, payload);
-  
+
   if (success) {
     editMode.value = false;
     showNotification('Perfil actualizado con éxito.', 'success');
@@ -513,13 +513,13 @@ const handleFile = async (file) => {
       showNotification(`La imagen no debe superar ${MAX_SIZE_MB}MB.`, 'error');
       return;
   }
-  
+
   const formData = new FormData();
   formData.append('file', file);
   showNotification('Subiendo imagen...', 'info');
-  
+
   const result = await userStore.uploadProfilePicture(formData);
-  
+
   if (result.success) {
     showNotification('Foto de perfil actualizada.', 'success');
   } else {
@@ -532,12 +532,12 @@ const onDragOver = (e) => { e.preventDefault(); isDragOver.value = true; };
 const onDragLeave = () => { isDragOver.value = false; };
 const onDrop = (e) => { e.preventDefault(); isDragOver.value = false; handleFile(e.dataTransfer?.files?.[0]); };
 
-const formatPhoneGroups = (value) => { 
+const formatPhoneGroups = (value) => {
   if (!value) return '';
-  const digits = value.replace(/\D+/g, ''); 
-  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim(); 
+  const digits = value.replace(/\D+/g, '');
+  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
 };
-const onPhoneInput = (e) => { 
+const onPhoneInput = (e) => {
   const formatted = formatPhoneGroups(e.target.value);
   editableProfile.value.phone = formatted;
   e.target.value = formatted;
