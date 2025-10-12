@@ -402,10 +402,10 @@
         </div>
         <div class="p-5">
             <p class="text-sm text-slate-600 mb-4">Haz clic en un lugar para enviarlo como sugerencia en el chat. Recomendamos siempre lugares públicos y concurridos.</p>
-            <ul class="space-y-3">
+            <ul v-if="suggestedPlaces.length > 0" class="space-y-3">
               <li
                 v-for="place in suggestedPlaces"
-                :key="place.name"
+                :key="place.id"
                 @click="sendSuggestedLocation(place)"
                 class="flex items-start p-3 rounded-lg border border-slate-200 hover:bg-pink-50 hover:border-pink-300 cursor-pointer transition-all duration-200"
               >
@@ -413,11 +413,16 @@
                     <MapPinIcon class="h-5 w-5 text-[#d7037b]" />
                 </div>
                 <div>
-                  <p class="font-semibold text-[#9e0154]">{{ place.name }}</p>
-                  <p class="text-xs text-slate-500">{{ place.address }}</p>
+                  <p class="font-semibold text-[#9e0154]">{{ place.nombre }}</p>
+                  <p class="text-xs text-slate-500">{{ place.tipo }}</p>
                 </div>
               </li>
             </ul>
+            <div v-else class="text-center py-8 text-slate-500">
+              <NoSymbolIcon class="h-12 w-12 mx-auto text-slate-300 mb-2"/>
+              <p>No hay lugares seguros sugeridos para tu ubicación actual.</p>
+              <p class="text-xs mt-1">Asegúrate de haber configurado tu distrito en tu perfil.</p>
+            </div>
         </div>
       </div>
     </div>
@@ -440,6 +445,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
+import suggestedPlacesData from '@/data/lugares_seguros.json';
 
 const userStore = useUserStore();
 const toast = useToast();
@@ -480,16 +486,15 @@ const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
 
 const isLocationModalVisible = ref(false);
 
-const suggestedPlaces = ref([
-  { name: 'Jockey Plaza', address: 'Av. Javier Prado Este 4200, Santiago de Surco' },
-  { name: 'Plaza San Miguel', address: 'Av. la Marina 2000, San Miguel' },
-  { name: 'Real Plaza Salaverry', address: 'Av. Gral. Salaverry 2370, Jesús María' },
-  { name: 'Parque Kennedy', address: 'Miraflores, Lima' },
-  { name: 'Centro Cívico', address: 'Av. Garcilaso de la Vega 1330, Cercado de Lima' }
-]);
+const suggestedPlaces = computed(() => {
+  if (!userStore.user || !userStore.user.district_id) {
+    return [];
+  }
+  return suggestedPlacesData.filter(place => place.district_id === userStore.user.district_id);
+});
 
 const sendSuggestedLocation = (place) => {
-  const locationMessage = `¡Hola! Para mayor seguridad, te sugiero que nos encontremos en un lugar público. ¿Qué te parece en "${place.name}" (${place.address})?`;
+  const locationMessage = `¡Hola! Para mayor seguridad, te sugiero que nos encontremos en un lugar público. ¿Qué te parece en "${place.nombre}"?`;
   newMessageText.value = locationMessage;
   sendMessage();
   isLocationModalVisible.value = false;
@@ -723,16 +728,11 @@ const scrollToBottom = () => {
   });
 };
 
-// ===== INICIO DE LA CORRECCIÓN =====
-// Se centraliza la lógica del scroll en un "watcher" que observa la lista de mensajes.
-// Cada vez que la lista de mensajes cambia (se carga, se añade uno nuevo, etc.),
-// se ejecuta automáticamente la función para ir hasta el final del chat.
 watch(messages, () => {
   scrollToBottom();
 }, {
-  deep: true // Esto es importante para detectar cuando se añaden nuevos mensajes a la lista.
+  deep: true
 });
-// ===== FIN DE LA CORRECCIÓN =====
 
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
@@ -746,7 +746,6 @@ const connectWebSocket = () => {
     const response = JSON.parse(event.data);
     if (response.type === 'new_message' && selectedConversation.value?.exchange.id === response.data.proposal_id) {
       messages.value.push(response.data);
-      // La llamada a scrollToBottom() se elimina de aquí porque el "watcher" ya lo hace.
       markMessagesAsRead([response.data]);
     }
   };
@@ -775,7 +774,6 @@ const selectConversation = async (conversation) => {
     messages.value = data;
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
-    // La llamada a scrollToBottom() se elimina de aquí porque el "watcher" ya lo hace.
     markMessagesAsRead(messages.value);
   } catch (e) {
     toast.error("No se pudieron cargar los mensajes.");
@@ -801,7 +799,6 @@ const sendMessage = async () => {
   });
 
   newMessageText.value = '';
-  // La llamada a scrollToBottom() se elimina de aquí porque el "watcher" ya lo hace.
 
   try {
     const { data: sentMessageData } = await axios.post('/messages', {
