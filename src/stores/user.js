@@ -27,7 +27,8 @@ export const useUserStore = defineStore('user', {
       email: '',
       profilePicture: defaultAvatar,
       phone: null,
-      address: null,
+      // ======================== CAMBIO CLAVE ========================
+      ubicacion: null, // <-- Cambiado de 'address' para coincidir con el backend
       dateOfBirth: null,
       gender: null,
       occupation: null,
@@ -73,7 +74,8 @@ export const useUserStore = defineStore('user', {
         email: data.email || '',
         profilePicture: normalizeImageUrl(data.profile_picture || data.profilePicture),
         phone: data.phone || null,
-        address: data.address || null,
+        // ======================== CAMBIO CLAVE ========================
+        ubicacion: data.ubicacion || null, // <-- Cambiado de 'address'
         dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES') : null,
         gender: data.gender || null,
         occupation: data.occupation || null,
@@ -134,15 +136,12 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    // --- ✅ ESTA ES LA FUNCIÓN CORREGIDA Y CLAVE ---
     async updateProfile(userId, updateData) {
       this.loading = true;
       this.error = null;
       try {
-        // Objeto temporal con los datos del formulario
         const dataToFilter = { ...updateData };
 
-        // Renombrar campos para que coincidan con el backend (camelCase a snake_case)
         if (dataToFilter.fullName) {
           dataToFilter.full_name = dataToFilter.fullName;
           delete dataToFilter.fullName;
@@ -152,11 +151,11 @@ export const useUserStore = defineStore('user', {
             dataToFilter.date_of_birth = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             delete dataToFilter.dateOfBirth;
         }
-
-        // Lista con los ÚNICOS campos que el backend acepta para la actualización
-        const allowedKeys = ['full_name', 'phone', 'address', 'date_of_birth', 'gender', 'occupation', 'bio', 'interest_ids'];
         
-        // Creamos el payload final, incluyendo solo los campos permitidos
+        // ======================== CAMBIO CLAVE ========================
+        // La lista ahora incluye 'ubicacion', que es lo que el backend espera.
+        const allowedKeys = ['full_name', 'phone', 'ubicacion', 'date_of_birth', 'gender', 'occupation', 'bio', 'interest_ids'];
+        
         const finalPayload = {};
         for (const key of allowedKeys) {
             if (dataToFilter[key] !== undefined && dataToFilter[key] !== null) {
@@ -164,7 +163,6 @@ export const useUserStore = defineStore('user', {
             }
         }
 
-        // Enviamos el payload "limpio" al backend
         const response = await axios.put(`/profile/${userId}`, finalPayload);
         const updatedUserData = this._processUserData(response.data);
         this.user = updatedUserData;
@@ -225,7 +223,8 @@ export const useUserStore = defineStore('user', {
         email: '',
         profilePicture: defaultAvatar,
         phone: null,
-        address: null,
+        // ======================== CAMBIO CLAVE ========================
+        ubicacion: null, // <-- Cambiado de 'address'
         dateOfBirth: null,
         gender: null,
         occupation: null,

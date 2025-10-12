@@ -157,7 +157,7 @@
 
               <div class="md:col-span-2">
                 <label class="label">Ubicación</label>
-                <p v-if="!editMode" class="display-field">{{ formatUbicacionForDisplay(userProfile.address) || '-' }}</p>
+                <p v-if="!editMode" class="display-field">{{ formatUbicacionForDisplay(userProfile.ubicacion) || '-' }}</p>
                 <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label for="departamento" class="label text-xs">Departamento</label>
@@ -175,7 +175,7 @@
                   </div>
                   <div>
                     <label for="distrito" class="label text-xs">Distrito</label>
-                    <select id="distrito" v-model="editableProfile.address" class="input" :disabled="!selectedProvinciaId">
+                    <select id="distrito" v-model="editableProfile.ubicacion" class="input" :disabled="!selectedProvinciaId">
                       <option disabled value="">Seleccione</option>
                       <option v-for="dist in distritos" :key="dist.id_ubigeo" :value="dist.id_ubigeo">{{ dist.nombre_ubigeo }}</option>
                     </select>
@@ -288,7 +288,6 @@ import { useRouter } from 'vue-router';
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import axios from '@/axios';
 
-// --- IMPORTAMOS LOS NUEVOS ARCHIVOS JSON ---
 import departamentosData from '@/data/departamentos.json';
 import provinciasData from '@/data/provincias.json';
 import distritosData from '@/data/distritos.json';
@@ -296,7 +295,6 @@ import distritosData from '@/data/distritos.json';
 const userStore = useUserStore();
 const router = useRouter();
 
-// --- Estados para la UI ---
 const editMode = ref(false);
 const activeTab = ref('perfil');
 const fileInput = ref(null);
@@ -304,58 +302,45 @@ const isDragOver = ref(false);
 const MAX_SIZE_MB = 2;
 const imageHasError = ref(false);
 
-// --- Estados para modales y datos ---
 const showDevices = ref(false);
 const devices = ref([]);
 const showPasswordModal = ref(false);
 const passwordFields = reactive({ current_password: '', new_password: '', confirm_new_password: '' });
 
-// --- Estados para el formulario de perfil ---
 const editableProfile = ref({});
 const allCategories = ref([]);
 const editableInterests = ref(new Set());
 
-// --- ESTADOS PARA UBIGEO ---
 const departamentos = ref(departamentosData);
 const provincias = ref([]);
 const distritos = ref([]);
 const selectedDepartamentoId = ref('');
 const selectedProvinciaId = ref('');
 
-// --- Propiedades Computadas ---
 const userProfile = computed(() => userStore.getUserProfile);
 const indicatorStyle = computed(() => ({ transform: `translateX(calc(${activeTab.value === 'perfil' ? 0 : 1} * 100%))` }));
-
 const displayPhotoUrl = computed(() => {
   imageHasError.value = false;
   return userProfile.value.profilePicture;
 });
-
 const availableCategories = computed(() => {
   return allCategories.value.filter(category => !editableInterests.value.has(category.name));
 });
 
-// --- LÓGICA DE UBIGEO (CORREGIDA) ---
 const onDepartamentoChange = () => {
   provincias.value = provinciasData[selectedDepartamentoId.value] || [];
   selectedProvinciaId.value = '';
   distritos.value = [];
-  // ===============================================================================
-  // CAMBIO CLAVE: Limpiamos la dirección al cambiar el departamento.
-  //               Asumimos que el campo `address` ahora contendrá el ID del distrito.
-  // ===============================================================================
-  editableProfile.value.address = '';
+  // ======================== CAMBIO CLAVE ========================
+  editableProfile.value.ubicacion = '';
 };
 
 const onProvinciaChange = () => {
   distritos.value = distritosData[selectedProvinciaId.value] || [];
-  // ===============================================================================
-  // CAMBIO CLAVE: Limpiamos la dirección al cambiar la provincia.
-  // ===============================================================================
-  editableProfile.value.address = '';
+  // ======================== CAMBIO CLAVE ========================
+  editableProfile.value.ubicacion = '';
 };
 
-// Busca por nombre de distrito (útil para la carga inicial)
 const findUbigeoInfoByName = (distritoName) => {
   if (!distritoName) return null;
   for (const provId in distritosData) {
@@ -373,65 +358,38 @@ const findUbigeoInfoByName = (distritoName) => {
   return null;
 };
 
-// Busca por ID de distrito (útil para mostrar el texto después de guardar)
-const findUbigeoInfoById = (distritoId) => {
-  if (!distritoId) return null;
-  for (const provId in distritosData) {
-    const distrito = distritosData[provId].find(d => d.id_ubigeo === distritoId);
-    if (distrito) {
-      for (const depId in provinciasData) {
-        const provincia = provinciasData[depId].find(p => p.id_ubigeo === distrito.id_padre_ubigeo);
-        if (provincia) {
-          const departamento = departamentosData.find(d => d.id_ubigeo === provincia.id_padre_ubigeo);
-          return { departamento, provincia, distrito };
-        }
-      }
-    }
-  }
-  return null;
-};
-
-// Configura los selects de Ubigeo a partir del nombre del distrito guardado en el perfil
-const setupUbigeoFromProfile = (addressName) => {
-  if (!addressName) return;
-  const info = findUbigeoInfoByName(addressName);
+// ======================== CAMBIO CLAVE ========================
+const setupUbigeoFromProfile = (ubicacionName) => {
+  if (!ubicacionName) return;
+  const info = findUbigeoInfoByName(ubicacionName);
   if (info) {
     selectedDepartamentoId.value = info.departamento.id_ubigeo;
     provincias.value = provinciasData[info.departamento.id_ubigeo] || [];
     selectedProvinciaId.value = info.provincia.id_ubigeo;
     distritos.value = distritosData[info.provincia.id_ubigeo] || [];
-    // ===============================================================================
-    // CAMBIO CLAVE: Asignamos el ID del distrito a `editableProfile.address`.
-    //               Este campo se enviará al backend.
-    // ===============================================================================
-    editableProfile.value.address = info.distrito.id_ubigeo;
+    editableProfile.value.ubicacion = info.distrito.id_ubigeo;
   }
 };
 
-// Formatea el texto de la ubicación para mostrar (recibe el nombre del distrito)
-const formatUbicacionForDisplay = (distritoName) => {
-  if (!distritoName) return null;
-  const info = findUbigeoInfoByName(distritoName);
+// ======================== CAMBIO CLAVE ========================
+const formatUbicacionForDisplay = (ubicacionName) => {
+  if (!ubicacionName) return '-';
+  const info = findUbigeoInfoByName(ubicacionName);
   if (info) {
     return `${info.distrito.nombre_ubigeo}, ${info.provincia.nombre_ubigeo}, ${info.departamento.nombre_ubigeo}`;
   }
-  return distritoName; // Devuelve el nombre si no se encuentra info completa
+  return ubicacionName;
 };
 
-
-// --- Funciones de Utilidad ---
 const handleImageError = () => { imageHasError.value = true; };
 
-// Helper para notificaciones (si tienes un componente Toast)
 const showNotification = (message, type = 'info') => {
   console.log(`[${type.toUpperCase()}] Notification: ${message}`);
-  // Aquí iría la lógica para mostrar un componente de notificación real
 };
 
 const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 const setTab = (tab) => activeTab.value = tab;
 
-// --- Lógica de Negocio (API calls, etc.) ---
 const fetchCategories = async () => {
   try {
     const response = await axios.get('/categories');
@@ -443,12 +401,8 @@ const fetchCategories = async () => {
 };
 
 const enterEditMode = async () => {
-  // Clon profundo para evitar mutaciones no deseadas
   editableProfile.value = JSON.parse(JSON.stringify(userProfile.value));
-  
-  // La propiedad 'address' de editableProfile se poblará con el ID en setupUbigeoFromProfile
-  
-  // Convertir fecha de 'dd/mm/yyyy' a 'yyyy-mm-dd' para el input
+
   if (editableProfile.value.dateOfBirth) {
     const parts = editableProfile.value.dateOfBirth.split('/');
     if (parts.length === 3) {
@@ -456,13 +410,10 @@ const enterEditMode = async () => {
     }
   }
 
-  // ===============================================================================
-  // CAMBIO CLAVE: Esta función ahora configurará el ID correcto en `editableProfile.address`.
-  // ===============================================================================
-  setupUbigeoFromProfile(userProfile.value.address);
+  // ======================== CAMBIO CLAVE ========================
+  setupUbigeoFromProfile(userProfile.value.ubicacion);
 
   editableInterests.value = new Set(userProfile.value.interests || []);
-
   editMode.value = true;
   showNotification('Modo de edición activado.', 'info');
   if (allCategories.value.length === 0) {
@@ -487,20 +438,16 @@ const saveProfile = async () => {
     .map(name => allCategories.value.find(cat => cat.name === name)?.id)
     .filter(id => id != null);
 
-  // ===============================================================================
-  // CAMBIO CLAVE: El payload ahora contiene `address` con el ID del distrito.
-  //               El backend debe esperar un número (ID) para este campo.
-  // ===============================================================================
+  // ======================== CAMBIO CLAVE ========================
   const payload = {
     ...editableProfile.value,
     interest_ids: selectedInterestIds,
   };
 
-  // Limpia campos que no deben enviarse directamente
   delete payload.interests;
-  delete payload.profilePicture; // La foto se actualiza por otra ruta
+  delete payload.profilePicture;
   delete payload.created_at;
-  delete payload.email; // El email no debería ser editable aquí
+  delete payload.email;
 
   const success = await userStore.updateProfile(userStore.user.id, payload);
 
@@ -511,7 +458,6 @@ const saveProfile = async () => {
     showNotification(userStore.error || 'No se pudo actualizar el perfil.', 'error');
   }
 };
-
 
 const logout = async () => {
   showNotification('Cerrando sesión...', 'info');
@@ -599,7 +545,6 @@ const toggleInterest = (interestName) => {
   }
 };
 
-// --- Lifecycle Hooks ---
 onMounted(async () => {
   if (userStore.isLoggedIn && userStore.user?.id) {
     await userStore.fetchUserProfile(userStore.user.id);
@@ -610,12 +555,10 @@ onMounted(async () => {
 
 watch(userProfile, (newProfile) => {
   if (newProfile && !editMode.value) {
-    // Sincroniza el editableProfile cuando el perfil del store cambia (y no estamos en modo edición)
     editableProfile.value = JSON.parse(JSON.stringify(newProfile));
   }
 }, { immediate: true, deep: true });
 </script>
-
 
 <style scoped>
 /* (Tus estilos se mantienen exactamente iguales) */
