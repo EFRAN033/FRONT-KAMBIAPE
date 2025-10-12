@@ -339,22 +339,30 @@ const onProvinciaChange = () => {
   editableProfile.value.ubicacion = '';
 };
 
-const findUbigeoInfoByName = (distritoName) => {
-  if (!distritoName) return null;
-  for (const provId in distritosData) {
-    const distrito = distritosData[provId].find(d => d.nombre_ubigeo === distritoName);
-    if (distrito) {
-      for (const depId in provinciasData) {
-        const provincia = provinciasData[depId].find(p => p.id_ubigeo === distrito.id_padre_ubigeo);
-        if (provincia) {
-          const departamento = departamentosData.find(d => d.id_ubigeo === provincia.id_padre_ubigeo);
-          return { departamento, provincia, distrito };
+const findUbigeoInfoByName = (locationString) => {
+    if (!locationString) return null;
+
+    // Asumimos que el formato es "Departamento, Provincia, Distrito"
+    const parts = locationString.split(',').map(p => p.trim());
+    const distritoName = parts[parts.length - 1]; // El último elemento es el distrito
+
+    for (const provId in distritosData) {
+        const distrito = distritosData[provId].find(d => d.nombre_ubigeo === distritoName);
+        if (distrito) {
+            for (const depId in provinciasData) {
+                const provincia = provinciasData[depId].find(p => p.id_ubigeo === distrito.id_padre_ubigeo);
+                if (provincia) {
+                    const departamento = departamentosData.find(d => d.id_ubigeo === provincia.id_padre_ubigeo);
+                    if (departamento) {
+                         return { departamento, provincia, distrito };
+                    }
+                }
+            }
         }
-      }
     }
-  }
-  return null;
+    return null; // No se encontró coincidencia
 };
+
 
 const setupUbigeoFromProfile = (ubicacionName) => {
   if (!ubicacionName) return;
@@ -364,17 +372,16 @@ const setupUbigeoFromProfile = (ubicacionName) => {
     provincias.value = provinciasData[info.departamento.id_ubigeo] || [];
     selectedProvinciaId.value = info.provincia.id_ubigeo;
     distritos.value = distritosData[info.provincia.id_ubigeo] || [];
+    // Aquí asignamos el ID del distrito al v-model del select de distritos
     editableProfile.value.ubicacion = info.distrito.id_ubigeo;
   }
 };
 
 const formatUbicacionForDisplay = (ubicacionName) => {
   if (!ubicacionName) return '-';
-  const info = findUbigeoInfoByName(ubicacionName);
-  if (info) {
-    return `${info.distrito.nombre_ubigeo}, ${info.provincia.nombre_ubigeo}, ${info.departamento.nombre_ubigeo}`;
-  }
-  return ubicacionName;
+  // El backend ahora guarda "Departamento, Provincia, Distrito", así que lo mostramos tal cual.
+  // Reemplazamos las comas por guiones para una mejor visualización.
+  return ubicacionName.split(',').map(p => p.trim()).join(' - ');
 };
 
 const handleImageError = () => { imageHasError.value = true; };
@@ -388,11 +395,20 @@ const capitalizeFirstLetter = (str) => !str ? '' : str.split(' ').filter(Boolean
 // ======================== CAMBIO CLAVE ========================
 const formatDateForDisplay = (dateStr) => {
   if (!dateStr) return '-';
-  const parts = dateStr.split('/');
-  if (parts.length !== 3) return dateStr; // Devuelve el original si no está en formato D/M/AAAA
-  const [day, month, year] = parts;
-  return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  // Maneja ambos formatos: 'YYYY-MM-DD' del modo edición y 'D/M/AAAA' de la base de datos
+  if (dateStr.includes('-')) {
+      const [year, month, day] = dateStr.split('-');
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  }
+  if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length !== 3) return dateStr;
+      const [day, month, year] = parts;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  }
+  return dateStr;
 };
+
 
 const setTab = (tab) => activeTab.value = tab;
 
@@ -445,12 +461,28 @@ const saveProfile = async () => {
 
   const profileDataToSend = JSON.parse(JSON.stringify(editableProfile.value));
 
-  if (profileDataToSend.ubicacion && distritos.value.length > 0) {
-    const selectedDistrict = distritos.value.find(d => d.id_ubigeo === profileDataToSend.ubicacion);
-    if (selectedDistrict) {
-      profileDataToSend.ubicacion = selectedDistrict.nombre_ubigeo;
+  // ===== INICIO DE LA CORRECCIÓN =====
+  // Construir la cadena de texto de la ubicación completa
+  if (selectedDepartamentoId.value && selectedProvinciaId.value && profileDataToSend.ubicacion) {
+    const dep = departamentos.value.find(d => d.id_ubigeo === selectedDepartamentoId.value);
+    const prov = provincias.value.find(p => p.id_ubigeo === selectedProvinciaId.value);
+    const dist = distritos.value.find(d => d.id_ubigeo === profileDataToSend.ubicacion);
+
+    if (dep && prov && dist) {
+      profileDataToSend.ubicacion = `${dep.nombre_ubigeo}, ${prov.nombre_ubigeo}, ${dist.nombre_ubigeo}`;
+    }
+  } else {
+    // Si no se seleccionó una nueva ubicación, mantenemos la anterior si existe.
+    // Si editableProfile.ubicacion es un ID, es porque el usuario interactuó con el selector.
+    // Si no es un ID (es un nombre), significa que no lo cambió, así que lo dejamos.
+    const isId = !isNaN(parseInt(profileDataToSend.ubicacion));
+    if (!isId) {
+       profileDataToSend.ubicacion = userProfile.value.ubicacion;
+    } else {
+       profileDataToSend.ubicacion = ''; // O manejar el error
     }
   }
+  // ===== FIN DE LA CORRECCIÓN =====
 
   const payload = {
     ...profileDataToSend,
