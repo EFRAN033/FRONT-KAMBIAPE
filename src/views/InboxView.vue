@@ -154,7 +154,7 @@
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('accepted')" class="p-2 text-green-700 bg-green-50 hover:bg-green-100" title="Aceptar"><CheckIcon class="h-5 w-5" /></button>
                   <button v-if="canAcceptOrReject" @click="updateProposalStatus('rejected')" class="p-2 text-red-700 bg-red-50 hover:bg-red-100" title="Rechazar"><XMarkIcon class="h-5 w-5" /></button>
                   <button v-if="canCancel" @click="openCancelModal" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
-                  <button v-if="canComplete" @click="updateProposalStatus('completed')" class="p-2 text-blue-700 bg-blue-50 hover:bg-blue-100" title="Completar y Valorar"><StarIcon class="h-5 w-5" /></button>
+                  <button v-if="canComplete" @click="openRatingModal" class="p-2 text-blue-700 bg-blue-50 hover:bg-blue-100" title="Completar y Valorar"><StarIcon class="h-5 w-5" /></button>
                   <button @click="openDetailsModal" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100" title="Detalles"><EyeIcon class="h-5 w-5" /></button>
                 </div>
               </div>
@@ -316,6 +316,43 @@
       </div>
     </div>
 
+    <div v-if="isRatingModalVisible" class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-bold text-slate-900">¡Intercambio completado!</h3>
+        <p class="mt-2 text-sm text-slate-600">
+          Valora tu experiencia con <span class="font-semibold">{{ formatUserName(selectedConversation.user.full_name) }}</span> para ayudar a la comunidad.
+        </p>
+        
+        <div class="my-5 flex justify-center">
+          <div class="flex items-center gap-2">
+            <button
+              v-for="star in 5"
+              :key="star"
+              @click="ratingScore = star"
+              class="text-3xl transition-transform duration-150 ease-in-out"
+              :class="star <= ratingScore ? 'text-yellow-400 scale-110' : 'text-slate-300 hover:text-yellow-300'"
+              :title="`${star} de 5 estrellas`"
+            >
+              <StarIcon class="w-8 h-8" :class="star <= ratingScore ? 'fill-current' : ''"/>
+            </button>
+          </div>
+        </div>
+
+        <textarea 
+          v-model="ratingComment" 
+          rows="3" 
+          placeholder="(Opcional) Deja un comentario sobre tu experiencia..." 
+          class="w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-[#d7037b] focus:border-transparent">
+        </textarea>
+        
+        <div class="mt-5 flex justify-end gap-3">
+          <button @click="closeRatingModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Omitir</button>
+          <button @click="submitRating" :disabled="ratingScore === 0" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:bg-blue-300 disabled:cursor-not-allowed">
+            Enviar Valoración
+          </button>
+        </div>
+      </div>
+    </div>
     <div v-if="isCancelModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-semibold text-slate-900">Confirmar Cancelación</h3>
@@ -478,6 +515,12 @@ const loadingBlockedUsers = ref(false);
 
 const isCancelModalVisible = ref(false);
 
+// ===== INICIO: NUEVAS VARIABLES PARA EL MODAL DE VALORACIÓN =====
+const isRatingModalVisible = ref(false);
+const ratingScore = ref(0);
+const ratingComment = ref('');
+// ===== FIN: NUEVAS VARIABLES PARA EL MODAL DE VALORACIÓN =====
+
 let ws = null;
 const isOtherUserTyping = ref(false);
 
@@ -487,12 +530,10 @@ const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
 const isLocationModalVisible = ref(false);
 
 const suggestedPlaces = computed(() => {
-  // ===== INICIO DE LA CORRECCIÓN (snake_case a camelCase) =====
   if (!userStore.user || !userStore.user.districtId) {
     return [];
   }
   return suggestedPlacesData.filter(place => place.district_id == userStore.user.districtId);
-  // ===== FIN DE LA CORRECCIÓN =====
 });
 
 const sendSuggestedLocation = (place) => {
@@ -567,6 +608,50 @@ const confirmCancel = async () => {
   await updateProposalStatus('cancelled');
   closeCancelModal();
 };
+
+// ===== INICIO: NUEVAS FUNCIONES PARA EL MODAL DE VALORACIÓN =====
+const openRatingModal = () => {
+  ratingScore.value = 0;
+  ratingComment.value = '';
+  isRatingModalVisible.value = true;
+};
+
+const closeRatingModal = () => {
+  isRatingModalVisible.value = false;
+  // Si el usuario omite la valoración, simplemente marcamos la propuesta como completada.
+  updateProposalStatus('completed');
+};
+
+const submitRating = async () => {
+  if (ratingScore.value === 0) {
+    toast.error("Debes seleccionar al menos una estrella para valorar.");
+    return;
+  }
+  if (!selectedConversation.value) return;
+
+  const ratingData = {
+    score: ratingScore.value,
+    comment: ratingComment.value.trim(),
+    rated_id: selectedConversation.value.user.id,
+    proposal_id: selectedConversation.value.exchange.id,
+  };
+
+  try {
+    // 1. Enviar la valoración al backend.
+    await axios.post('/ratings', ratingData);
+    toast.success("¡Gracias por tu valoración!");
+    
+    // 2. Marcar la propuesta como completada.
+    await updateProposalStatus('completed');
+
+  } catch (error) {
+    toast.error(error.response?.data?.detail || "No se pudo enviar la valoración.");
+  } finally {
+    // 3. Cerrar el modal.
+    isRatingModalVisible.value = false;
+  }
+};
+// ===== FIN: NUEVAS FUNCIONES PARA EL MODAL DE VALORACIÓN =====
 
 const toggleActionMenu = (id) => {
   activeMenuId.value = activeMenuId.value === id ? null : id;
@@ -841,20 +926,30 @@ const markMessagesAsRead = async (messagesToRead) => {
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
-  try {
-    if (status === 'completed') {
-      toast.info("Aquí se abriría un modal para dejar una valoración.", { timeout: 5000 });
-    }
+  
+  // Si el estado es 'completed' y el modal de valoración no se ha mostrado,
+  // simplemente salimos, ya que la lógica se manejará al enviar o omitir la valoración.
+  if (status === 'completed' && !isRatingModalVisible.value) {
+    openRatingModal();
+    return;
+  }
 
+  try {
     await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
-    toast.success(`Propuesta ${statusTextMap[status]}.`);
+    
+    // Solo mostramos el toast si no es una finalización (ya que esa tiene su propio feedback)
+    if (status !== 'completed') {
+        toast.success(`Propuesta ${statusTextMap[status]}.`);
+    }
+
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
     if (convInList) convInList.exchange.status = status;
   } catch (e) {
-    toast.error(e.response?.data?.detail || `Error al ${statusTextMap[status]} la propuesta.`);
+    toast.error(e.response?.data?.detail || `Error al actualizar la propuesta.`);
   }
 };
+
 
 onMounted(() => {
   if(userStore.isLoggedIn){
@@ -879,7 +974,7 @@ const statusStripeClass = (status) => ({
 const statusBadgeClass = (status) => ({
   'bg-white text-sky-700 border border-sky-300': status === 'pending',
   'bg-white text-green-700 border border-green-300': status === 'accepted',
-  'bg-white text-red-700 border border-red-300': status === 'rejected',
+  'bg-white text-red-700 border border-red-300': 'rejected',
   'bg-white text-slate-600 border border-slate-300': status === 'cancelled',
   'bg-[#9e0154] text-white ring-1 ring-[#d7037b]/50': status === 'completed',
 });
