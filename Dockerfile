@@ -22,6 +22,11 @@ COPY . .
 # El resultado se almacena en el subdirectorio /app/dist
 RUN npm run build
 
+# Opcional pero recomendado para depurar:
+# Esta línea te mostrará los archivos que existen después del build.
+# Así puedes confirmar si la carpeta /dist se creó correctamente.
+RUN ls -la
+
 
 # ==================================
 # ETAPA 2: PRODUCTION (Servir con Nginx)
