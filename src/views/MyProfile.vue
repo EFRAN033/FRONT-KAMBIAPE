@@ -75,7 +75,24 @@
           <div class="col-span-1 md:col-span-2 p-6 flex flex-col">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
-
+            
+            <div class="mt-4">
+              <div v-if="userProfile.rating_count > 0" class="flex items-center gap-3">
+                <div class="star-rating" :aria-label="`Valoración de ${userProfile.rating_score} de 5 estrellas.`">
+                  <div class="star-rating-background">
+                    <svg v-for="i in 5" :key="`star-bg-${i}`" class="star-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                  </div>
+                  <div class="star-rating-foreground" :style="{ width: `${(userProfile.rating_score || 0) * 20}%` }">
+                    <svg v-for="i in 5" :key="`star-fg-${i}`" class="star-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                  </div>
+                </div>
+                <div class="flex items-baseline gap-1.5">
+                    <span class="text-base font-bold text-gray-800 dark:text-slate-100">{{ (userProfile.rating_score || 0).toFixed(1) }}</span>
+                    <span class="text-xs text-gray-500 dark:text-slate-400"> ({{ userProfile.rating_count }} valoraciones)</span>
+                </div>
+              </div>
+              <p v-else class="text-sm text-gray-500 dark:text-slate-400 mt-2">Aún no hay valoraciones.</p>
+            </div>
             <div class="status-line mt-4" role="status" aria-label="Estado de cuenta">
               <span class="flag-role" title="Rol">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 -mt-[1px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -175,7 +192,7 @@
                   </div>
                   <div>
                     <label for="distrito" class="label text-xs">Distrito</label>
-                    <select id="distrito" v-model="editableProfile.ubicacion" class="input" :disabled="!selectedProvinciaId">
+                    <select id="distrito" v-model="selectedDistritoId" class="input" :disabled="!selectedProvinciaId">
                       <option disabled value="">Seleccione</option>
                       <option v-for="dist in distritos" :key="dist.id_ubigeo" :value="dist.id_ubigeo">{{ dist.nombre_ubigeo }}</option>
                     </select>
@@ -316,6 +333,9 @@ const provincias = ref([]);
 const distritos = ref([]);
 const selectedDepartamentoId = ref('');
 const selectedProvinciaId = ref('');
+const selectedDistritoId = ref('');
+
+// ===== MODIFICACIÓN: Se elimina la variable estática 'userRating' =====
 
 const userProfile = computed(() => userStore.getUserProfile);
 const indicatorStyle = computed(() => ({ transform: `translateX(calc(${activeTab.value === 'perfil' ? 0 : 1} * 100%))` }));
@@ -331,20 +351,19 @@ const onDepartamentoChange = () => {
   provincias.value = provinciasData[selectedDepartamentoId.value] || [];
   selectedProvinciaId.value = '';
   distritos.value = [];
-  editableProfile.value.ubicacion = '';
+  selectedDistritoId.value = '';
 };
 
 const onProvinciaChange = () => {
   distritos.value = distritosData[selectedProvinciaId.value] || [];
-  editableProfile.value.ubicacion = '';
+  selectedDistritoId.value = '';
 };
 
-// ===== INICIO DE LA MODIFICACIÓN #1: Función de búsqueda optimizada =====
 const findUbigeoInfoByName = (locationString) => {
     if (!locationString) return null;
     
     const parts = locationString.split(',').map(p => p.trim());
-    if (parts.length < 3) return null; // Devuelve nulo si no tiene el formato "Dep, Prov, Dist"
+    if (parts.length < 3) return null;
 
     const [depName, provName, distName] = parts;
 
@@ -361,8 +380,6 @@ const findUbigeoInfoByName = (locationString) => {
 
     return { departamento, provincia, distrito };
 };
-// ===== FIN DE LA MODIFICACIÓN #1 =====
-
 
 const setupUbigeoFromProfile = (ubicacionName) => {
   if (!ubicacionName) return;
@@ -372,7 +389,7 @@ const setupUbigeoFromProfile = (ubicacionName) => {
     provincias.value = provinciasData[info.departamento.id_ubigeo] || [];
     selectedProvinciaId.value = info.provincia.id_ubigeo;
     distritos.value = distritosData[info.provincia.id_ubigeo] || [];
-    editableProfile.value.ubicacion = info.distrito.id_ubigeo;
+    selectedDistritoId.value = info.distrito.id_ubigeo;
   }
 };
 
@@ -442,7 +459,6 @@ const cancelEdit = () => {
   showNotification('Edición cancelada.', 'info');
 };
 
-// ===== INICIO DE LA MODIFICACIÓN #2: Lógica de guardado simplificada =====
 const saveProfile = async () => {
   if (!userStore.user?.id) {
       showNotification('Error: ID de usuario no encontrado.', 'error');
@@ -451,36 +467,27 @@ const saveProfile = async () => {
 
   showNotification('Guardando cambios...', 'info');
 
+  const profileDataToSend = JSON.parse(JSON.stringify(editableProfile.value));
+  let ubicacionCompleta = null;
+  
+  if (selectedDepartamentoId.value && selectedProvinciaId.value && selectedDistritoId.value) {
+    const dep = departamentos.value.find(d => d.id_ubigeo === selectedDepartamentoId.value);
+    const prov = (provinciasData[selectedDepartamentoId.value] || []).find(p => p.id_ubigeo === selectedProvinciaId.value);
+    const dist = (distritosData[selectedProvinciaId.value] || []).find(d => d.id_ubigeo === selectedDistritoId.value);
+
+    if (dep && prov && dist) {
+      ubicacionCompleta = `${dep.nombre_ubigeo}, ${prov.nombre_ubigeo}, ${dist.nombre_ubigeo}`;
+    }
+  }
+
   const selectedInterestIds = Array.from(editableInterests.value)
     .map(name => allCategories.value.find(cat => cat.name === name)?.id)
     .filter(id => id != null);
 
-  const profileDataToSend = JSON.parse(JSON.stringify(editableProfile.value));
-
-  // --- Lógica para construir la cadena de texto de la ubicación ---
-  const distritoId = profileDataToSend.ubicacion;
-
-  if (selectedDepartamentoId.value && selectedProvinciaId.value && distritoId) {
-    const dep = departamentos.value.find(d => d.id_ubigeo === selectedDepartamentoId.value);
-    const prov = (provinciasData[selectedDepartamentoId.value] || []).find(p => p.id_ubigeo === selectedProvinciaId.value);
-    const dist = (distritosData[selectedProvinciaId.value] || []).find(d => d.id_ubigeo === distritoId);
-
-    if (dep && prov && dist) {
-      // Si se encontraron todos los datos, se construye la cadena completa
-      profileDataToSend.ubicacion = `${dep.nombre_ubigeo}, ${prov.nombre_ubigeo}, ${dist.nombre_ubigeo}`;
-    } else {
-      // Si falta algún dato (lo cual sería raro), se establece como nulo para evitar inconsistencias
-      profileDataToSend.ubicacion = null;
-    }
-  } else {
-    // Si no se seleccionó una ubicación completa (faltan campos), se establece como nulo.
-    // Esto asegura que no se guarde una ubicación parcial.
-    profileDataToSend.ubicacion = null;
-  }
-  // --- Fin de la lógica de ubicación ---
-
   const payload = {
     ...profileDataToSend,
+    ubicacion: ubicacionCompleta,
+    district_id: selectedDistritoId.value || null,
     interest_ids: selectedInterestIds,
   };
 
@@ -498,7 +505,6 @@ const saveProfile = async () => {
     showNotification(userStore.error || 'No se pudo actualizar el perfil.', 'error');
   }
 };
-// ===== FIN DE LA MODIFICACIÓN #2 =====
 
 const logout = async () => {
   showNotification('Cerrando sesión...', 'info');
@@ -613,6 +619,35 @@ watch(userProfile, (newProfile) => {
   animation: aurora-float 14s ease-in-out infinite;
 }
 @keyframes aurora-float { 50% { transform: translateY(-18px); } }
+
+.star-rating {
+  position: relative;
+  display: inline-flex;
+}
+.star-rating-background,
+.star-rating-foreground {
+  display: flex;
+  gap: 0.1rem;
+}
+.star-rating-background {
+  color: #e5e7eb; /* Color de las estrellas vacías (light mode) */
+}
+.dark .star-rating-background {
+  color: #4b5563; /* Color de las estrellas vacías (dark mode) */
+}
+.star-rating-foreground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  color: #f59e0b; /* Color de las estrellas llenas (amarillo/naranja) */
+}
+.star-icon {
+  width: 1.25rem; /* 20px */
+  height: 1.25rem; /* 20px */
+  flex-shrink: 0;
+}
 
 .icon-btn{ width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;transition:.25s; }
 .icon-btn:hover{ background:rgba(255,255,255,.22); transform:scale(1.08); }
