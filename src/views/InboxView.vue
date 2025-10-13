@@ -487,10 +487,12 @@ const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
 const isLocationModalVisible = ref(false);
 
 const suggestedPlaces = computed(() => {
-  if (!userStore.user || !userStore.user.district_id) {
+  // ===== INICIO DE LA CORRECCIÓN (snake_case a camelCase) =====
+  if (!userStore.user || !userStore.user.districtId) {
     return [];
   }
-  return suggestedPlacesData.filter(place => place.district_id === userStore.user.district_id);
+  return suggestedPlacesData.filter(place => place.district_id == userStore.user.districtId);
+  // ===== FIN DE LA CORRECCIÓN =====
 });
 
 const sendSuggestedLocation = (place) => {
