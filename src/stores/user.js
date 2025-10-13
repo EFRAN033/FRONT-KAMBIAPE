@@ -28,9 +28,7 @@ export const useUserStore = defineStore('user', {
       profilePicture: defaultAvatar,
       phone: null,
       ubicacion: null,
-      // ===== INICIO DE LA CORRECCIÓN =====
-      districtId: null, // <-- Añadido al estado inicial
-      // ===== FIN DE LA CORRECCIÓN =====
+      districtId: null,
       dateOfBirth: null,
       gender: null,
       occupation: null,
@@ -40,6 +38,10 @@ export const useUserStore = defineStore('user', {
       created_at: null,
       interests: [],
       credits: 0,
+      // ===== INICIO DE LA CORRECCIÓN =====
+      rating_score: 0, // <-- Añadido al estado inicial
+      rating_count: 0, // <-- Añadido al estado inicial
+      // ===== FIN DE LA CORRECCIÓN =====
     },
     loading: false,
     error: null,
@@ -77,11 +79,7 @@ export const useUserStore = defineStore('user', {
         profilePicture: normalizeImageUrl(data.profile_picture || data.profilePicture),
         phone: data.phone || null,
         ubicacion: data.ubicacion || null,
-        // ===== INICIO DE LA CORRECCIÓN =====
-        // Esta línea procesa el district_id que viene del backend (snake_case)
-        // y lo guarda como districtId (camelCase) en nuestro estado.
         districtId: data.district_id || data.districtId || null,
-        // ===== FIN DE LA CORRECCIÓN =====
         dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES') : null,
         gender: data.gender || null,
         occupation: data.occupation || null,
@@ -91,6 +89,12 @@ export const useUserStore = defineStore('user', {
         created_at: data.created_at || null,
         interests: data.interests || [],
         credits: data.credits ?? 0,
+        // ===== INICIO DE LA CORRECCIÓN =====
+        // Estas líneas procesan los datos de valoración que vienen del backend
+        // y los guardan en nuestro estado.
+        rating_score: data.rating_score ?? 0,
+        rating_count: data.rating_count ?? 0,
+        // ===== FIN DE LA CORRECCIÓN =====
       };
       return processedData;
     },
@@ -158,7 +162,6 @@ export const useUserStore = defineStore('user', {
             delete dataToFilter.dateOfBirth;
         }
         
-        // El backend espera 'district_id', así que lo convertimos si viene como 'districtId'.
         if (dataToFilter.districtId) {
           dataToFilter.district_id = dataToFilter.districtId;
           delete dataToFilter.districtId;
@@ -234,9 +237,7 @@ export const useUserStore = defineStore('user', {
         profilePicture: defaultAvatar,
         phone: null,
         ubicacion: null,
-        // ===== INICIO DE LA CORRECCIÓN =====
-        districtId: null, // <-- Añadido al estado de reseteo
-        // ===== FIN DE LA CORRECCIÓN =====
+        districtId: null,
         dateOfBirth: null,
         gender: null,
         occupation: null,
@@ -246,6 +247,10 @@ export const useUserStore = defineStore('user', {
         created_at: null,
         interests: [],
         credits: 0,
+        // ===== INICIO DE LA CORRECCIÓN =====
+        rating_score: 0, // <-- Añadido al estado de reseteo
+        rating_count: 0, // <-- Añadido al estado de reseteo
+        // ===== FIN DE LA CORRECCIÓN =====
       };
       localStorage.removeItem('user');
       localStorage.removeItem('access_token');
