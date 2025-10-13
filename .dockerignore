@@ -1,10 +1,13 @@
 # Ignorar dependencias de Node
 /node_modules
+
 # Ignorar la carpeta de compilación (dist)
 # Esta carpeta se generará dentro del contenedor, no necesitamos el local
 /dist
+
 # Archivos de logs de npm
 npm-debug.log
+
 # Archivos de desarrollo específicos
 .env
 .DS_Store
@@ -12,4 +15,3 @@ npm-debug.log
 # Archivos específicos de Docker (para evitar que se copien a sí mismos)
 Dockerfile
 .dockerignore
-nginx.conf
