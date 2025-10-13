@@ -644,10 +644,15 @@ const submitRating = async () => {
     // 2. Marcar la propuesta como completada.
     await updateProposalStatus('completed');
 
+    // 3. ¡AQUÍ ESTÁ LA SOLUCIÓN! Vuelve a cargar los datos del perfil del usuario.
+    if (userStore.user?.id) {
+      await userStore.fetchUserProfile(userStore.user.id);
+    }
+
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo enviar la valoración.");
   } finally {
-    // 3. Cerrar el modal.
+    // 4. Cerrar el modal.
     isRatingModalVisible.value = false;
   }
 };
