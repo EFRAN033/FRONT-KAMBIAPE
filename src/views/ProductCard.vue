@@ -154,7 +154,7 @@
                 id="initial_message"
                 v-model="initialMessage"
                 rows="3"
-                placeholder="¿Quisieras intercambiar conmigo?"
+                placeholder="¿Hacemos un intercambio?"
                 class="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
               ></textarea>
               <div class="mt-2 flex flex-wrap gap-2">
@@ -213,7 +213,6 @@ const currentIndex = ref(0);
 const hasImages = computed(() => images.value.length > 0);
 const currentImage = computed(() => hasImages.value ? images.value[currentIndex.value] : placeholderImage);
 
-// ### MEJORA: State para el mensaje personalizable ###
 const initialMessage = ref('');
 const suggestedMessages = ref([
   '¿Sigue disponible?',
@@ -285,8 +284,12 @@ const closeProposeModal = () => {
   isModalOpen.value = false;
   userInventory.value = [];
   selectedProductId.value = null;
-  initialMessage.value = ''; // ### MEJORA: Limpiar el mensaje al cerrar ###
+  initialMessage.value = '';
 };
+
+// ===============================================================
+// ===== INICIO DE LA CORRECCIÓN: LÓGICA DE ENVÍO SEPARADA =====
+// ===============================================================
 
 const submitProposal = async () => {
   if (!selectedProductId.value) {
@@ -294,23 +297,26 @@ const submitProposal = async () => {
     return;
   }
 
-  // ### MEJORA: Lógica de envío de propuesta actualizada ###
-  const payload = {
-    offered_product_id: selectedProductId.value,
-    requested_product_id: props.product.id,
-    // Enviamos el mensaje del textarea, o uno por defecto si está vacío
-    initial_message: initialMessage.value.trim() || '¿Quisieras intercambiar conmigo?'
-  };
-
   submitting.value = true;
   try {
-    const response = await axios.post('/proposals', payload);
-    
-    if (response.status === 201) {
-      toast.success('¡Propuesta enviada con éxito!');
-      closeProposeModal();
-      router.push({ name: 'Inbox' });
+    // PASO 1: Crear la propuesta sin el mensaje
+    const proposalPayload = {
+      offered_product_id: selectedProductId.value,
+      requested_product_id: props.product.id,
+    };
+    const response = await axios.post('/proposals', proposalPayload);
+    const newProposal = response.data;
+
+    // PASO 2: Si la propuesta se creó, enviar el mensaje inicial
+    if (newProposal && newProposal.id) {
+      const messageText = initialMessage.value.trim() || '¿Hacemos un intercambio?';
+      await sendInitialMessage(newProposal.id, messageText);
     }
+    
+    toast.success('¡Propuesta enviada con éxito!');
+    closeProposeModal();
+    router.push({ name: 'Inbox' });
+
   } catch (error) {
     const errorMessage = error.response?.data?.detail || 'Hubo un error al enviar la propuesta.';
     console.error("Error al crear la propuesta:", error.response || error);
@@ -319,6 +325,24 @@ const submitProposal = async () => {
     submitting.value = false;
   }
 };
+
+// Nueva función para enviar solo el mensaje
+const sendInitialMessage = async (proposalId, text) => {
+  try {
+    await axios.post('/messages', {
+      proposal_id: proposalId,
+      text: text,
+    });
+  } catch (error) {
+    console.error("Error al enviar el mensaje inicial:", error);
+    toast.warning('La propuesta fue creada, pero el mensaje inicial no se pudo enviar.');
+  }
+};
+
+// ===============================================================
+// ===== FIN DE LA CORRECCIÓN =====
+// ===============================================================
+
 
 watch(() => props.product, (p) => {
   images.value = [];
