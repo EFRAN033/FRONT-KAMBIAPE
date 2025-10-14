@@ -94,7 +94,8 @@
                           <span class="text-[11px] text-slate-500 whitespace-nowrap">{{ formatTime(c.last_message?.timestamp || c.exchange.created_at) }}</span>
                         </div>
                         <p class="text-[13px] text-slate-600 mt-0.5 truncate">
-                          <span v-if="c.last_message?.sender_id === userStore.user?.id">Tú: </span>{{ c.last_message?.text || 'Propuesta iniciada...' }}
+                          <span v-if="c.last_message?.sender_id === userStore.user?.id || (!c.last_message && c.exchange.proposer_user_id === userStore.user?.id)">Tú: </span>
+                          {{ c.last_message?.text || c.exchange.initial_message || 'Propuesta iniciada...' }}
                         </p>
                         <div class="mt-1">
                           <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium capitalize ring-1" :class="statusBadgeClass(c.exchange.status)">
