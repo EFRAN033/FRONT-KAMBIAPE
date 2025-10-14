@@ -383,7 +383,8 @@ const dragging = ref(false);
 
 const isProfileComplete = computed(() => {
   const user = userStore.user;
-  return !!user.phone && !!user.address;
+  // ✨ CORRECCIÓN APLICADA AQUÍ ✨
+  return !!user.phone && !!user.ubicacion;
 });
 
 const availableCategories = computed(() => {
