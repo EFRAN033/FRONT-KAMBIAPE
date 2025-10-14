@@ -97,14 +97,16 @@
           
           <template v-if="userStore.isLoggedIn">
             <div class="flex items-center space-x-4">
-              <div class="credits-chip" title="Tus créditos disponibles">
-                <svg class="credits-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M8.433 7.418c.158-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.134 0V7.418zM11.567 7.151c.22.07.408.164.567.267v1.698a2.5 2.5 0 00-1.134 0V7.151z" />
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.5 4.5 0 00-1.879 3.487c-.024.143-.024.287 0 .431.133.791.436 1.53.86 2.185.341.52.768.963 1.228 1.328V15a1 1 0 102 0v-2.083c.46-.365.887-.808 1.228-1.328.424-.655.727-1.394.86-2.185.024-.144.024-.288 0-.431A4.5 4.5 0 0011 5.092V5z" clip-rule="evenodd" />
-                </svg>
-                <span class="credits-text">{{ userStore.userCredits }}</span>
-                <span class="credits-label hidden sm:inline">Kambitos</span>
-              </div>
+              <router-link to="/kambitos">
+                <div class="credits-chip" title="Tus créditos disponibles">
+                  <svg class="credits-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M8.433 7.418c.158-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.134 0V7.418zM11.567 7.151c.22.07.408.164.567.267v1.698a2.5 2.5 0 00-1.134 0V7.151z" />
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.5 4.5 0 00-1.879 3.487c-.024.143-.024.287 0 .431.133.791.436 1.53.86 2.185.341.52.768.963 1.228 1.328V15a1 1 0 102 0v-2.083c.46-.365.887-.808 1.228-1.328.424-.655.727-1.394.86-2.185.024-.144.024-.288 0-.431A4.5 4.5 0 0011 5.092V5z" clip-rule="evenodd" />
+                  </svg>
+                  <span class="credits-text">{{ userStore.userCredits }}</span>
+                  <span class="credits-label hidden sm:inline">Kambitos</span>
+                </div>
+              </router-link>
 
               <div class="relative">
                 <button
@@ -399,7 +401,7 @@ button, a, .router-link {
   border-radius: 9999px;
   padding: 0.25rem 0.75rem 0.25rem 0.25rem; /* py-1 pr-3 pl-1 */
   border: 1px solid rgba(255, 255, 255, 0.2);
-  cursor: default;
+  cursor: pointer; /* Cambiado a pointer para indicar que es clickeable */
   transition: all 0.2s ease-in-out;
 }
 .credits-chip:hover {

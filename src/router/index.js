@@ -22,6 +22,10 @@ import ConfigurationView from '../views/Configuration.vue';
 // --- NUEVA IMPORTACIÓN PARA MyProducts.vue ---
 import MyProducts from '../views/MyProducts.vue';
 
+// +++ ✨ Nueva importación para la vista de Kambitos ✨ +++
+// (Asegúrate de haber creado este archivo en la carpeta 'views')
+import KambitosView from '../views/Kambitos.vue'; 
+
 // --- IMPORTACIONES PARA PÁGINAS INFORMATIVAS ---
 import FAQsView from '../views/FAQsView.vue';
 import CookiesView from '../views/Cookies.vue';
@@ -41,43 +45,9 @@ const routes = [
       title: 'Inicio | KambiaPe'
     }
   },
-  // Existing structural routes
-  {
-    path: '/header',
-    name: 'header',
-    component: Header,
-    meta: {
-      title: 'Header | KambiaPe'
-    }
-  },
-  {
-    path: '/footer',
-    name: 'footer',
-    component: Footer,
-    meta: {
-      title: 'Footer | KambiaPe'
-    }
-  },
-  {
-    path: '/hero-section',
-    name: 'hero-section',
-    component: HeroSection,
-    meta: {
-      title: 'Hero Section | KambiaPe'
-    }
-  },
-  {
-    path: '/productos',
-    name: 'products',
-    component: ProductFeed,
-    meta: {
-      title: 'Productos | KambiaPe'
-    }
-  },
-  // New routes for your navigation items
   {
     path: '/nosotros',
-    name: 'about',
+    name: 'AboutUs',
     component: AboutUsView,
     meta: {
       title: 'Nosotros | KambiaPe'
@@ -85,9 +55,10 @@ const routes = [
   },
   {
     path: '/publicar',
-    name: 'publish',
+    name: 'Publish',
     component: PublishView,
     meta: {
+      requiresAuth: true,
       title: 'Publicar | KambiaPe'
     }
   },
@@ -96,10 +67,10 @@ const routes = [
     name: 'Inbox',
     component: InboxView,
     meta: {
+      requiresAuth: true,
       title: 'Buzón | KambiaPe'
     }
   },
-  // --- Rutas para autenticación y perfil de usuario ---
   {
     path: '/login',
     name: 'Login',
@@ -113,7 +84,7 @@ const routes = [
     name: 'Register',
     component: RegisterView,
     meta: {
-      title: 'Registrarse | KambiaPe'
+      title: 'Registro | KambiaPe'
     }
   },
   {
@@ -121,30 +92,40 @@ const routes = [
     name: 'MyProfile',
     component: MyProfile,
     meta: {
-      title: 'Mi Perfil | KambiaPe',
-      requiresAuth: true
+      requiresAuth: true,
+      title: 'Mi Perfil | KambiaPe'
     }
   },
   {
     path: '/settings',
-    name: 'Settings',
+    name: 'Configuration',
     component: ConfigurationView,
     meta: {
-      title: 'Configuración | KambiaPe',
-      requiresAuth: true
+      requiresAuth: true,
+      title: 'Configuración | KambiaPe'
     }
   },
-  // --- NUEVA RUTA PARA "MIS PRODUCTOS" (INVENTARIO) ---
+  // --- NUEVA RUTA PARA "MIS PRODUCTOS" ---
   {
     path: '/my-products',
     name: 'MyProducts',
     component: MyProducts,
     meta: {
-      title: 'Mis Productos | KambiaPe',
-      requiresAuth: true
+      requiresAuth: true,
+      title: 'Mis Productos | KambiaPe'
     }
   },
-  // --- NUEVAS RUTAS INFORMATIVAS ---
+  // +++ ✨ Nueva ruta para la página de Kambitos ✨ +++
+  {
+    path: '/kambitos',
+    name: 'Kambitos',
+    component: KambitosView,
+    meta: {
+      requiresAuth: true, // Para que solo usuarios logueados puedan verla
+      title: 'Mis Kambitos | KambiaPe'
+    }
+  },
+  // --- RUTAS PARA PÁGINAS INFORMATIVAS ---
   {
     path: '/faqs',
     name: 'FAQs',
@@ -202,15 +183,22 @@ const router = createRouter({
       };
     } else if (savedPosition) {
       return savedPosition;
+    } else {
+      return {
+        top: 0,
+        behavior: 'smooth'
+      };
     }
-    return { top: 0 };
   }
 });
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'KambiaPe';
   const userStore = useUserStore();
-  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  
+  document.title = to.meta.title || 'KambiaPe';
+
+  if (requiresAuth && !userStore.isLoggedIn) {
     next('/login');
   } else {
     next();
