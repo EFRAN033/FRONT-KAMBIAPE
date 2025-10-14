@@ -154,7 +154,7 @@
                 id="initial_message"
                 v-model="initialMessage"
                 rows="3"
-                placeholder="¿Hacemos un intercambio?"
+                :placeholder="placeholderMessage"
                 class="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
               ></textarea>
               <div class="mt-2 flex flex-wrap gap-2">
@@ -219,6 +219,20 @@ const suggestedMessages = ref([
   '¡Hola! Me interesa tu producto.',
   '¿Te interesa algo de mi perfil?'
 ]);
+
+// Propiedad computada para encontrar el producto seleccionado del inventario
+const selectedProduct = computed(() => {
+    if (!selectedProductId.value) return null;
+    return userInventory.value.find(item => item.id === selectedProductId.value);
+});
+
+// Mensaje de placeholder dinámico para el textarea
+const placeholderMessage = computed(() => {
+    if (selectedProduct.value) {
+        return `¡Hola! Me interesa tu "${props.product.title}". Te ofrezco mi "${selectedProduct.value.title}" a cambio. ¿Qué te parece?`;
+    }
+    return 'Selecciona un producto para ver un mensaje sugerido.';
+});
 
 const fetchUserInventory = async () => {
     if (!userStore.isLoggedIn) return;
@@ -287,19 +301,15 @@ const closeProposeModal = () => {
   initialMessage.value = '';
 };
 
-// ===============================================================
-// ===== INICIO DE LA CORRECCIÓN: LÓGICA DE ENVÍO SEPARADA =====
-// ===============================================================
-
 const submitProposal = async () => {
-  if (!selectedProductId.value) {
+  if (!selectedProductId.value || !selectedProduct.value) {
     toast.error('Por favor, selecciona un producto para intercambiar.');
     return;
   }
 
   submitting.value = true;
   try {
-    // PASO 1: Crear la propuesta sin el mensaje
+    // PASO 1: Crear la propuesta
     const proposalPayload = {
       offered_product_id: selectedProductId.value,
       requested_product_id: props.product.id,
@@ -309,7 +319,8 @@ const submitProposal = async () => {
 
     // PASO 2: Si la propuesta se creó, enviar el mensaje inicial
     if (newProposal && newProposal.id) {
-      const messageText = initialMessage.value.trim() || '¿Hacemos un intercambio?';
+      // Usar mensaje personalizado o el mensaje dinámico por defecto
+      const messageText = initialMessage.value.trim() || placeholderMessage.value;
       await sendInitialMessage(newProposal.id, messageText);
     }
     
@@ -326,7 +337,6 @@ const submitProposal = async () => {
   }
 };
 
-// Nueva función para enviar solo el mensaje
 const sendInitialMessage = async (proposalId, text) => {
   try {
     await axios.post('/messages', {
@@ -338,11 +348,6 @@ const sendInitialMessage = async (proposalId, text) => {
     toast.warning('La propuesta fue creada, pero el mensaje inicial no se pudo enviar.');
   }
 };
-
-// ===============================================================
-// ===== FIN DE LA CORRECCIÓN =====
-// ===============================================================
-
 
 watch(() => props.product, (p) => {
   images.value = [];
