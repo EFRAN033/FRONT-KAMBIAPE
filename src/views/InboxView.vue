@@ -234,7 +234,19 @@
                 <div class="flex flex-col items-center text-center">
                   <img :src="getAvatarUrl(selectedProfileUser.avatar)" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover mb-4 ring-2 ring-offset-2 ring-[#d7037b]/50">
                   <h3 class="text-xl font-bold">{{ formatUserName(selectedProfileUser.full_name) }}</h3>
-                </div>
+                  
+                  <div v-if="selectedProfileUser.rating_count > 0" class="mt-2 flex items-center justify-center gap-1.5">
+                    <div class="flex items-center text-yellow-400">
+                      <StarIconSolid v-for="i in Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5"/>
+                      <StarIcon v-for="i in 5 - Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5 text-slate-300"/>
+                    </div>
+                    <span class="text-sm font-semibold text-slate-700">{{ selectedProfileUser.rating_score.toFixed(1) }}</span>
+                    <span class="text-xs text-slate-500">({{ selectedProfileUser.rating_count }} valoraciones)</span>
+                  </div>
+                  <p v-else class="mt-2 text-sm text-slate-500 italic">
+                    Aún no tiene valoraciones.
+                  </p>
+                  </div>
                 <div class="mt-6 w-full text-left pt-4 border-t border-slate-200">
                   <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Biografía</h4>
                   <p class="text-sm text-slate-600 mt-2 italic">
@@ -480,6 +492,9 @@ import {
   UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon,
   MapPinIcon
 } from '@heroicons/vue/24/outline';
+// ===== INICIO: IMPORTACIÓN AÑADIDA =====
+import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
+// ===== FIN: IMPORTACIÓN AÑADIDA =====
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
 import suggestedPlacesData from '@/data/lugares_seguros.json';
