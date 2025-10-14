@@ -880,6 +880,23 @@ const selectConversation = async (conversation) => {
   try {
     const { data } = await axios.get(`/proposals/${conversation.exchange.id}/messages`);
     messages.value = data;
+
+    // ===== INICIO: CÓDIGO MODIFICADO =====
+    // Si la conversación no tiene mensajes y el usuario actual es quien la propuso,
+    // se enviará un mensaje automático con los detalles del intercambio.
+    if (data.length === 0 && conversation.exchange.proposer_user_id === userStore.user?.id) {
+      const offerTitle = conversation.exchange.offer?.title || 'producto ofrecido';
+      const requestTitle = conversation.exchange.request?.title || 'producto solicitado';
+      
+      // Componemos el mensaje que se enviará automáticamente.
+      const autoMessage = `¡Hacemos intercambio! Te propongo cambiar mi producto "${offerTitle}" por tu producto "${requestTitle}".`;
+      
+      // Asignamos el texto al `ref` del nuevo mensaje y llamamos a la función de envío.
+      newMessageText.value = autoMessage;
+      await sendMessage();
+    }
+    // ===== FIN: CÓDIGO MODIFICADO =====
+
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
     markMessagesAsRead(messages.value);
