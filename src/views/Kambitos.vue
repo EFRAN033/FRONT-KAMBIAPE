@@ -1,63 +1,56 @@
 <template>
-    <div class="min-h-screen bg-slate-100 dark:bg-slate-900 font-sans antialiased">
+    <div class="relative min-h-screen bg-slate-100 dark:bg-slate-900 font-sans antialiased overflow-hidden" @mousemove="handleMouseMove">
+        
+        <div class="background-grid"></div>
+        <div ref="shape1" class="background-arc"></div>
         <Header />
 
-        <main class="py-16 sm:py-24">
-            <div class="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
+        <main class="relative z-10 flex items-center justify-center min-h-screen py-16 sm:py-24">
+            <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
 
-                <div class="text-center mb-10">
-                    <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                        Tienda de Kambitos
-                    </h1>
-                    <p class="mt-4 text-lg max-w-2xl mx-auto text-slate-600 dark:text-slate-400">
-                        Elige un paquete, potencia tus publicaciones y llega a más personas.
-                    </p>
-                </div>
-
-                <div class="purchase-container">
-                    <div class="selection-panel">
-                        <div class="balance-display">
-                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Tu Saldo</p>
-                            <div class="flex items-baseline gap-2">
-                                <span class="text-3xl font-black text-slate-800 dark:text-white">{{userCredits}}</span>
-                                <span class="text-xl font-lobster text-[#d7037b]">Kambitos</span>
-                            </div>
-                        </div>
-                        <div class="plans-list">
-                            <button 
-                                v-for="plan in plans" 
-                                :key="plan.name" 
-                                @click="selectPlan(plan)"
-                                :class="['plan-item', { 'active': selectedPlan.name === plan.name }]">
-                                <div class="flex-1 text-left">
-                                    <h4 class="font-bold text-slate-800 dark:text-white text-base">{{ plan.name }}</h4>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400">{{ plan.amount }} Kambitos</p>
-                                </div>
-                                <span class="text-lg font-bold text-[#d7037b]">{{ plan.price }}</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="display-panel">
-                        <div class="avatar-stage">
-                            <transition name="avatar-fade" mode="out-in">
-                                <img :src="currentAvatar" :key="currentAvatar" alt="Kambito Avatar" class="avatar-image"/>
-                            </transition>
-                        </div>
-                         <transition name="fade" mode="out-in">
-                            <div :key="selectedPlan.name" class="w-full text-center">
-                                <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Paquete {{ selectedPlan.name }}</h3>
-                                <p class="text-slate-500 dark:text-slate-400">Recibirás <span class="font-bold text-[#d7037b]">{{ selectedPlan.amount }} Kambitos</span> para destacar lo que quieras.</p>
-                                <button @click="purchaseCredits(selectedPlan.name, selectedPlan.amount)" class="purchase-button">
-                                    Comprar por {{ selectedPlan.price }}
-                                </button>
-                            </div>
+                <div class="store-layout">
+                    
+                    <div class="avatar-stage">
+                        <transition name="avatar-swap" mode="out-in">
+                            <img :src="currentAvatar" :key="currentAvatar" alt="Kambito Avatar" class="avatar-image"/>
                         </transition>
                     </div>
+
+                    <div class="selection-stage">
+                        <div class="balance-display">
+                            <span class="text-slate-500 dark:text-slate-400">Tu Saldo</span>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-2xl font-black text-slate-800 dark:text-white">{{ userCredits }}</span>
+                                <span class="font-lobster text-xl text-[#d7037b]">Kambitos</span>
+                            </div>
+                        </div>
+
+                        <div class="plan-selector">
+                            <h2 
+                                v-for="plan in plans" 
+                                :key="plan.name"
+                                @click="selectPlan(plan)"
+                                :class="['plan-name', {'active': selectedPlan.name === plan.name}]">
+                                {{ plan.name }}
+                            </h2>
+                        </div>
+
+                        <transition name="details-fade" mode="out-in">
+                           <div class="details-flow" :key="selectedPlan.name">
+                                <p class="price-display">{{ selectedPlan.price }}</p>
+                                <p class="text-slate-600 dark:text-slate-400 text-base">
+                                    y recibe <span class="font-bold text-lg text-[#d7037b]">{{ selectedPlan.amount }} Kambitos</span>
+                                </p>
+                                <button @click="purchaseCredits(selectedPlan.name, selectedPlan.amount)" class="purchase-button">
+                                    Comprar Paquete
+                                </button>
+                           </div>
+                        </transition>
+                    </div>
+
                 </div>
-            </div>
+                </div>
         </main>
-        <Footer />
     </div>
 </template>
 
@@ -65,7 +58,6 @@
 import { ref, computed } from 'vue';
 import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
-import Footer from './Footer.vue';
 
 import avatarBasico from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
 import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
@@ -92,68 +84,143 @@ function purchaseCredits(packageName, amount) {
     console.log(`Iniciando compra para: ${packageName} (${amount} Kambitos)`);
     alert(`Funcionalidad de compra para "${packageName}" aún no implementada.`);
 }
+
+// --- Lógica para el efecto Parallax ---
+const shape1 = ref(null);
+
+function handleMouseMove(event) {
+    const { clientX, clientY } = event;
+    const x = (clientX / window.innerWidth - 0.5) * -40;
+    const y = (clientY / window.innerHeight - 0.5) * -40;
+
+    if (shape1.value) {
+        shape1.value.style.transform = `translateX(${x}px) translateY(${y}px) rotate(-15deg) scale(1.2)`;
+    }
+}
 </script>
 
 <style scoped>
-.purchase-container {
-    @apply grid grid-cols-1 lg:grid-cols-2 max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700;
+/* --- Fondo y Elementos Decorativos --- */
+.background-grid {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+        linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.5;
+}
+.dark .background-grid {
+    background-image:
+        linear-gradient(to right, #374151 1px, transparent 1px),
+        linear-gradient(to bottom, #374151 1px, transparent 1px);
 }
 
-/* Panel Izquierdo */
-.selection-panel {
-    @apply p-6 flex flex-col;
+.background-arc {
+    position: absolute;
+    top: -25vh;
+    left: -20vw;
+    width: 140vw;
+    height: 150vh;
+    background: radial-gradient(circle at top left, #fce7f3, #fbcfe8, #f9a8d4);
+    border-radius: 50%;
+    z-index: 0;
+    opacity: 0.5;
+    transform: rotate(-15deg) scale(1.2);
+    transition: transform 0.2s linear;
 }
-.balance-display {
-    @apply p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl mb-4 text-center;
-}
-.plans-list {
-    @apply space-y-3;
-}
-.plan-item {
-    @apply w-full flex items-center gap-4 p-4 rounded-xl border-2 border-transparent transition-all duration-300;
-    @apply bg-slate-50 dark:bg-slate-700/50;
-}
-.plan-item:hover {
-    @apply bg-slate-100 dark:bg-slate-700;
-}
-.plan-item.active {
-    @apply border-[#d7037b] ring-2 ring-pink-200 dark:ring-pink-800/50;
+.dark .background-arc {
+    background: radial-gradient(circle at top left, #2e101e, #3d1429, #5c1e3d);
 }
 
-/* Panel Derecho */
-.display-panel {
-    @apply bg-slate-50 dark:bg-slate-800/50 p-8 flex flex-col items-center justify-center gap-6 rounded-r-3xl;
+
+/* --- Layout Principal --- */
+.store-layout {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-0 items-center;
 }
+
+/* --- Escenario del Avatar (Izquierda) --- */
 .avatar-stage {
-    @apply w-full h-64 flex items-center justify-center mb-4;
+    @apply relative flex items-center justify-center h-[70vh] z-10;
 }
 .avatar-image {
-    @apply max-w-full h-auto max-h-60 object-contain;
-}
-.purchase-button {
-    @apply w-full mt-6 bg-[#d7037b] text-white font-bold py-3.5 px-6 rounded-xl text-base transition-all duration-300;
-    @apply hover:bg-pink-700 transform hover:scale-105 shadow-lg shadow-pink-500/20;
+    @apply max-w-full h-auto max-h-[90%] object-contain;
+    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.2));
 }
 
-/* Transiciones */
-.fade-enter-active,
-.fade-leave-active {
+/* --- Selección y Detalles (Derecha) --- */
+.selection-stage {
+    @apply flex flex-col items-start h-full p-8 rounded-2xl;
+    @apply bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700;
+}
+
+.balance-display {
+    @apply text-base font-medium mb-6 w-full pb-4 border-b border-slate-200 dark:border-slate-700;
+}
+
+.plan-selector {
+    @apply w-full flex flex-col items-start gap-4;
+}
+
+.plan-name {
+    @apply text-5xl md:text-6xl font-extrabold text-transparent cursor-pointer transition-all duration-300 relative;
+    -webkit-text-stroke: 2px #d1d5db; /* color de borde para no activos */
+}
+.dark .plan-name {
+    -webkit-text-stroke: 2px #4b5563;
+}
+
+.plan-name:hover {
+    -webkit-text-stroke: 2px #be185d;
+}
+
+.plan-name.active {
+    @apply text-[#d7037b];
+    -webkit-text-stroke: 2px transparent;
+}
+
+
+/* Detalles que fluyen */
+.details-flow {
+    @apply mt-auto pt-6 w-full;
+}
+
+.price-display {
+    @apply text-6xl md:text-7xl font-black text-slate-800 dark:text-white mb-2;
+}
+
+.purchase-button {
+    @apply w-full mt-4 bg-[#d7037b] text-white font-bold py-3.5 px-6 rounded-lg text-lg transition-all duration-300;
+    box-shadow: 0 8px 25px -8px rgba(215, 3, 123, 0.7);
+}
+.purchase-button:hover {
+    @apply bg-pink-700;
+    transform: scale(1.03) translateY(-1px);
+    box-shadow: 0 10px 30px -8px rgba(215, 3, 123, 0.6);
+}
+
+/* --- Transiciones --- */
+.details-fade-enter-active, .details-fade-leave-active {
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.fade-enter-from,
-.fade-leave-to {
+.details-fade-enter-from, .details-fade-leave-to {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px);
 }
-.avatar-fade-enter-active,
-.avatar-fade-leave-active {
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+.avatar-swap-enter-active {
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
 }
-.avatar-fade-enter-from {
-    transform: scale(0.7);
+.avatar-swap-leave-active {
+     transition: transform 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045), opacity 0.2s ease;
+}
+.avatar-swap-enter-from {
+    transform: scale(0.6) translateY(80px);
     opacity: 0;
 }
-.avatar-fade-leave-to {
+.avatar-swap-leave-to {
+    transform: scale(0.9);
     opacity: 0;
 }
 </style>
