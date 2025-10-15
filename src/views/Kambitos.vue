@@ -1,93 +1,58 @@
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans antialiased">
+    <div class="min-h-screen bg-slate-100 dark:bg-slate-900 font-sans antialiased">
         <Header />
 
-        <main class="py-12 sm:py-16">
+        <main class="py-16 sm:py-24">
             <div class="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
 
-                <div class="relative mb-12 sm:mb-16">
-                    <button @click="$router.go(-1)"
-                        class="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors dark:text-slate-400 dark:hover:text-slate-200"
-                        aria-label="Volver">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.25a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        Atrás
-                    </button>
-                    <h1 class="text-center text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                         Tienda de Kambitos
                     </h1>
+                    <p class="mt-4 text-lg max-w-2xl mx-auto text-slate-600 dark:text-slate-400">
+                        Elige un paquete, potencia tus publicaciones y llega a más personas.
+                    </p>
                 </div>
 
-                <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-
-                    <div class="text-center lg:text-left">
-                        <h2 class="text-2xl font-bold text-[#d7037b] sm:text-3xl">Un Kambito, una Publicación.</h2>
-                        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
-                            Así de simple. Cada Kambito que adquieres te permite destacar un producto en la plataforma,
-                            asegurando que más personas lo vean.
-                        </p>
-
-                        <div
-                            class="mt-8 bg-white dark:bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg">
-                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Tus Kambitos disponibles:</p>
-                            <div class="mt-2 flex items-center justify-center lg:justify-start gap-4">
-                                <span
-                                    class="text-6xl font-black text-slate-800 dark:text-white tracking-tight">{{userCredits}}</span>
-                                <span class="text-2xl font-lobster text-[#d7037b]">Kambitos</span>
+                <div class="purchase-container">
+                    <div class="selection-panel">
+                        <div class="balance-display">
+                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Tu Saldo</p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-3xl font-black text-slate-800 dark:text-white">{{userCredits}}</span>
+                                <span class="text-xl font-lobster text-[#d7037b]">Kambitos</span>
                             </div>
+                        </div>
+                        <div class="plans-list">
+                            <button 
+                                v-for="plan in plans" 
+                                :key="plan.name" 
+                                @click="selectPlan(plan)"
+                                :class="['plan-item', { 'active': selectedPlan.name === plan.name }]">
+                                <div class="flex-1 text-left">
+                                    <h4 class="font-bold text-slate-800 dark:text-white text-base">{{ plan.name }}</h4>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400">{{ plan.amount }} Kambitos</p>
+                                </div>
+                                <span class="text-lg font-bold text-[#d7037b]">{{ plan.price }}</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="package-container space-y-4">
-                        
-                        <button @click="purchaseCredits('Básico', 2)" class="package-item group">
-                            <div class="icon-wrapper">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
+                    <div class="display-panel">
+                        <div class="avatar-stage">
+                            <transition name="avatar-fade" mode="out-in">
+                                <img :src="currentAvatar" :key="currentAvatar" alt="Kambito Avatar" class="avatar-image"/>
+                            </transition>
+                        </div>
+                         <transition name="fade" mode="out-in">
+                            <div :key="selectedPlan.name" class="w-full text-center">
+                                <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Paquete {{ selectedPlan.name }}</h3>
+                                <p class="text-slate-500 dark:text-slate-400">Recibirás <span class="font-bold text-[#d7037b]">{{ selectedPlan.amount }} Kambitos</span> para destacar lo que quieras.</p>
+                                <button @click="purchaseCredits(selectedPlan.name, selectedPlan.amount)" class="purchase-button">
+                                    Comprar por {{ selectedPlan.price }}
+                                </button>
                             </div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-slate-800 dark:text-white text-lg">Paquete Básico</h3>
-                                <p class="text-slate-500 dark:text-slate-400 text-sm">Compra <span class="font-semibold text-[#d7037b]">2 Kambitos</span></p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-extrabold text-slate-900 dark:text-white text-xl">S/ 1.00</p>
-                            </div>
-                        </button>
-
-                        <button @click="purchaseCredits('Popular', 5)" class="package-item popular group relative">
-                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#d7037b] text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">Popular</div>
-                            <div class="icon-wrapper">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-slate-800 dark:text-white text-lg">Paquete Popular</h3>
-                                <p class="text-slate-500 dark:text-slate-400 text-sm">Compra <span class="font-semibold text-[#d7037b]">5 Kambitos</span></p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-extrabold text-slate-900 dark:text-white text-xl">S/ 2.00</p>
-                            </div>
-                        </button>
-  
-                        <button @click="purchaseCredits('Pro', 15)" class="package-item group">
-                            <div class="icon-wrapper">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-slate-800 dark:text-white text-lg">Paquete Pro</h3>
-                                <p class="text-slate-500 dark:text-slate-400 text-sm">Compra <span class="font-semibold text-[#d7037b]">10 Kambitos</span></p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-extrabold text-slate-900 dark:text-white text-xl">S/ 5.00</p>
-                            </div>
-                        </button>
+                        </transition>
                     </div>
                 </div>
             </div>
@@ -97,13 +62,31 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 
+import avatarBasico from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
+import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
+import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
+
 const userStore = useUserStore();
 const userCredits = computed(() => userStore.userCredits || 0);
+
+const plans = [
+    { name: 'Básico', amount: 2, price: 'S/ 1.00', avatar: avatarBasico },
+    { name: 'Popular', amount: 5, price: 'S/ 2.00', avatar: avatarPopular },
+    { name: 'Pro', amount: 10, price: 'S/ 5.00', avatar: avatarPro }
+];
+
+const selectedPlan = ref(plans[1]);
+
+function selectPlan(plan) {
+    selectedPlan.value = plan;
+}
+
+const currentAvatar = computed(() => selectedPlan.value.avatar);
 
 function purchaseCredits(packageName, amount) {
     console.log(`Iniciando compra para: ${packageName} (${amount} Kambitos)`);
@@ -112,43 +95,65 @@ function purchaseCredits(packageName, amount) {
 </script>
 
 <style scoped>
-.package-container:hover .package-item:not(:hover) {
-    opacity: 0.6;
-    transform: scale(0.95);
+.purchase-container {
+    @apply grid grid-cols-1 lg:grid-cols-2 max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700;
 }
 
-.package-item {
-    @apply w-full text-left bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-5 transition-all duration-300 ease-in-out;
-    will-change: transform, opacity;
+/* Panel Izquierdo */
+.selection-panel {
+    @apply p-6 flex flex-col;
+}
+.balance-display {
+    @apply p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl mb-4 text-center;
+}
+.plans-list {
+    @apply space-y-3;
+}
+.plan-item {
+    @apply w-full flex items-center gap-4 p-4 rounded-xl border-2 border-transparent transition-all duration-300;
+    @apply bg-slate-50 dark:bg-slate-700/50;
+}
+.plan-item:hover {
+    @apply bg-slate-100 dark:bg-slate-700;
+}
+.plan-item.active {
+    @apply border-[#d7037b] ring-2 ring-pink-200 dark:ring-pink-800/50;
 }
 
-.package-item:hover {
-    transform: scale(1.05);
-    border-color: #d7037b;
-    box-shadow: 0 10px 25px -5px rgba(215, 3, 123, 0.1), 0 8px 10px -6px rgba(215, 3, 123, 0.1);
+/* Panel Derecho */
+.display-panel {
+    @apply bg-slate-50 dark:bg-slate-800/50 p-8 flex flex-col items-center justify-center gap-6 rounded-r-3xl;
+}
+.avatar-stage {
+    @apply w-full h-64 flex items-center justify-center mb-4;
+}
+.avatar-image {
+    @apply max-w-full h-auto max-h-60 object-contain;
+}
+.purchase-button {
+    @apply w-full mt-6 bg-[#d7037b] text-white font-bold py-3.5 px-6 rounded-xl text-base transition-all duration-300;
+    @apply hover:bg-pink-700 transform hover:scale-105 shadow-lg shadow-pink-500/20;
 }
 
-.package-item.popular {
-    @apply border-2 border-[#d7037b];
-    box-shadow: 0 0 20px rgba(215, 3, 123, 0.2);
+/* Transiciones */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
-.icon-wrapper {
-    @apply p-3 rounded-lg transition-all duration-300;
-    background: linear-gradient(145deg, #f9fafb, #e5e7eb);
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
 }
-
-.dark .icon-wrapper {
-    background: linear-gradient(145deg, #1e293b, #334155);
+.avatar-fade-enter-active,
+.avatar-fade-leave-active {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
 }
-
-.package-item:hover .icon-wrapper {
-    background: linear-gradient(145deg, #fce7f3, #fbcfe8);
-    color: #d7037b;
+.avatar-fade-enter-from {
+    transform: scale(0.7);
+    opacity: 0;
 }
-
-.dark .package-item:hover .icon-wrapper {
-    background: linear-gradient(145deg, #be185d, #9d174d);
-    color: white;
+.avatar-fade-leave-to {
+    opacity: 0;
 }
 </style>
