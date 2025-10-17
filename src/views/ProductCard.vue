@@ -1,15 +1,15 @@
 <template>
-  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
     <button @click="$emit('close')" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
       </svg>
     </button>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
       
       <div class="md:col-span-1">
-        <div class="relative rounded-lg overflow-hidden shadow-lg aspect-square bg-gray-100 dark:bg-gray-700">
+        <div class="relative rounded-lg overflow-hidden shadow-lg aspect-square bg-white sm:bg-gray-100 dark:bg-gray-800 sm:dark:bg-gray-700">
           <transition name="fade-img" mode="out-in">
             <img :key="currentImage" :src="currentImage" :alt="product.title" class="w-full h-full object-contain" loading="lazy" />
           </transition>
@@ -48,17 +48,17 @@
       <aside class="md:col-span-1 flex flex-col">
         <header>
           <span class="text-sm font-semibold uppercase tracking-wider text-brand-primary">{{ product.category_name }}</span>
-          <h1 id="product-title" class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mt-1 leading-tight">
+          <h1 id="product-title" class="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mt-1 leading-tight">
             {{ formattedTitle }}
           </h1>
-          <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Publicado hace {{ daysAgo }} días</p>
+          <p class="mt-2 sm:mt-3 text-sm text-gray-500 dark:text-gray-400">Publicado hace {{ daysAgo }} días</p>
         </header>
 
-        <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ formattedDescription }}</p>
+        <div class="mt-4 sm:mt-6 border-t border-gray-200 dark:border-gray-700 pt-4 sm:pt-6">
+          <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-sm sm:text-base">{{ formattedDescription }}</p>
         </div>
 
-        <div class="mt-6 space-y-4 text-sm">
+        <div class="mt-4 sm:mt-6 space-y-3 sm:space-y-4 text-sm">
             <div class="flex items-center gap-3">
               <img :src="avatarSrc" alt="avatar" class="h-10 w-10 rounded-full object-cover" />
               <div>
@@ -76,7 +76,7 @@
              </div>
         </div>
 
-        <div v-if="product.exchange_interests && product.exchange_interests.length" class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+        <div v-if="product.exchange_interests && product.exchange_interests.length" class="mt-4 sm:mt-6 border-t border-gray-200 dark:border-gray-700 pt-4 sm:pt-6">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Busca a cambio de:</h3>
           <div class="flex flex-wrap gap-2">
             <span v-for="interest in product.exchange_interests" :key="interest" class="inline-flex items-center whitespace-nowrap rounded border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50">
@@ -85,13 +85,10 @@
           </div>
         </div>
 
-        <div class="mt-auto pt-8 flex flex-col sm:flex-row gap-3">
-           <button @click="openProposeModal" class="flex-1 inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
+        <div class="mt-auto pt-6 sm:pt-8">
+           <button @click="openProposeModal" class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v6a6 6 0 11-12 0V5H4a2 2 0 01-2-2z"/></svg>
             Proponer Intercambio
-          </button>
-          <button @click="$emit('favorite', product)" class="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 18l-6.828-6.828a4 4 0 010-5.656z"/></svg>
           </button>
         </div>
       </aside>
@@ -199,7 +196,7 @@ const props = defineProps({
   product: { type: Object, required: true },
   apiBase: { type: String, default: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' }
 });
-const emit = defineEmits(['close', 'favorite']);
+const emit = defineEmits(['close']);
 
 const isModalOpen = ref(false);
 const submitting = ref(false);

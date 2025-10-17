@@ -302,7 +302,7 @@
             {{ product.category_name }}
           </div>
 
-          <div class="flex flex-col flex-grow p-5">
+          <div class="flex flex-col flex-grow p-3 sm:p-5">
             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ formatTitle(product.title) }}</h3>
             
             <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
@@ -617,8 +617,6 @@ watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 .product-list-leave-to { opacity: 0; transform: translateY(18px) }
 .product-list-leave-active { position: absolute }
 
-/* Clamp multi-línea */
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 
 .badge-sq{
