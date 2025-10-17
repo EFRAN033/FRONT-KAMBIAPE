@@ -167,7 +167,7 @@
               :aria-expanded="isCategoryDropdownOpen"
             >
               <svg class="h-5 w-5 text-brand-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM2.5 6.25c0-.414.336-.75.75-.75h7.5c.414 0 .75.336.75.75v7.5c0 .414-.336-.75-.75-.75h-7.5a.75.75 0 01-.75-.75v-7.5z" /><path d="M15.25 5.5a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7zM17.5 5.5a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7z" /></svg>
-              <span class="text-gray-600 dark:text-gray-400">Categoría:</span>
+              <span class="hidden md:inline text-gray-600 dark:text-gray-400">Categoría:</span>
               <span class="font-bold text-gray-900 dark:text-white">{{ selectedCategory || 'Todas' }}</span>
               <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
             </button>
@@ -218,7 +218,7 @@
               :aria-expanded="isSortDropdownOpen"
             >
               <svg class="h-5 w-5 text-brand-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2.24 6.5A.75.75 0 013 6h14a.75.75 0 010 1.5H3a.75.75 0 01-.76-.5zM3 10h14a.75.75 0 010 1.5H3a.75.75 0 010-1.5zM3.75 14a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd" /></svg>
-              <span class="text-gray-600 dark:text-gray-400">Ordenar:</span>
+              <span class="hidden md:inline text-gray-600 dark:text-gray-400">Ordenar:</span>
               <span class="font-bold text-gray-900 dark:text-white">{{ sortOptions.find(opt => opt.value === sortBy)?.label }}</span>
               <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
             </button>
@@ -249,7 +249,7 @@
           </div>
 
           <div class="w-full md:w-auto">
-            <button @click="resetFilters" class="w-full md:w-auto flex-shrink-0 bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 font-medium py-2.5 px-6 rounded-full transition shadow-sm ring-1 ring-inset ring-transparent hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-brand-primary">
+            <button @click="resetFilters" class="w-full md:w-auto flex-shrink-0 bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 font-medium py-2.5 px-4 md:px-6 rounded-full transition shadow-sm ring-1 ring-inset ring-transparent hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-brand-primary">
               Reiniciar
             </button>
           </div>
@@ -258,7 +258,7 @@
     </div>
 
     <div class="py-10 md:py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-inner">
-      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
+      <div v-if="loading" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-4 sm:px-6 lg:px-8">
         <div v-for="n in 12" :key="n" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 animate-pulse">
           <div class="w-full h-48 sm:h-56 bg-gray-200 dark:bg-gray-700"></div>
           <div class="p-5">
@@ -281,7 +281,7 @@
         </button>
       </div>
 
-      <TransitionGroup name="product-list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8">
+      <TransitionGroup name="product-list" tag="div" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-4 sm:px-6 lg:px-8">
         <article
           v-for="product in visibleProducts"
           :key="product.id"
@@ -309,9 +309,9 @@
               Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ formatOwnerName(product.user_username) || 'Usuario' }}</span>
             </div>
             
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 flex-grow min-h-[40px]">{{ product.description }}</p>
+            <p class="hidden sm:block text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 min-h-[40px]">{{ product.description }}</p>
 
-            <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
+            <div class="hidden sm:flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
               <div class="inline-flex items-center">
                 <svg class="w-4 h-4 mr-1 text-brand-primary" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
@@ -322,7 +322,7 @@
               <span class="truncate">Hace {{ calculateAgeDays(product.created_at) }} días</span>
             </div>
 
-            <div v-if="product.exchange_interests && product.exchange_interests.length > 0" class="mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+            <div v-if="product.exchange_interests && product.exchange_interests.length > 0" class="hidden sm:block mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Busca a cambio:</h4>
                 <div class="flex flex-wrap gap-1.5">
                     <span v-for="interest in product.exchange_interests" :key="interest" class="badge-sq">
@@ -352,21 +352,21 @@
         <div class="absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.4)_1px,transparent_1.5px)] bg-[length:18px_18px]"></div>
         <div class="absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.4)_1px,transparent_1.5px)] bg-[length:18px_18px]"></div>
       </div>
-
-      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-7">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-center sm:text-left font-extrabold tracking-wide text-white drop-shadow-[0_2px_0_rgba(166,4,93,0.6)] text-[clamp(14px,2vw,20px)]">
-            ¡<span class="uppercase">Kambix</span>! Síguenos y entérate de nuestras novedades
+      
+      <div class="relative mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4">
+        <div class="flex w-full items-center justify-between gap-3">
+          <p class="text-left font-extrabold tracking-wide text-white drop-shadow-[0_2px_0_rgba(166,4,93,0.6)] text-sm sm:text-[clamp(14px,2vw,20px)]">
+            <span class="sm:hidden">¡<span class="uppercase">Kambix</span>! Síguenos</span>
+            <span class="hidden sm:inline">¡<span class="uppercase">Kambix</span>! Síguenos y entérate de nuestras novedades</span>
           </p>
-
           <nav class="flex items-center justify-center gap-2 sm:gap-3" aria-label="Redes sociales">
-            <a href="https://www.instagram.com/kambia_pe?igsh=MWg2aWR3YnhnNW1qdw==" target="_blank" rel="noopener noreferrer" class="group inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/90 ring-2 ring-white/30 backdrop-blur transition-all hover:scale-[1.04] hover:bg-white" aria-label="Instagram de Kambix (@kambix_oficial)">
+            <a href="https://www.instagram.com/kambia_pe?igsh=MWg2aWR3YnhnNW1qdw==" target="_blank" rel="noopener noreferrer" class="group inline-flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/90 ring-2 ring-white/30 backdrop-blur transition-all hover:scale-[1.04] hover:bg-white" aria-label="Instagram de Kambix (@kambix_oficial)">
               <svg class="h-5 w-5 text-brand-dark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm5 5.5a5.5 5.5 0 1 0 5.5 5.5A5.5 5.5 0 0 0 12 7.5ZM18 6.8a1.2 1.2 0 1 1-1.2 1.2A1.2 1.2 0 0 1 18 6.8Z"/></svg>
             </a>
-            <a href="https://tiktok.com/@kambiape" target="_blank" rel="noopener noreferrer" class="group inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/90 ring-2 ring-white/30 backdrop-blur transition-all hover:scale-[1.04] hover:bg-white" aria-label="TikTok de Kambix">
+            <a href="https://tiktok.com/@kambiape" target="_blank" rel="noopener noreferrer" class="group inline-flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/90 ring-2 ring-white/30 backdrop-blur transition-all hover:scale-[1.04] hover:bg-white" aria-label="TikTok de Kambix">
               <svg class="h-5 w-5 text-brand-dark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 3h3.1A6.9 6.9 0 0 0 23 9.9V13A10 10 0 0 1 13 6.1V16a6 6 0 1 1-6-6c.34 0 .68.03 1.02.1V13a3 3 0 1 0 3 3V3Z"/></svg>
             </a>
-            <a href="https://www.facebook.com/share/1A62pnpV8K/" target="_blank" rel="noopener noreferrer" class="group inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/90 ring-2 ring-white/30 backdrop-blur transition-all hover:scale-[1.04] hover:bg-white" aria-label="Facebook de Kambix">
+            <a href="https://www.facebook.com/share/1A62pnpV8K/" target="_blank" rel="noopener noreferrer" class="group inline-flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-white/90 ring-2 ring-white/30 backdrop-blur transition-all hover:scale-[1.04] hover:bg-white" aria-label="Facebook de Kambix">
               <svg class="h-5 w-5 text-brand-dark" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951Z"/></svg>
             </a>
           </nav>
