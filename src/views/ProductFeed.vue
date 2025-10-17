@@ -309,7 +309,7 @@
               Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ formatOwnerName(product.user_username) || 'Usuario' }}</span>
             </div>
             
-            <p class="hidden sm:block text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 min-h-[40px]">{{ product.description }}</p>
+            <p class="hidden text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2 min-h-[40px]">{{ product.description }}</p>
 
             <div class="hidden sm:flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4 gap-3">
               <div class="inline-flex items-center">
