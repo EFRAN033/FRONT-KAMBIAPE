@@ -133,7 +133,7 @@
                     <div class="w-full">
                       <div class="flex justify-between items-start gap-2">
                         <h3 class="font-bold text-slate-900 leading-tight mb-1 pr-2 line-clamp-2">{{ product.title }}</h3>
-                        <div class="inline-flex items-center gap-1.5 flex-shrink-0">
+                        <div class="inline-flex items-center gap-1.5 flex-shrink-0 sm:hidden">
                           <button class="icon-btn" @click="openEditModal(product)" title="Editar">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="currentColor"><path d="M5 15.5V19h3.5l10-10-3.5-3.5-10 10zM20.7 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.29 1.29 3.75 3.75 1.29-1.29z"/></svg>
                           </button>

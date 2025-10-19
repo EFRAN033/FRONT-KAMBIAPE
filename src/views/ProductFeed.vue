@@ -104,13 +104,14 @@
               </router-link>
 
               <router-link
-                to="/explore"
-                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/90 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 text-brand-dark font-medium hover:bg-white transition rounded-full"
+                to="/buzon"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-white/90 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 text-brand-dark font-medium hover:bg-white transition rounded-full"
               >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 5a7 7 0 1 0 4.9 12l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 5Z"/>
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-                Explorar intercambios
+                Buzón
               </router-link>
             </div>
 
