@@ -20,7 +20,8 @@
           </div>
       </div>
     </Transition>
-    <section class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-3xl ring-1 ring-gray-200 dark:ring-gray-700">
+    
+    <section class="relative bg-gray-100 dark:bg-gray-900 rounded-3xl ring-1 ring-gray-200 dark:ring-gray-700 md:overflow-hidden">
       <div aria-hidden="true" class="pointer-events-none absolute inset-0">
         <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/15 to-brand-dark/15 blur-3xl"></div>
         <div class="absolute inset-0 opacity-10 dark:opacity-20 mix-blend-multiply"
@@ -28,67 +29,12 @@
                     background-size: 22px 22px;"></div>
       </div>
 
-      <div class="relative mx-auto max-w-7xl px-6 lg:px-8 py-10 sm:py-12">
-        <div class="grid items-center grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
-          <header class="lg:col-span-7">
-            <div class="inline-flex items-center gap-2 rounded-full bg-white/80 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 px-3 py-1">
-              <span class="h-1.5 w-1.5 rounded-full bg-brand-primary"></span>
-              <span class="text-[11px] font-semibold tracking-[0.22em] uppercase text-brand-dark">Bienvenido a KambiaPe</span>
-            </div>
-
-            <h1 class="mt-3 text-[28px] sm:text-[34px] font-black leading-[1.05] tracking-tight text-gray-900 dark:text-white font-lobster">
-              Intercambia fácil, seguro y sin comisiones.
-            </h1>
-
-            <p class="mt-3 max-w-[60ch] text-[15px] sm:text-[16px] leading-relaxed text-gray-700 dark:text-gray-300">
-              Publica lo que ya no usas y encuentra lo que necesitas en tu comunidad.
-              Perfiles verificados, chat directo y reglas claras.
-            </p>
-
-            <div class="mt-2 h-[2px] w-56 bg-gradient-to-r from-brand-primary/30 to-brand-dark/30"></div>
-
-            <div class="mt-6 flex flex-wrap items-stretch gap-3">
-              <router-link
-                to="/publicar"
-                class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/30 hover:brightness-110 active:scale-95 transition rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/70"
-              >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
-                </svg>
-                Publicar objeto
-              </router-link>
-
-              <router-link
-                to="/explore"
-                class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/90 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 text-brand-dark font-medium hover:bg-white transition rounded-full"
-              >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 5a7 7 0 1 0 4.9 12l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 5Z"/>
-                </svg>
-                Explorar intercambios
-              </router-link>
-
-              <router-link
-                to="/buzon"
-                class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/90 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 text-gray-700 dark:text-gray-200 font-medium hover:bg-white transition rounded-full"
-              >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 3H5a2 2 0 0 0-2 2v12a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V5a2 2 0 0 0-2-2Zm0 10h-3.38a2 2 0 0 0-1.79 1.11l-.66 1.33a1 1 0 0 1-.9.56h-1.54a1 1 0 0 1-.9-.56l-.66-1.33A2 2 0 0 0 8.38 13H5V5h14v8Z"/>
-                </svg>
-                Mis mensajes
-              </router-link>
-            </div>
-
-            <ul class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[12px] text-gray-600 dark:text-gray-400">
-              <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-success"></span> Perfiles verificados</li>
-              <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-accentBlue"></span> Mediación segura</li>
-              <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-primary"></span> 0% comisiones</li>
-            </ul>
-          </header>
-
-          <aside class="lg:col-span-5">
-            <div class="relative mx-auto w-full max-w-md group select-none">
-              <svg class="absolute -z-10 left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 opacity-55" viewBox="0 0 200 200" fill="none">
+      <div class="relative mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-12 md:gap-8 lg:gap-14 md:items-center">
+          
+          <aside class="md:col-span-5 lg:col-span-5 h-80 md:h-auto -mt-4 md:mt-0 pointer-events-none md:pointer-events-auto">
+            <div class="relative w-full h-full flex items-center justify-center group select-none pointer-events-auto">
+              <svg class="absolute -z-10 left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 opacity-55 scale-[0.8] md:scale-100" viewBox="0 0 200 200" fill="none">
                 <defs>
                   <radialGradient id="ringGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 100) rotate(90) scale(100)">
                     <stop offset="0" stop-color="#d7037b" stop-opacity="0.6"/>
@@ -98,7 +44,7 @@
                 <circle cx="100" cy="100" r="92" stroke="url(#ringGrad)" stroke-width="1.6"/>
               </svg>
 
-              <div class="relative h-[23rem]">
+              <div class="relative h-[23rem] w-full scale-[0.7] md:scale-90 lg:scale-100">
                 <div
                   v-for="(card, i) in orderedCards"
                   :key="card.id"
@@ -126,14 +72,54 @@
                   </div>
                 </div>
               </div>
-
-              <div class="mt-3 grid grid-cols-3 gap-2 text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-brand-primary/70"></span> Publica</div>
-                <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-brand-dark/70"></span> Propuestas</div>
-                <div class="flex items-center gap-2"><span class="h-1.5 w-6 rounded-full bg-success/70"></span> Intercambia</div>
-              </div>
             </div>
           </aside>
+
+          <header class="md:col-span-7 lg:col-span-7 text-center md:text-left flex flex-col items-center md:items-start px-6 pb-10 md:py-12 md:pl-6 md:pr-0 lg:pl-8 relative z-10 -mt-24 md:mt-0 bg-gray-100/80 dark:bg-gray-900/80 md:bg-transparent dark:md:bg-transparent rounded-2xl md:rounded-none backdrop-blur-sm md:backdrop-blur-none mx-4 md:mx-0">
+            <div class="inline-flex items-center gap-2 rounded-full bg-white/80 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 px-3 py-1">
+              <span class="h-1.5 w-1.5 rounded-full bg-brand-primary"></span>
+              <span class="text-[11px] font-semibold tracking-[0.22em] uppercase text-brand-dark">Bienvenido a KambiaPe</span>
+            </div>
+
+            <h1 class="mt-3 text-[26px] sm:text-[32px] font-black leading-[1.05] tracking-tight text-gray-900 dark:text-white font-lobster">
+              Intercambia fácil, seguro y sin comisiones.
+            </h1>
+
+            <p class="mt-3 max-w-[60ch] mx-auto md:mx-0 text-[15px] leading-relaxed text-gray-700 dark:text-gray-300">
+              Publica lo que ya no usas y encuentra lo que necesitas en tu comunidad.
+              Perfiles verificados, chat directo y reglas claras.
+            </p>
+
+            <div class="hidden md:block mt-2 h-[2px] w-56 bg-gradient-to-r from-brand-primary/30 to-brand-dark/30"></div>
+
+            <div class="mt-6 flex flex-wrap items-center justify-center md:justify-start gap-3 w-full sm:w-auto">
+              <router-link
+                to="/publicar"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-brand-primary text-white font-semibold shadow-lg shadow-brand-primary/30 hover:brightness-110 active:scale-95 transition rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/70"
+              >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
+                </svg>
+                Publicar objeto
+              </router-link>
+
+              <router-link
+                to="/explore"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/90 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 text-brand-dark font-medium hover:bg-white transition rounded-full"
+              >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 5a7 7 0 1 0 4.9 12l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 5Z"/>
+                </svg>
+                Explorar intercambios
+              </router-link>
+            </div>
+
+            <ul class="hidden sm:flex mt-5 flex-wrap justify-center md:justify-start gap-x-5 gap-y-2 text-[12px] text-gray-600 dark:text-gray-400">
+              <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-success"></span> Perfiles verificados</li>
+              <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-accentBlue"></span> Mediación segura</li>
+              <li class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-brand-primary"></span> 0% comisiones</li>
+            </ul>
+          </header>
         </div>
       </div>
     </section>
