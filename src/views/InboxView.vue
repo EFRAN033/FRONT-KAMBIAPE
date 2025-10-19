@@ -46,9 +46,12 @@
           <p class="ml-3 text-sm font-medium text-[#9e0154]">Cargando tus conversaciones…</p>
         </div>
 
-        <div v-else class="flex flex-row h-[75vh] max-h-[850px] border border-slate-200">
+        <div v-else class="relative h-[75vh] max-h-[850px] border border-slate-200 overflow-hidden lg:flex lg:flex-row">
           
-          <aside class="w-full lg:w-[34%] flex-shrink-0 border-r border-slate-200 overflow-y-auto custom-scrollbar-unique">
+          <aside 
+            class="w-full lg:w-[34%] flex-shrink-0 border-r border-slate-200 overflow-y-auto custom-scrollbar-unique transition-transform duration-300 ease-in-out lg:translate-x-0"
+            :class="{ '-translate-x-full': isChatViewVisible }"
+          >
             <div class="sticky top-0 bg-white/90 backdrop-blur px-4 py-3 border-b border-slate-100 z-10 flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <h2 class="text-[13px] tracking-wide font-semibold text-slate-700">Conversaciones</h2>
@@ -135,12 +138,19 @@
             </div>
           </aside>
 
-          <section class="flex-1 flex flex-col bg-white overflow-hidden">
+          <section 
+            class="absolute inset-0 w-full h-full bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-in-out lg:static lg:flex-1 lg:translate-x-0"
+            :class="{ 'translate-x-0': isChatViewVisible, 'translate-x-full': !isChatViewVisible }"
+          >
             <template v-if="selectedConversation">
-              <div @click="openProfilePanel(selectedConversation.user)" class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
+              <div class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between transition-colors sticky top-0 z-10">
                 <div class="flex items-center gap-3 min-w-0">
-                  <img :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow" />
-                  <div class="min-w-0">
+                  <button @click="returnToConversationList" class="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full lg:hidden">
+                    <ArrowLeftIcon class="h-5 w-5" />
+                  </button>
+
+                  <img @click="openProfilePanel(selectedConversation.user)" :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow cursor-pointer lg:cursor-default" />
+                  <div @click="openProfilePanel(selectedConversation.user)" class="min-w-0 cursor-pointer lg:cursor-default">
                     <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
                     <p class="text-[12px] text-slate-500" v-if="selectedConversation.user.ubicacion">{{ formatUbicacion(selectedConversation.user.ubicacion) }}</p>
                     <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
@@ -212,8 +222,8 @@
                 </p>
               </div>
             </template>
-            <template v-else>
-              <div class="flex-1 flex items-center justify-center p-8 text-center text-slate-500">
+            <template v-else-if="!isChatViewVisible">
+              <div class="hidden lg:flex flex-1 items-center justify-center p-8 text-center text-slate-500">
                 <div class="flex flex-col items-center gap-3">
                   <ChatBubbleLeftRightIcon class="h-20 w-20 text-slate-300" />
                   <p class="text-[17px] font-semibold text-slate-700">Selecciona una conversación</p>
@@ -224,7 +234,11 @@
           </section>
 
           <transition name="slide-fade">
-            <aside v-if="selectedProfileUser" class="w-full lg:w-[30%] flex-shrink-0 bg-white border-l border-slate-200 overflow-y-auto custom-scrollbar-unique">
+            <aside 
+              v-if="selectedProfileUser" 
+              class="absolute inset-0 w-full h-full bg-white transition-transform duration-300 ease-in-out lg:static lg:w-[30%] lg:flex-shrink-0 lg:border-l lg:border-slate-200 lg:translate-x-0 overflow-y-auto custom-scrollbar-unique"
+              :class="{ 'translate-x-0': selectedProfileUser, 'translate-x-full': !selectedProfileUser }"
+            >
               <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-sm z-10">
                 <h2 class="text-base font-semibold">Perfil del Usuario</h2>
                 <button @click="closeProfilePanel" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800">
@@ -328,14 +342,12 @@
         </div>
       </div>
     </div>
-
     <div v-if="isRatingModalVisible" class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center backdrop-blur-sm">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-bold text-slate-900">¡Intercambio completado!</h3>
         <p class="mt-2 text-sm text-slate-600">
           Valora tu experiencia con <span class="font-semibold">{{ formatUserName(selectedConversation.user.full_name) }}</span> para ayudar a la comunidad.
         </p>
-        
         <div class="my-5 flex justify-center">
           <div class="flex items-center gap-2">
             <button
@@ -350,14 +362,12 @@
             </button>
           </div>
         </div>
-
         <textarea 
           v-model="ratingComment" 
           rows="3" 
           placeholder="(Opcional) Deja un comentario sobre tu experiencia..." 
           class="w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-[#d7037b] focus:border-transparent">
         </textarea>
-        
         <div class="mt-5 flex justify-end gap-3">
           <button @click="closeRatingModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Omitir</button>
           <button @click="submitRating" :disabled="ratingScore === 0" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:bg-blue-300 disabled:cursor-not-allowed">
@@ -376,7 +386,6 @@
         </div>
       </div>
     </div>
-
     <div v-if="isDeleteModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-semibold text-slate-900">Eliminar conversación</h3>
@@ -387,7 +396,6 @@
         </div>
       </div>
     </div>
-
     <div v-if="isBlockModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-semibold text-slate-900">Bloquear Usuario</h3>
@@ -398,7 +406,6 @@
         </div>
       </div>
     </div>
-
     <div v-if="isReportModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         <h3 class="text-lg font-semibold text-slate-900">Reportar y Bloquear Usuario</h3>
@@ -410,7 +417,6 @@
         </div>
       </div>
     </div>
-
     <div v-if="isBlockedUsersModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div class="bg-white rounded-lg shadow-xl p-0 w-full max-w-md mx-4">
         <div class="flex items-center justify-between p-4 border-b border-slate-200">
@@ -441,7 +447,6 @@
         </div>
       </div>
     </div>
-    
     <div v-if="isLocationModalVisible" @click.self="isLocationModalVisible = false" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-0 relative">
         <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/95">
@@ -491,14 +496,14 @@ import {
   ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon,
   EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
   UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon,
-  MapPinIcon
+  MapPinIcon, ArrowLeftIcon
 } from '@heroicons/vue/24/outline';
-// ===== INICIO: IMPORTACIÓN AÑADIDA =====
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
-// ===== FIN: IMPORTACIÓN AÑADIDA =====
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
 import suggestedPlacesData from '@/data/lugares_seguros.json';
+
+const isChatViewVisible = ref(false);
 
 const userStore = useUserStore();
 const toast = useToast();
@@ -531,11 +536,9 @@ const loadingBlockedUsers = ref(false);
 
 const isCancelModalVisible = ref(false);
 
-// ===== INICIO: NUEVAS VARIABLES PARA EL MODAL DE VALORACIÓN =====
 const isRatingModalVisible = ref(false);
 const ratingScore = ref(0);
 const ratingComment = ref('');
-// ===== FIN: NUEVAS VARIABLES PARA EL MODAL DE VALORACIÓN =====
 
 let ws = null;
 const isOtherUserTyping = ref(false);
@@ -625,7 +628,6 @@ const confirmCancel = async () => {
   closeCancelModal();
 };
 
-// ===== INICIO: NUEVAS FUNCIONES PARA EL MODAL DE VALORACIÓN =====
 const openRatingModal = () => {
   ratingScore.value = 0;
   ratingComment.value = '';
@@ -634,7 +636,6 @@ const openRatingModal = () => {
 
 const closeRatingModal = () => {
   isRatingModalVisible.value = false;
-  // Si el usuario omite la valoración, simplemente marcamos la propuesta como completada.
   updateProposalStatus('completed');
 };
 
@@ -653,26 +654,18 @@ const submitRating = async () => {
   };
 
   try {
-    // 1. Enviar la valoración al backend.
     await axios.post('/ratings', ratingData);
     toast.success("¡Gracias por tu valoración!");
-    
-    // 2. Marcar la propuesta como completada.
     await updateProposalStatus('completed');
-
-    // 3. ¡AQUÍ ESTÁ LA SOLUCIÓN! Vuelve a cargar los datos del perfil del usuario.
     if (userStore.user?.id) {
       await userStore.fetchUserProfile(userStore.user.id);
     }
-
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo enviar la valoración.");
   } finally {
-    // 4. Cerrar el modal.
     isRatingModalVisible.value = false;
   }
 };
-// ===== FIN: NUEVAS FUNCIONES PARA EL MODAL DE VALORACIÓN =====
 
 const toggleActionMenu = (id) => {
   activeMenuId.value = activeMenuId.value === id ? null : id;
@@ -870,7 +863,14 @@ const fetchConversations = async () => {
     loadingConversations.value = false;
   }
 };
+
+const returnToConversationList = () => {
+  isChatViewVisible.value = false;
+};
+
 const selectConversation = async (conversation) => {
+  isChatViewVisible.value = true; 
+
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
   
@@ -881,21 +881,15 @@ const selectConversation = async (conversation) => {
     const { data } = await axios.get(`/proposals/${conversation.exchange.id}/messages`);
     messages.value = data;
 
-    // ===== INICIO: CÓDIGO MODIFICADO =====
-    // Si la conversación no tiene mensajes y el usuario actual es quien la propuso,
-    // se enviará un mensaje automático con los detalles del intercambio.
     if (data.length === 0 && conversation.exchange.proposer_user_id === userStore.user?.id) {
       const offerTitle = conversation.exchange.offer?.title || 'producto ofrecido';
       const requestTitle = conversation.exchange.request?.title || 'producto solicitado';
       
-      // Componemos el mensaje que se enviará automáticamente.
       const autoMessage = `¡Hacemos intercambio! Te propongo cambiar mi producto "${offerTitle}" por tu producto "${requestTitle}".`;
       
-      // Asignamos el texto al `ref` del nuevo mensaje y llamamos a la función de envío.
       newMessageText.value = autoMessage;
       await sendMessage();
     }
-    // ===== FIN: CÓDIGO MODIFICADO =====
 
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
@@ -965,8 +959,6 @@ const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
   
-  // Si el estado es 'completed' y el modal de valoración no se ha mostrado,
-  // simplemente salimos, ya que la lógica se manejará al enviar o omitir la valoración.
   if (status === 'completed' && !isRatingModalVisible.value) {
     openRatingModal();
     return;
@@ -976,7 +968,6 @@ const updateProposalStatus = async (status) => {
     await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
     
-    // Solo mostramos el toast si no es una finalización (ya que esa tiene su propio feedback)
     if (status !== 'completed') {
         toast.success(`Propuesta ${statusTextMap[status]}.`);
     }

@@ -11,7 +11,7 @@
   >
     <router-link to="/publicar" class="flex flex-col items-center gap-1" title="Publicar">
       <div class="h-14 w-14 grid place-items-center rounded-2xl bg-gradient-to-br from-[#d7037b] to-[#b80268] text-white shadow-[0_14px_34px_rgba(215,3,123,.25)] ring-1 ring-white/40 dark:ring-white/10 transition-transform hover:-translate-y-0.5">
-        <svg class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H3a1 1 M0 110-2h6V3a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        <svg class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H3a1 1 0 110-2h6V3a1 1 0 011-1z" clip-rule="evenodd"/></svg>
       </div>
       <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 leading-none">Publicar</span>
     </router-link>
@@ -149,9 +149,8 @@ onMounted(() => {
     border-radius: 9999px;
     cursor: pointer;
     color: #475569;
-    /* Optimización de rendimiento */
     will-change: color;
-    transition: color 0.3s ease-out;
+    transition: color 0.3s ease-in-out;
   }
   :global(.dark) .nav-item {
     color: #94a3b8;
@@ -161,9 +160,9 @@ onMounted(() => {
     width: 24px;
     height: 24px;
     margin-right: 0;
-    /* Optimización de rendimiento */
     will-change: margin-right;
-    transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Transición sincronizada con el efecto resorte del indicador */
+    transition: margin-right 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
   .icon-svg {
     width: 100%;
@@ -178,9 +177,10 @@ onMounted(() => {
     opacity: 0;
     overflow: hidden;
     white-space: nowrap;
-    /* Optimización de rendimiento */
     will-change: max-width, opacity;
-    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+    /* Transición escalonada: el ancho sigue el efecto resorte, la opacidad aparece después */
+    transition: max-width 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                opacity 0.3s ease-in-out 0.1s;
   }
   
   /* ESTADO ACTIVO */
@@ -204,9 +204,10 @@ onMounted(() => {
     background-image: linear-gradient(135deg, #d7037b, #b80268);
     border-radius: 9999px;
     box-shadow: 0 6px 16px rgba(215, 3, 123, .3);
-    /* Optimización de rendimiento y tiempo sincronizado */
     will-change: transform, width;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Duración aumentada y curva 'spring' para un movimiento ultra fluido */
+    transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                width 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     z-index: 5;
   }
 }
