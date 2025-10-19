@@ -22,10 +22,10 @@
       </div>
     </header>
 
-    <div class="container mx-auto px-4 sm:px-6 py-8">
+    <div class="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
       <div class="max-w-4xl mx-auto">
         <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
-          <div class="col-span-1 flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
+          <div class="col-span-1 flex flex-col items-center justify-center p-6 sm:p-8 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
             <div
               class="avatar-shell group"
               :class="[isDragOver && 'dragging']"
@@ -72,7 +72,7 @@
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-3 text-center">Máx. {{ MAX_SIZE_MB }}MB</p>
           </div>
 
-          <div class="col-span-1 md:col-span-2 p-6 flex flex-col">
+          <div class="col-span-1 md:col-span-2 p-5 sm:p-6 flex flex-col">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
             
@@ -118,17 +118,17 @@
               <p v-else class="text-sm text-gray-500 dark:text-slate-400">No has añadido intereses todavía.</p>
             </div>
 
-            <div class="mt-auto pt-4 flex flex-wrap items-center gap-2">
+            <div class="mt-auto pt-4 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
               <template v-if="!editMode">
-                <button @click="enterEditMode" class="btn-brand">Editar Perfil</button>
-                <button @click="logout" class="btn-ghost">Salir</button>
+                <button @click="enterEditMode" class="btn-brand w-full sm:w-auto">Editar Perfil</button>
+                <button @click="logout" class="btn-ghost w-full sm:w-auto">Salir</button>
               </template>
               <template v-else>
-                <button @click="saveProfile" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed">
+                <button @click="saveProfile" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto">
                   <svg v-if="userStore.loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   <span v-else>Guardar Cambios</span>
                 </button>
-                <button @click="cancelEdit" class="btn-ghost">Cancelar</button>
+                <button @click="cancelEdit" class="btn-ghost w-full sm:w-auto">Cancelar</button>
               </template>
             </div>
           </div>
@@ -151,7 +151,7 @@
               <p class="text-sm text-gray-500 dark:text-slate-400">Mantén tus datos actualizados para una mejor experiencia.</p>
             </header>
 
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+            <div class="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               <div>
                 <label class="label">Nombre Completo</label>
                 <p class="display-field">{{ capitalizeFirstLetter(userProfile.fullName) || '-' }}</p>
@@ -263,13 +263,13 @@
               <h3 class="text-lg font-bold">Seguridad y Privacidad</h3>
               <p class="text-sm text-gray-500 dark:text-slate-400">Gestiona el acceso y la seguridad de tu cuenta.</p>
             </header>
-            <div class="p-6 space-y-5">
+            <div class="p-5 sm:p-6 space-y-5">
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">Contraseña</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Se recomienda actualizar tu contraseña periódicamente.</p>
                 </div>
-                <button @click="openChangePasswordModal" class="btn-brand">Cambiar Contraseña</button>
+                <button @click="openChangePasswordModal" class="btn-brand flex-shrink-0 w-full md:w-auto">Cambiar Contraseña</button>
               </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
@@ -279,7 +279,7 @@
                   <h4 class="font-semibold text-gray-900 dark:text-white">Dispositivos y sesiones</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Revisa dónde tienes la sesión iniciada y gestiona el acceso.</p>
                 </div>
-                <button @click="openDevicesModal" class="btn-brand">Ver dispositivos actuales</button>
+                <button @click="openDevicesModal" class="btn-brand flex-shrink-0 w-full md:w-auto">Ver dispositivos</button>
               </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
@@ -289,7 +289,7 @@
                   <h4 class="font-semibold text-red-600 dark:text-red-500">Cerrar Sesión</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Finaliza tu sesión actual en este dispositivo.</p>
                 </div>
-                <button @click="logout" class="btn-danger">Cerrar Sesión</button>
+                <button @click="logout" class="btn-danger flex-shrink-0 w-full md:w-auto">Cerrar Sesión</button>
               </div>
             </div>
           </section>
@@ -334,8 +334,6 @@ const distritos = ref([]);
 const selectedDepartamentoId = ref('');
 const selectedProvinciaId = ref('');
 const selectedDistritoId = ref('');
-
-// ===== MODIFICACIÓN: Se elimina la variable estática 'userRating' =====
 
 const userProfile = computed(() => userStore.getUserProfile);
 const indicatorStyle = computed(() => ({ transform: `translateX(calc(${activeTab.value === 'perfil' ? 0 : 1} * 100%))` }));
@@ -694,7 +692,12 @@ watch(userProfile, (newProfile) => {
 }
 .dark .seg-indicator{ background:linear-gradient(180deg,#0b1220,#0f172a);border-color:#334155;box-shadow:0 3px 8px -1px rgba(0,0,0,.25); }
 
-.avatar-shell{ --size:168px; --ring:1px; --gap:6px; --blur:26px; position:relative;width:var(--size);height:var(--size);border-radius:999px;isolation:isolate;transition: transform .2s ease; }
+/* --- AJUSTE RESPONSIVO --- */
+.avatar-shell{ --size: 140px; --ring: 1px; --gap: 5px; --blur: 20px; position:relative;width:var(--size);height:var(--size);border-radius:999px;isolation:isolate;transition: transform .2s ease; }
+@media (min-width: 640px) {
+  .avatar-shell { --size:168px; --ring:1px; --gap:6px; --blur:26px; }
+}
+
 .avatar-shell:hover{ transform: translateY(-2px); }
 .avatar-shell.dragging{ transform: scale(1.02); }
 .avatar-border{ position:absolute;inset:0;border-radius:999px;background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);filter: saturate(1.1);
@@ -710,7 +713,7 @@ watch(userProfile, (newProfile) => {
 .dark .avatar-img{ border-color: rgba(30,41,59,.6); }
 .avatar-fallback{ color:#64748b; border:1px solid rgba(148,163,184,.3); }
 .dark .avatar-fallback{ border-color: rgba(51,65,85,.6); }
-.avatar-initials{ font-size:3rem; font-weight:800; letter-spacing:.02em; z-index:1; }
+.avatar-initials{ font-size: calc(var(--size) / 3.5); font-weight:800; letter-spacing:.02em; z-index:1; }
 .avatar-pattern{ position:absolute; inset:0; width:100%; height:100%; color:#64748b; }
 .avatar-status{ position:absolute; right:10px; bottom:10px; width:16px; height:16px; border-radius:999px;background: radial-gradient(circle at 30% 30%, #ffffff 10%, #22c55e 12% 100%);border:2px solid rgba(255,255,255,.9);box-shadow: 0 2px 6px rgba(34,197,94,.45); z-index:2; }
 .dark .avatar-status{ border-color:#0f172a; }
@@ -723,7 +726,7 @@ watch(userProfile, (newProfile) => {
 .avatar-overlay-text{ color:white; font-weight:700; line-height:1.1; pointer-events: none; }
 
 .status-line{
-  display:flex; align-items:center; gap:.6rem;
+  display:flex; align-items:center; gap:.6rem; flex-wrap: wrap;
   padding:.4rem .6rem; border:1px solid #E2E8F0; background:#fff; border-radius:6px;
   box-shadow:0 2px 10px -6px rgba(2,6,23,.18); width:max-content;
 }
@@ -768,7 +771,7 @@ watch(userProfile, (newProfile) => {
 .badge-remove{ display:inline-grid; place-items:center; width:18px; height:18px; border-radius:3px; background:rgba(255,255,255,.14); border:1px solid rgba(148,163,184,.35); }
 .dark .badge-remove{ background:rgba(15,23,42,.4); border-color:#475569; }
 
-.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:.55rem; }
+.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:.55rem; }
 .tile{
   display:flex; align-items:center; gap:.6rem; padding:.65rem .7rem; border:1px solid #E2E8F0; background:#fff; color:#0f172a;
   border-radius:6px; text-align:left; transition: border-color .18s ease, box-shadow .18s ease, transform .06s ease;

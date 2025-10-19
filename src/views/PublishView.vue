@@ -9,7 +9,7 @@
     <div class="flex">
       <Sidebar />
 
-      <div class="relative flex-1">
+      <div class="relative flex-1 lg:ml-64">
         <transition name="gif-fade">
           <div v-if="showAnimation" class="absolute top-4 right-4 w-64 h-64 z-20 pointer-events-none">
             <img 
@@ -28,22 +28,22 @@
           <div class="absolute -bottom-24 -right-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl"></div>
         </div>
 
-        <main class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <section class="mb-10">
+        <main class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+          <section class="mb-8 sm:mb-10">
             <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Publica tu Producto</h1>
             <p class="mt-2 max-w-2xl text-[15px] sm:text-base text-slate-600">Completa los detalles y ponlo en circulación para un trueque.</p>
           </section>
 
           <div v-if="!isProfileComplete" class="my-10 text-center">
               <div class="h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent"></div>
-              <div class="py-4 flex justify-center items-center gap-3 text-slate-600">
+              <div class="py-4 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3 text-slate-600 text-center">
                   <svg class="h-6 w-6 flex-shrink-0 text-rose-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                   </svg>
                   <p>
-                      Para publicar un producto, necesitas
+                      Para publicar, necesitas
                       <router-link to="/profile" class="font-bold text-rose-600 underline decoration-dotted underline-offset-4 hover:text-rose-700">
-                          completar tu información de perfil
+                          completar tu perfil
                       </router-link>.
                   </p>
               </div>
@@ -101,9 +101,9 @@
                       <label for="description" class="block text-sm font-medium text-slate-700">Descripción <span class="text-rose-600">*</span></label>
                       <textarea id="description" v-model="product.description" rows="4" maxlength="500" placeholder="Incluye estado, características y detalles clave."
                         class="mt-1 w-full bg-transparent border border-slate-300/80 focus:border-rose-500 focus:ring-0 rounded-xl px-3.5 py-3 resize-y" :class="{'!border-rose-400': step1Errors.description}"></textarea>
-                      <div class="mt-1 flex items-center justify-between">
+                      <div class="mt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between">
                         <p v-if="step1Errors.description" class="text-rose-600 text-xs">{{ step1Errors.description }}</p>
-                        <p class="text-[11px] text-slate-500 ml-auto">{{ product.description.length }} / 500</p>
+                        <p class="text-[11px] text-slate-500 sm:ml-auto">{{ product.description.length }} / 500</p>
                       </div>
                       <div class="mt-2 h-1.5 w-full rounded-full bg-slate-200/60 overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-[width] duration-500" :style="{ width: Math.min(100, Math.round((product.description.length/500)*100)) + '%' }"></div>
@@ -114,7 +114,7 @@
                         <label class="block text-sm font-medium text-slate-700">¿Qué buscas a cambio? (Intereses)</label>
                         <div class="mt-3 p-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg bg-transparent">
                             <p v-if="exchangeInterests.size === 0" class="text-sm text-slate-500 dark:text-slate-400">
-                                Selecciona las categorías que te interesan para el intercambio.
+                                Selecciona las categorías que te interesan.
                             </p>
                             <div v-else class="flex flex-wrap gap-1.5">
                                 <span v-for="interestName in exchangeInterests" :key="`selected-${interestName}`" class="badge-sq badge-sq--active">
@@ -134,17 +134,17 @@
                                 <button v-for="category in availableCategories" :key="category.id" type="button" class="tile" :class="exchangeInterests.has(category.name) && 'is-selected'" :aria-pressed="exchangeInterests.has(category.name)" @click="toggleInterest(category.name)">
                                     <span class="tile-check" aria-hidden="true">
                                         <svg v-if="exchangeInterests.has(category.name)" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 M10 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 0 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                         </svg>
                                     </span>
                                     <span class="tile-text">{{ category.name }}</span>
                                 </button>
                             </div>
                             <p v-else-if="allCategories.length > 0" class="text-sm text-slate-500 dark:text-slate-400">
-                                ¡Has seleccionado todos los intereses disponibles!
+                                ¡Has seleccionado todos los intereses!
                             </p>
                             <p v-else class="text-sm text-slate-500 dark:text-slate-400">
-                                Cargando categorías...
+                                Cargando...
                             </p>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
                   </div>
 
                   <div class="pt-4 flex justify-end border-t border-dashed border-slate-300/70">
-                    <button type="button" @click="goToNextStep" class="inline-flex items-center gap-2 rounded-full bg-rose-600 px-6 py-2.5 text-white font-semibold hover:bg-rose-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 transition-transform hover:-translate-y-0.5">Siguiente Paso</button>
+                    <button type="button" @click="goToNextStep" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-rose-600 px-6 py-2.5 text-white font-semibold hover:bg-rose-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 transition-transform hover:-translate-y-0.5">Siguiente Paso</button>
                   </div>
                 </div>
               </transition>
@@ -169,14 +169,14 @@
                        @click="triggerFileInput" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
                     <input type="file" ref="fileInput" @change="handleFileChange" multiple accept="image/*" class="hidden" />
                     <svg class="mx-auto h-10 w-10 text-slate-400 group-hover:scale-105 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3-3a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <p class="mt-2 text-sm text-slate-600">Arrastra y suelta imágenes aquí, o haz clic para seleccionar</p>
-                    <p class="text-xs text-slate-500">(Máximo 4 imágenes, JPG/PNG)</p>
+                    <p class="mt-2 text-sm text-slate-600">Arrastra y suelta o haz clic para seleccionar</p>
+                    <p class="text-xs text-slate-500">(Máx. 4 imágenes, JPG/PNG)</p>
                   </div>
 
                   <p v-if="step2Errors.photos" class="text-rose-600 text-xs -mt-4">{{ step2Errors.photos }}</p>
 
                   <div v-if="imagePreviews.length > 0">
-                    <p class="text-sm text-slate-600 mb-2">Arrastra las imágenes para reordenarlas. La primera será la portada.</p>
+                    <p class="text-sm text-slate-600 mb-2">Arrastra para reordenar. La primera es la portada.</p>
                     <transition-group tag="div" name="list" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       <div v-for="(image, i) in imagePreviews" :key="image" class="relative overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-white cursor-move group/item"
                         draggable="true" @dragstart="onDragStart(i)" @dragover.prevent="onDragOver($event, i)" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop(i)"
@@ -220,13 +220,13 @@
                       </div>
                     </div>
                     
-                    <div class="flex items-center justify-between">
-                        <button type="button" @click="goToPreviousStep" class="px-5 py-2.5 rounded-full font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300/70 transition">Paso Anterior</button>
+                    <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+                        <button type="button" @click="goToPreviousStep" class="w-full sm:w-auto px-5 py-2.5 rounded-full font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300/70 transition">Paso Anterior</button>
                         <button 
                           type="button" 
                           @click="handleSubmit" 
                           :disabled="isSubmitting || !isProfileComplete" 
-                          class="px-7 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                          class="w-full sm:w-auto px-7 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
                         >
                           <span v-if="isSubmitting">Publicando...</span>
                           <span v-else-if="!isProfileComplete">Perfil Incompleto</span>
@@ -318,8 +318,99 @@
                 </div>
               </article>
             </aside>
-            </div>
+          </div>
         </main>
+
+        <div class="lg:hidden fixed bottom-6 right-6 z-40">
+            <button @click="showMobilePreview = true" type="button" class="h-14 w-14 rounded-full bg-rose-600 text-white shadow-lg flex items-center justify-center hover:bg-rose-700 transition-transform hover:scale-105" aria-label="Mostrar previsualización">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+            </button>
+        </div>
+
+        <transition name="fade">
+            <div v-if="showMobilePreview" @click="showMobilePreview = false" class="lg:hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div @click.stop class="w-full max-w-sm relative">
+                    <article class="relative isolate flex flex-col bg-white rounded-xl shadow-lg group border border-gray-100">
+                      <div class="relative overflow-hidden rounded-t-xl">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-[1]"></div>
+                        
+                        <div v-if="imagePreviews.length > 0" class="relative">
+                          <div class="w-full h-48 overflow-hidden">
+                            <div class="flex transition-transform duration-300 ease-in-out" :style="{ transform: `translateX(-${currentPreviewIndex * 100}%)` }">
+                              <div v-for="(photo, index) in previewProduct.photos" :key="index" class="w-full flex-shrink-0">
+                                <img
+                                  :src="photo.url"
+                                  :alt="previewProduct.title"
+                                  class="w-full h-48 object-cover"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <button v-if="imagePreviews.length > 1" @click="prevPreview" class="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-1 z-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <button v-if="imagePreviews.length > 1" @click="nextPreview" class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-1 z-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                          <div v-if="imagePreviews.length > 1" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                            <button
+                              v-for="(photo, index) in previewProduct.photos"
+                              :key="`dot-${index}`"
+                              @click="goToPreview(index)"
+                              class="h-2 w-2 rounded-full"
+                              :class="index === currentPreviewIndex ? 'bg-white' : 'bg-white/50'"
+                            ></button>
+                          </div>
+                          </div>
+                        <div v-else class="w-full h-48 bg-slate-100 grid place-items-center">
+                          <svg class="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </div>
+                      </div>
+                      <div v-if="previewProduct.category_name !== 'Categoría'" class="absolute -top-3 right-3 z-10 bg-rose-600 text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg shadow-rose-600/30">
+                        {{ previewProduct.category_name }}
+                      </div>
+                      <div class="flex flex-col flex-grow p-5">
+                        <h3 class="text-lg font-bold text-gray-900 mb-1 truncate h-7">{{ previewProduct.title }}</h3>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow min-h-[40px]">{{ previewProduct.description }}</p>
+                        <div class="flex items-center text-gray-500 text-sm mb-4 gap-3">
+                          <div class="inline-flex items-center" v-if="previewProduct.condition !== 'Estado'">
+                            <svg class="w-4 h-4 mr-1 text-rose-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
+                            </svg>
+                            <span class="truncate">{{ previewProduct.condition }}</span>
+                          </div>
+                        </div>
+                        <div v-if="previewProduct.interests.length > 0" class="mt-2 pt-3 border-t border-gray-100">
+                          <h4 class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Busca a cambio:</h4>
+                          <div class="flex flex-wrap gap-1.5">
+                            <span v-for="interest in previewProduct.interests" :key="`prev-${interest}`" class="badge-sq">
+                              {{ interest }}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 mt-auto">
+                          <button type="button" disabled class="bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium transition">
+                            Intercambiar
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                    <button @click="showMobilePreview = false" class="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-md flex items-center justify-center text-slate-600 hover:text-rose-600 transition" aria-label="Cerrar previsualización">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </transition>
+
       </div>
     </div>
 
@@ -374,6 +465,8 @@ const userStore = useUserStore()
 const router = useRouter()
 const toast = useToast(); 
 
+const showMobilePreview = ref(false);
+
 const allCategories = ref([]);
 const exchangeInterests = ref(new Set());
 
@@ -383,7 +476,6 @@ const dragging = ref(false);
 
 const isProfileComplete = computed(() => {
   const user = userStore.user;
-  // ✨ CORRECCIÓN APLICADA AQUÍ ✨
   return !!user.phone && !!user.ubicacion;
 });
 
@@ -632,7 +724,7 @@ select {
 .badge-remove{ display:inline-grid; place-items:center; width:18px; height:18px; border-radius:3px; background:rgba(255,255,255,.14); border:1px solid rgba(148,163,184,.35); }
 .dark .badge-remove{ background:rgba(15,23,42,.4); border-color:#475569; }
 
-.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:.55rem; }
+.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:.55rem; }
 .tile{
   display:flex; align-items:center; gap:.6rem; padding:.65rem .7rem; border:1px solid #E2E8F0; background:#fff; color:#0f172a;
   border-radius:6px; text-align:left; transition: border-color .18s ease, box-shadow .18s ease, transform .06s ease;
