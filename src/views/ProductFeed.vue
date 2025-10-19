@@ -75,7 +75,7 @@
             </div>
           </aside>
 
-          <header class="md:col-span-7 lg:col-span-7 text-center md:text-left flex flex-col items-center md:items-start px-6 pb-10 md:py-12 md:pl-6 md:pr-0 lg:pl-8 relative z-10 -mt-24 md:mt-0 bg-gray-100/80 dark:bg-gray-900/80 md:bg-transparent dark:md:bg-transparent rounded-2xl md:rounded-none backdrop-blur-sm md:backdrop-blur-none mx-4 md:mx-0">
+          <header class="md:col-span-7 lg:col-span-7 text-center md:text-left flex flex-col items-center md:items-start px-6 pb-6 md:py-12 md:pl-6 md:pr-0 lg:pl-8 relative z-10 -mt-24 md:mt-0 bg-gray-100/80 dark:bg-gray-900/80 md:bg-transparent dark:md:bg-transparent rounded-2xl md:rounded-none backdrop-blur-sm md:backdrop-blur-none mx-4 md:mx-0">
             <div class="inline-flex items-center gap-2 rounded-full bg-white/80 dark:bg-white/5 ring-1 ring-gray-200/70 dark:ring-white/10 px-3 py-1">
               <span class="h-1.5 w-1.5 rounded-full bg-brand-primary"></span>
               <span class="text-[11px] font-semibold tracking-[0.22em] uppercase text-brand-dark">Bienvenido a KambiaPe</span>
@@ -124,7 +124,7 @@
       </div>
     </section>
 
-    <div class="bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl shadow-md my-8 p-4 sticky top-3 z-40">
+    <div class="bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl shadow-md mt-6 p-4 sticky top-3 z-40">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="w-full md:w-1/3 relative">
           <label for="search-filter" class="sr-only">Buscar productos</label>
