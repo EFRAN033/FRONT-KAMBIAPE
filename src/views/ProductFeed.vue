@@ -21,7 +21,7 @@
       </div>
     </Transition>
     
-    <section class="relative bg-gray-100 dark:bg-gray-900 rounded-3xl ring-1 ring-gray-200 dark:ring-gray-700 md:overflow-hidden">
+    <section class="relative bg-gray-100 dark:bg-gray-900 rounded-3xl ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden">
       <div aria-hidden="true" class="pointer-events-none absolute inset-0">
         <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/15 to-brand-dark/15 blur-3xl"></div>
         <div class="absolute inset-0 opacity-10 dark:opacity-20 mix-blend-multiply"

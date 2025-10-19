@@ -21,18 +21,18 @@
     <div class="container mx-auto px-4 sm:px-6 py-8">
       <div class="max-w-4xl mx-auto">
         <main>
-          <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up">
+          <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up shadow-sm">
             <header class="p-5 border-b border-gray-200 dark:border-slate-700">
-              <h3 class="text-lg font-bold">Preferencias Generales</h3>
-              <p class="text-sm text-gray-500 dark:text-slate-400">Administra las notificaciones, el tema y el idioma de tu cuenta.</p>
+              <h3 class="text-xl font-bold">Preferencias Generales</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">Administra las notificaciones y el tema de tu cuenta.</p>
             </header>
             <div class="p-6 space-y-5">
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">Recibir notificaciones por correo</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Activa para recibir actualizaciones importantes.</p>
                 </div>
-                <label class="switch">
+                <label class="switch self-start sm:self-center">
                   <input type="checkbox" v-model="settings.notificationsEnabled" @change="saveSetting('notificationsEnabled')">
                   <span class="slider round"></span>
                 </label>
@@ -40,64 +40,87 @@
 
               <hr class="border-gray-200 dark:border-slate-700" />
 
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">Habilitar modo oscuro</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Ideal para condiciones de poca luz.</p>
                 </div>
-                <label class="switch">
+                <label class="switch self-start sm:self-center">
                   <input type="checkbox" v-model="settings.darkModeEnabled" @change="saveSetting('darkModeEnabled')">
                   <span class="slider round"></span>
                 </label>
               </div>
+            </div>
+          </section>
+
+          <section class="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up shadow-sm">
+            <header class="p-5 border-b border-gray-200 dark:border-slate-700">
+              <h3 class="text-xl font-bold">Facturación y Suscripción</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">Gestiona tus métodos de pago, facturas y plan actual.</p>
+            </header>
+            <div class="p-6 space-y-5">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h4 class="font-semibold text-gray-900 dark:text-white">Gestionar método de pago</h4>
+                  <p class="text-sm text-gray-500 dark:text-slate-400">Actualiza tu tarjeta de crédito o débito.</p>
+                </div>
+                <button @click="managePaymentMethod" class="btn-primary w-full sm:w-auto">Actualizar</button>
+              </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
-              
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Idioma preferido</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Selecciona el idioma de la interfaz.</p>
+                  <h4 class="font-semibold text-gray-900 dark:text-white">Historial de facturas</h4>
+                  <p class="text-sm text-gray-500 dark:text-slate-400">Revisa y descarga tus facturas anteriores.</p>
                 </div>
-                <select v-model="settings.preferredLanguage" @change="saveSetting('preferredLanguage')" class="input md:w-48">
-                  <option value="es">Español</option>
-                  <option value="en">English</option>
-                </select>
+                <button @click="viewInvoiceHistory" class="btn-primary w-full sm:w-auto">Ver historial</button>
+              </div>
+
+              <hr class="border-gray-200 dark:border-slate-700" />
+
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h4 class="font-semibold text-gray-900 dark:text-white">Administrar suscripción</h4>
+                  <p class="text-sm text-gray-500 dark:text-slate-400">Cambia de plan o cancela tu suscripción.</p>
+                </div>
+                <button @click="manageSubscription" class="btn-primary w-full sm:w-auto">Gestionar Plan</button>
               </div>
             </div>
           </section>
 
-          <section class="mt-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up">
+          <section class="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up shadow-sm">
             <header class="p-5 border-b border-gray-200 dark:border-slate-700">
-              <h3 class="text-lg font-bold">Seguridad y Privacidad</h3>
-              <p class="text-sm text-gray-500 dark:text-slate-400">Gestiona el acceso y la seguridad de tu cuenta.</p>
+              <h3 class="text-xl font-bold">Seguridad y Privacidad</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">Gestiona el acceso y la seguridad de tu cuenta.</p>
             </header>
             <div class="p-6 space-y-5">
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">Autenticación de dos factores</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Añade una capa extra de seguridad a tu cuenta.</p>
                 </div>
-                <button @click="manageTwoFactor" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110 shrink-0">Gestionar</button>
+                <button @click="manageTwoFactor" class="btn-primary w-full sm:w-auto">Gestionar</button>
               </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
-              
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">Historial de sesiones</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Revisa los dispositivos con sesión iniciada.</p>
                 </div>
-                <button @click="viewSessionHistory" class="rounded-md bg-brand-primary px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110 shrink-0">Ver historial</button>
+                <button @click="viewSessionHistory" class="btn-primary w-full sm:w-auto">Ver historial</button>
               </div>
 
               <hr class="border-gray-200 dark:border-slate-700" />
-              
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                 <div>
+
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
                   <h4 class="font-semibold text-red-600 dark:text-red-500">Eliminar mi cuenta</h4>
                   <p class="text-sm text-gray-500 dark:text-slate-400">Esta acción es permanente y no se puede deshacer.</p>
                 </div>
-                <button @click="deleteAccount" class="rounded-md bg-error px-4 py-2.5 text-[13px] font-semibold text-white shadow hover:brightness-110 shrink-0">Eliminar Cuenta</button>
+                <button @click="deleteAccount" class="btn-danger w-full sm:w-auto">Eliminar Cuenta</button>
               </div>
             </div>
           </section>
@@ -109,8 +132,8 @@
        <div v-if="showToast" :class="[
         'fixed right-4 bottom-4 z-50 flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 shadow-lg bg-white dark:bg-slate-800',
         toastType === 'success' ? 'border-green-500 text-green-700 dark:text-green-300' : '',
-        toastType === 'error' ? 'border-error text-error dark:text-red-400' : '',
-        toastType === 'info' ? 'border-brand-primary text-brand-primary dark:text-brand-primary' : ''
+        toastType === 'error' ? 'border-red-500 text-red-700 dark:text-red-400' : '',
+        toastType === 'info' ? 'border-blue-500 text-blue-700 dark:text-blue-300' : ''
       ]" role="status" aria-live="polite">
         <svg v-if="toastType === 'success'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
         <svg v-else-if="toastType === 'error'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
@@ -122,7 +145,6 @@
 </template>
 
 <script>
-// El script no necesita cambios
 import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 
@@ -130,7 +152,7 @@ export default {
   name: 'ConfigurationView',
   setup() {
     const router = useRouter();
-    const settings = ref({ notificationsEnabled: true, darkModeEnabled: false, preferredLanguage: 'es' });
+    const settings = ref({ notificationsEnabled: true, darkModeEnabled: false });
     const showToast = ref(false);
     const toastMessage = ref('');
     const toastType = ref('info');
@@ -167,15 +189,71 @@ export default {
       }
     };
 
-    return { settings, goBack, saveSetting, manageTwoFactor, viewSessionHistory, deleteAccount, showToast, toastMessage, toastType };
+    const managePaymentMethod = () => showNotification('Redirigiendo a la gestión de pagos...', 'info');
+    const viewInvoiceHistory = () => showNotification('Cargando historial de facturas...', 'info');
+    const manageSubscription = () => showNotification('Abriendo portal de suscripción...', 'info');
+
+    return {
+      settings,
+      goBack,
+      saveSetting,
+      manageTwoFactor,
+      viewSessionHistory,
+      deleteAccount,
+      showToast,
+      toastMessage,
+      toastType,
+      managePaymentMethod,
+      viewInvoiceHistory,
+      manageSubscription
+    };
   },
 };
 </script>
 
 <style scoped>
-/* ========= CSS SIMPLIFICADO: Se han eliminado las clases de botón personalizadas ========= */
+/* Clases de botón reutilizables para consistencia y transiciones */
+.btn-primary, .btn-danger {
+  border-radius: .5rem; /* 8px */
+  padding: .625rem 1rem; /* 10px 16px */
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600; /* semibold */
+  color: white;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  transition: all 0.2s ease-in-out;
+  flex-shrink: 0; /* Evita que el botón se encoja */
+}
 
-/* Header de MyProfile.vue (Se mantiene) */
+.btn-primary:hover, .btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 0.1);
+}
+
+.btn-primary {
+  background-color: #d7037b; /* Color de marca */
+}
+.btn-primary:hover {
+  background-color: #b90267; /* Un tono más oscuro para el hover */
+}
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.3);
+}
+
+.btn-danger {
+  background-color: #dc2626; /* Rojo de error */
+}
+.btn-danger:hover {
+  background-color: #b91c1c; /* Rojo más oscuro */
+}
+.btn-danger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+}
+
+
+/* ========= ESTILOS ANTERIORES ========= */
+
 .brand-header {
   background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
 }
@@ -200,10 +278,10 @@ export default {
 .icon-btn:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
 
 
-/* Input y Select con foco de marca (usando el color directo) */
+/* Input y Select con foco de marca */
 .input {
-  width: 100%; border-radius: .9rem; border: 1px solid #e5e7eb;
-  background: transparent; color: inherit; padding: .8rem 1rem;
+  width: 100%; border-radius: .5rem; border: 1px solid #e5e7eb; /* 8px */
+  background: transparent; color: inherit; padding: .625rem 1rem; /* 10px 16px */
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 .dark .input { border-color: #334155; }
@@ -213,7 +291,7 @@ export default {
   box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.2);
 }
 
-/* Switch (toggle) con color de marca (usando el color directo) */
+/* Switch (toggle) con color de marca */
 .switch {
   position: relative; display: inline-block;
   width: 44px; height: 24px; flex-shrink: 0;
@@ -240,7 +318,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .slider.round { border-radius: 24px; }
 .slider.round:before { border-radius: 50%; }
 
-/* Toast y animaciones (consistentes) */
+/* Toast y animaciones */
 .toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
 .toast-slide-enter-from, .toast-slide-leave-to { transform: translateX(120%); opacity: 0; }
 .animate-in-up { animation: animate-in-up .5s ease-out both; }
