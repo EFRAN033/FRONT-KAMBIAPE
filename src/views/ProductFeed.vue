@@ -1,5 +1,5 @@
 <template>
-  <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 antialiased">
+  <section class="container mx-auto px-4 sm:px-6 lg:px-8 pb-8 md:py-12 antialiased">
     <Transition name="fade-overlay">
       <div
         v-if="selectedProduct"
