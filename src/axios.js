@@ -1,41 +1,48 @@
-import axios from 'axios';
+// Archivo: src/axios.js (COMPLETO Y CORREGIDO)
 
-// 💡 CAMBIO CLAVE:
-// Le decimos a Axios que todas las peticiones deben empezar con '/api'.
-// Esto activará el proxy que definiste en tu archivo vite.config.js,
-// redirigiendo las peticiones a tu backend en http://localhost:8000.
+import axios from 'axios';
+import { useUserStore } from '@/stores/user'; 
+
 const apiClient = axios.create({
-  baseURL: '/api', 
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  // ¡Esto es correcto y fundamental para que las cookies funcionen!
-  withCredentials: true, 
+  baseURL: '/api', // Usa '/api' para que el proxy de Vite lo intercepte
+  // Se elimina la cabecera 'Content-Type' para que Axios la ajuste automáticamente.
 });
 
+// Interceptor para añadir el token de autenticación a cada solicitud
+apiClient.interceptors.request.use(
+  (config) => {
+    const userStore = useUserStore(); 
+    const token = userStore.token; 
 
-// Este interceptor es útil para redirigir automáticamente al usuario
-// a la página de login si su sesión expira (error 401). Lo mantenemos.
-apiClient.interceptors.response.use(
-  // Si la respuesta es exitosa, simplemente la devuelve.
-  (response) => response,
-  
-  // Si hay un error en la respuesta...
-  (error) => {
-    // Comprueba si el error es un 401 (No Autorizado).
-    if (error.response && error.response.status === 401) {
-      console.error("Sesión no autorizada o expirada. Redirigiendo a login.");
-      
-      // Evita bucles de redirección si ya estamos en la página de login.
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'; 
-      }
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Devuelve el error para que pueda ser manejado por la llamada original (ej. en el .catch).
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );
 
+// Interceptor para manejar respuestas, especialmente errores de autenticación
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // Si el error es 401 (No autorizado) y no es un reintento, limpia la sesión y redirige
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; 
+      
+      const userStore = useUserStore();
+      userStore.clearUser(); // Limpia los datos del usuario y el token
+      
+      // Redirige a la página de login para que el usuario pueda volver a ingresar
+      window.location.href = '/login'; 
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;
