@@ -112,7 +112,7 @@
                                     <img :src="MonedaSVG" alt="Moneda" class="inline-h-8 w-8 mx-2" />
                                     <span class="font-bold text-lg text-[#d7037b]">{{ selectedPlan.amount }} Kambitos</span>
                                 </div>
-                                <button @click="purchaseCredits(selectedPlan.name)" class="purchase-button">
+                                <button @click="startPurchase(selectedPlan)" class="purchase-button">
                                     Cargar Kambitos
                                 </button>
                            </div>
@@ -120,6 +120,80 @@
                     </div>
                 </div>
             </div>
+
+            <div v-if="showPaymentModal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 transition-opacity duration-300" :class="showPaymentModal ? 'opacity-100' : 'opacity-0'">
+                <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md p-6 sm:p-8 relative transition-transform duration-300" :class="showPaymentModal ? 'scale-100' : 'scale-95'">
+                    
+                    <button @click="showPaymentModal = false" class="absolute top-3 right-3 text-slate-400 hover:text-slate-700 dark:hover:text-white text-2xl leading-none">&times;</button>
+
+                    <div v-if="planToPurchase" class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800 dark:text-white">Completa tu Compra</h3>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1">
+                            Estás comprando {{ planToPurchase.amount }} Kambitos por 
+                            <span class="font-semibold text-[#d7037b]">{{ planToPurchase.price }}</span>.
+                        </p>
+                    </div>
+                    
+                    <form id="paymentForm" class="space-y-4">
+                        <div>
+                            <label for="form-checkout__cardholderName" class="form-label">Nombre del Titular</label>
+                            <input type="text" id="form-checkout__cardholderName" class="form-input" />
+                        </div>
+
+                        <div>
+                            <label class="form-label">Número de Tarjeta</label>
+                            <div id="form-checkout__cardNumber" class="form-input-mp"></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">Vencimiento</label>
+                                <div id="form-checkout__cardExpirationDate" class="form-input-mp"></div>
+                            </div>
+                            <div>
+                                <label class="form-label">CVV</label>
+                                <div id="form-checkout__securityCode" class="form-input-mp"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="form-checkout__identificationType" class="form-label">Tipo Doc.</label>
+                                <select id="form-checkout__identificationType" class="form-input"></select>
+                            </div>
+                            <div>
+                                <label for="form-checkout__identificationNumber" class="form-label">Nro. Doc.</label>
+                                <input type="text" id="form-checkout__identificationNumber" class="form-input"/>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="form-checkout__installments" class="form-label">Cuotas</label>
+                                <select id="form-checkout__installments" class="form-input"></select>
+                            </div>
+                             <div>
+                                <label for="form-checkout__issuer" class="form-label">Banco</label>
+                                <select id="form-checkout__issuer" class="form-input"></select>
+                            </div>
+                        </div>
+                        
+                        <div v-if="paymentError" class="text-sm text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-500/30">
+                            <p class="font-semibold">¡Hubo un error!</p>
+                            <p>{{ paymentError }}</p>
+                        </div>
+
+                        <button type="submit" :disabled="isProcessing" class="w-full bg-[#d7037b] text-white font-bold py-3 px-6 rounded-lg text-lg transition-all duration-300 hover:bg-pink-700 disabled:bg-slate-400 dark:disabled:bg-slate-600 disabled:cursor-not-allowed flex items-center justify-center">
+                             <svg v-if="isProcessing" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            {{ isProcessing ? 'Procesando...' : `Pagar S/ ${planToPurchase.priceValue.toFixed(2)}` }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </main>
         
         <div class="relative z-10">
@@ -129,7 +203,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
@@ -138,91 +212,168 @@ import avatarBasico from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.p
 import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
 import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
 
+// --- Lógica de la tienda y estado del usuario (sin cambios) ---
 const userStore = useUserStore();
 const userCredits = computed(() => userStore.userCredits || 0);
-
 const plans = [
     { name: 'Básico', amount: 2, price: 'S/ 1.00', priceValue: 1.00, avatar: avatarBasico, tagline: 'Para empezar a destacar.', headline: 'Toma la Delantera.', subHeadline: 'Un pequeño paso para ti, un gran salto para tu cuenta. Empieza a diferenciarte.', fillLevel: '33%', liquidColor: 'hsl(190, 80%, 60%)' },
     { name: 'Popular', amount: 5, price: 'S/ 2.00', priceValue: 2.00, avatar: avatarPopular, tagline: 'La elección inteligente.', headline: 'Conviértete en el Favorito.', subHeadline: 'Atrae más miradas y genera más confianza. Consigue los mejores intercambios.', fillLevel: '66%', liquidColor: 'hsl(250, 80%, 70%)' },
     { name: 'Pro', amount: 10, price: 'S/ 5.00', priceValue: 5.00, avatar: avatarPro, tagline: 'Juega en otro nivel.', headline: 'Sé el Número Uno.', subHeadline: 'Llega a la cima y conviértete en un referente. Es para los que quieren ganar en grande.', fillLevel: '100%', liquidColor: 'hsl(320, 80%, 65%)' }
 ];
-
 const selectedPlan = ref(plans[1]);
 const playAnimation = ref(false);
-
 function selectPlan(plan) {
     if (selectedPlan.value.name === plan.name) return;
     selectedPlan.value = plan;
     playAnimation.value = true;
     setTimeout(() => { playAnimation.value = false; }, 700);
 }
-
 const currentAvatar = computed(() => selectedPlan.value.avatar);
-
 const liquidStyle = computed(() => ({
     '--liquid-height': selectedPlan.value.fillLevel,
     '--liquid-color': selectedPlan.value.liquidColor,
     '--liquid-shadow-color': selectedPlan.value.liquidColor,
 }));
 
-async function purchaseCredits(planName) {
-    // 1. Encuentra el plan completo para obtener todos sus datos
-    const plan = plans.find(p => p.name === planName);
-    if (!plan) {
-        console.error('Plan no encontrado');
-        alert('Ha ocurrido un error al seleccionar el plan. Por favor, intenta de nuevo.');
-        return;
-    }
+// --- Estado para el formulario de pago ---
+const showPaymentModal = ref(false);
+const isProcessing = ref(false);
+const paymentError = ref(null);
+const planToPurchase = ref(null);
+let mp;
+let cardForm;
 
-    // 2. Obtiene el token de autenticación del usuario desde el store de Pinia
-    const token = userStore.token;
-    if (!token) {
-        alert('Debes iniciar sesión para poder comprar créditos.');
-        // Opcional: Redirigir al login
-        // router.push('/login');
+onMounted(() => {
+    loadMercadoPagoSDK();
+});
+
+function loadMercadoPagoSDK() {
+    if (document.getElementById('mercadopago-sdk')) return;
+    const script = document.createElement('script');
+    script.id = 'mercadopago-sdk';
+    script.src = 'https://sdk.mercadopago.com/js/v2';
+    script.onload = () => console.log('SDK de Mercado Pago cargado.');
+    script.onerror = () => console.error('Error al cargar SDK de Mercado Pago.');
+    document.body.appendChild(script);
+}
+
+async function startPurchase(plan) {
+    planToPurchase.value = plan;
+    showPaymentModal.value = true;
+    paymentError.value = null;
+    await nextTick();
+    initializeCardForm();
+}
+
+// --- CORRECCIÓN 2: Lógica de inicialización del formulario mejorada ---
+async function initializeCardForm() {
+    if (cardForm) cardForm.unmount();
+    
+    // RECUERDA USAR TU PUBLIC KEY DE PRUEBAS
+    const publicKey = 'APP_USR-950fac67-631d-4a39-ad05-2fdf73576170'; 
+    if (!window.MercadoPago) {
+        paymentError.value = "El SDK de Mercado Pago no se ha cargado. Revisa tu conexión.";
         return;
     }
-    
-    console.log(`Iniciando compra para: ${plan.name} (${plan.amount} Kambitos por S/${plan.priceValue})`);
+    mp = new window.MercadoPago(publicKey);
+
+    cardForm = await mp.cardForm({
+        amount: String(planToPurchase.value.priceValue),
+        iframe: true,
+        form: {
+            id: 'paymentForm',
+            cardNumber: { id: 'form-checkout__cardNumber' },
+            cardholderName: { id: 'form-checkout__cardholderName' },
+            // El campo de fecha de expiración ahora es un solo elemento
+            cardExpirationDate: { id: 'form-checkout__cardExpirationDate' },
+            securityCode: { id: 'form-checkout__securityCode' },
+            installments: { id: 'form-checkout__installments' },
+            identificationType: { id: 'form-checkout__identificationType' },
+            identificationNumber: { id: 'form-checkout__identificationNumber' },
+            issuer: { id: 'form-checkout__issuer' },
+        },
+        callbacks: {
+            onFormMounted: error => { if (error) console.warn('Form Mounted error:', error) },
+            onSubmit: event => {
+                event.preventDefault();
+                processPayment();
+            },
+            onError: (errors) => {
+                const errorMessages = errors.map(e => e.message).join('. ');
+                paymentError.value = errorMessages;
+            }
+        }
+    });
+}
+
+async function processPayment() {
+    isProcessing.value = true;
+    paymentError.value = null;
 
     try {
-        // 3. Llama a tu backend para crear la preferencia de pago
-        const response = await fetch('http://localhost:8000/payment/create_preference', {
+        const { token, issuer, paymentMethodId, installments } = await cardForm.getCardToken();
+        if (!token) {
+            throw new Error("No se pudo generar el token. Revisa los datos de la tarjeta.");
+        }
+
+        const authToken = userStore.token;
+        if (!authToken) {
+            alert('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
+            return;
+        }
+
+        const paymentPayload = {
+            token,
+            issuer_id: issuer,
+            payment_method_id: paymentMethodId,
+            transaction_amount: planToPurchase.value.priceValue,
+            installments: Number(installments),
+            description: `Compra de ${planToPurchase.value.amount} Kambitos`,
+            payer: {
+                email: userStore.user.email,
+                identification: {
+                    type: document.getElementById('form-checkout__identificationType').value,
+                    number: document.getElementById('form-checkout__identificationNumber').value
+                }
+            }
+        };
+
+        const response = await fetch('http://localhost:8000/payment/process_payment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // ¡Muy importante para la autenticación!
+                'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({
-                quantity: plan.amount,
-                unit_price: plan.priceValue, // Usamos el valor numérico
-                title: `Compra de ${plan.amount} Kambitos`
-            })
+            body: JSON.stringify(paymentPayload)
         });
 
         const responseData = await response.json();
 
-        // 4. Si la respuesta no es exitosa, muestra un error
         if (!response.ok) {
-            // Intenta mostrar el error específico del backend si está disponible
-            const errorDetail = responseData.detail || 'No se pudo iniciar el proceso de pago.';
-            throw new Error(errorDetail);
+            throw new Error(responseData.detail || 'El pago fue rechazado.');
         }
 
-        // 5. Si todo sale bien, redirige al usuario a la pasarela de Mercado Pago
-        window.location.href = responseData.init_point;
+        if (responseData.status === 'approved') {
+            alert('¡Compra exitosa! Tus Kambitos han sido acreditados.');
+            await userStore.fetchUserProfile();
+            showPaymentModal.value = false;
+        } else {
+            paymentError.value = `Estado del pago: ${responseData.status}. ${responseData.detail}`;
+        }
 
     } catch (error) {
-        console.error('Hubo un problema con la compra:', error);
-        alert(`Error al procesar la compra: ${error.message}`);
+        console.error('Error al procesar el pago:', error);
+        paymentError.value = error.message;
+    } finally {
+        isProcessing.value = false;
     }
 }
 
+// --- Animación de mouse (sin cambios) ---
 const shape1 = ref(null);
 const shape2 = ref(null);
 const shape3 = ref(null);
 const shape4 = ref(null);
-
 function handleMouseMove(event) {
     if (window.innerWidth < 1024) return;
     const { clientX, clientY } = event;
@@ -235,7 +386,29 @@ function handleMouseMove(event) {
 }
 </script>
 
+<style>
+/* Estilos globales para los iframes de Mercado Pago */
+.form-input-mp iframe {
+    width: 100%;
+    height: 42px; /* Altura consistente con los inputs normales */
+    border: none;
+    border-radius: 0.375rem;
+}
+</style>
+
 <style scoped>
+/* Clases de utilidad para los inputs del formulario, para no repetir código */
+.form-label {
+    @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1;
+}
+.form-input {
+    @apply mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-white;
+}
+.form-input-mp {
+    @apply mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 shadow-sm focus-within:border-pink-500 focus-within:ring-1 focus-within:ring-pink-500 transition;
+    min-height: 42px; /* Altura mínima para el contenedor */
+}
+
 /* --- ESTILOS GENERALES Y DE ESCRITORIO --- */
 
 /* Fondos decorativos */
@@ -293,16 +466,7 @@ function handleMouseMove(event) {
 
 /* --- ✨ ESTILOS RESPONSIVOS PARA MÓVILES (Hasta 1023px) ✨ --- */
 @media (max-width: 1023px) {
-    /* Ocultar la imagen del Kambito y su plataforma en móvil */
-    .hide-on-mobile {
-        display: none;
-    }
-
-    /* Ocultamos elementos decorativos y texto de la columna izquierda (ahora vacía) */
-    .background-shape { display: none; }
-    .branding-text-desktop { display: none; }
-
-    /* Mostramos y estilizamos el texto del plan dentro del panel de selección */
+    .hide-on-mobile, .background-shape, .branding-text-desktop { display: none; }
     .branding-text-mobile {
         display: block;
         width: 100%;
@@ -312,21 +476,11 @@ function handleMouseMove(event) {
         border-bottom: 1px solid #e2e8f0; /* slate-200 */
     }
     .dark .branding-text-mobile { border-bottom-color: #334155; /* slate-700 */ }
-
-    /* Reordenamos las columnas: el panel de selección se convierte en el elemento principal */
-    .branding-stage { order: 2; /* Aunque esté oculto, mantiene su orden para evitar saltos */ }
+    .branding-stage { order: 2; }
     .selection-stage { order: 1; }
-    
-    /* Ajustamos la tipografía y espaciado para mejor legibilidad */
-    .main-headline-mobile {
-        @apply text-3xl font-black text-slate-800 dark:text-white;
-    }
-    .sub-headline-mobile {
-        @apply text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-xs mx-auto;
-    }
-    .price-display {
-        font-size: 3.75rem; /* 60px */
-    }
+    .main-headline-mobile { @apply text-3xl font-black text-slate-800 dark:text-white; }
+    .sub-headline-mobile { @apply text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-xs mx-auto; }
+    .price-display { font-size: 3.75rem; }
     .balance-display { margin-bottom: 1.5rem; }
     .kambito-charger { margin-top: 0; margin-bottom: 1.5rem; }
 }
