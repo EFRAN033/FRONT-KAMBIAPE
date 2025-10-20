@@ -288,30 +288,37 @@ export default {
       this.errorMessage = '';
       this.isLoading = true;
 
-      if (!this.emailValid || !this.passwordValid) {
+      if (!this.formValid) {
         this.errorMessage = 'Por favor, corrige los errores en el formulario.';
         this.isLoading = false;
         return;
       }
 
       try {
-        const success = await this.userStore.login({
+        // Llamamos a la acción de login en el store.
+        // Esta acción ahora no devuelve nada, solo realiza la petición.
+        await this.userStore.login({
           email: this.email,
           password: this.password,
         });
 
-        if (success) {
+        // Verificamos si el login fue exitoso revisando el estado del store.
+        // La acción de login, si tiene éxito, obtendrá los datos del usuario.
+        if (this.userStore.isLoggedIn) {
           if (this.rememberMe) {
             localStorage.setItem('rememberedEmail', this.email);
           } else {
             localStorage.removeItem('rememberedEmail');
           }
+          // Redirigimos al dashboard.
           this.router.push('/dashboard');
         } else {
+          // Si no estamos logueados, significa que la acción de login falló y guardó un error.
           this.errorMessage = this.userStore.error || 'Credenciales incorrectas. Por favor, verifica tu correo y contraseña.';
         }
       } catch (error) {
-        this.errorMessage = 'Ocurrió un error inesperado al intentar iniciar sesión.';
+        // El error ya es manejado y guardado en el store, así que lo mostramos desde ahí.
+        this.errorMessage = this.userStore.error || 'Ocurrió un error inesperado al intentar iniciar sesión.';
       } finally {
         this.isLoading = false;
       }
