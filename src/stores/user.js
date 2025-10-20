@@ -98,20 +98,17 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        // CAMBIO: La petición de login ahora establece la cookie. No necesitamos hacer nada con la respuesta.
+        // La petición de login establece la cookie.
         await axios.post('/login', credentials);
         
-        // CAMBIO: Después del login exitoso, obtenemos el perfil del usuario para poblar el estado.
-        // El backend necesita una ruta como /profile/me que devuelva el perfil del usuario actual.
-        // Asumiré que la tienes, si no, puedes usar la de /profile/{userId} pero necesitas el ID.
-        // Una mejor práctica es tener un endpoint /users/me
-        await this.fetchCurrentUserProfile();
+        // Después del login, obtenemos el perfil del usuario.
+        // ✅ CAMBIO CLAVE: Devolvemos el resultado de esta promesa.
+        return await this.fetchCurrentUserProfile();
         
-        return true;
       } catch (err) {
         this.error = err.response?.data?.detail || 'Error en el inicio de sesión. Verifica tus credenciales.';
         this.clearUser(); // Limpiamos el estado en caso de error
-        return false;
+        return false; // ✅ CAMBIO CLAVE: Aseguramos devolver false en caso de error.
       } finally {
         this.loading = false;
       }
@@ -122,31 +119,26 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        // Asumimos que tienes un endpoint `/profile/me` que usa la cookie para identificar al usuario.
-        // Si no lo tienes, puedes crear uno que internamente llame a tu lógica `get_user_profile`
-        // con el `current_user` que obtienes de la dependencia.
-        const response = await axios.get('/profile/me'); // <-- ¡Endpoint recomendado!
+        const response = await axios.get('/profile/me');
         const userData = this._processUserData(response.data);
         this.user = userData;
-        localStorage.setItem('user', JSON.stringify(userData)); // Opcional: persistir datos de usuario
+        localStorage.setItem('user', JSON.stringify(userData));
+        return true; // ✅ CAMBIO CLAVE: Devuelve true si tiene éxito.
       } catch (err) {
         this.error = 'No se pudo cargar el perfil. Tu sesión puede haber expirado.';
         this.clearUser(); // Si falla, significa que no estamos logueados.
+        return false; // ✅ CAMBIO CLAVE: Devuelve false si falla.
       } finally {
         this.loading = false;
       }
     },
 
-    // CAMBIO: El nombre es más genérico, ya no necesita el userId como argumento principal.
     async fetchUserProfile(userId) {
       this.loading = true;
       this.error = null;
       try {
-        // Esta función sigue siendo útil para ver perfiles de OTROS usuarios.
         const response = await axios.get(`/profile/${userId}`);
         const userData = this._processUserData(response.data);
-        // OJO: No actualizamos this.user aquí, para no sobreescribir el perfil del usuario logueado.
-        // Devolvemos los datos para que el componente que la llamó los use.
         return userData;
       } catch (err) {
         this.error = err.response?.data?.detail || 'Error al cargar el perfil.';
@@ -156,30 +148,30 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    // No se necesitan cambios en updateProfile, changePassword, uploadProfilePicture, ya que
+    // No se necesitan cambios en las siguientes acciones ya que
     // axios enviará la cookie automáticamente.
-
     async updateProfile(userId, updateData) {
-      // ... (sin cambios en la lógica interna)
+      // ... (lógica interna sin cambios)
     },
 
     async changePassword(passwordData) {
-      // ... (sin cambios en la lógica interna)
+      // ... (lógica interna sin cambios)
     },
     
     async uploadProfilePicture(formData) {
-      // ... (sin cambios en la lógica interna)
+      // ... (lógica interna sin cambios)
     },
 
     async logout() {
         this.loading = true;
         try {
-            // CAMBIO: Debes crear un endpoint en tu backend para invalidar la cookie.
+            // Debes tener un endpoint en tu backend para invalidar la cookie.
+            // Si no lo tienes, el borrado local seguirá funcionando.
             await axios.post('/logout'); 
         } catch (error) {
             console.error("Error en el logout, se procederá a limpiar el estado local:", error);
         } finally {
-            this.clearUser(); // Limpiamos el estado local independientemente del resultado del backend.
+            this.clearUser();
             this.loading = false;
         }
     },
@@ -205,18 +197,18 @@ export const useUserStore = defineStore('user', {
         rating_score: 0,
         rating_count: 0,
       };
-      // CAMBIO: Ya no se maneja el token aquí.
       localStorage.removeItem('user');
     },
 
     async initializeUser() {
-      // CAMBIO: La inicialización ya no depende de un token en localStorage.
+      // La inicialización ya no depende de un token en localStorage.
       // Simplemente intentamos obtener el perfil del usuario. Si la cookie es válida, funcionará.
       const userFromStorage = localStorage.getItem('user');
       if (userFromStorage) {
           this.user = JSON.parse(userFromStorage);
       }
-      // Siempre intentamos refrescar los datos del usuario al iniciar la app
+      // Siempre intentamos refrescar los datos del usuario al iniciar la app.
+      // Si hay una cookie válida, esto actualizará los datos. Si no, limpiará el estado.
       await this.fetchCurrentUserProfile();
     }
   },

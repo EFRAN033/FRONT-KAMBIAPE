@@ -295,16 +295,14 @@ export default {
       }
 
       try {
-        // Llamamos a la acción de login en el store.
-        // Esta acción ahora no devuelve nada, solo realiza la petición.
-        await this.userStore.login({
+        // ✅ CAMBIO CLAVE: Esperamos el resultado booleano de la acción de login.
+        const loginSuccess = await this.userStore.login({
           email: this.email,
           password: this.password,
         });
 
-        // Verificamos si el login fue exitoso revisando el estado del store.
-        // La acción de login, si tiene éxito, obtendrá los datos del usuario.
-        if (this.userStore.isLoggedIn) {
+        // La comprobación ahora es fiable porque espera a que todo el proceso termine.
+        if (loginSuccess) {
           if (this.rememberMe) {
             localStorage.setItem('rememberedEmail', this.email);
           } else {
@@ -313,11 +311,11 @@ export default {
           // Redirigimos al dashboard.
           this.router.push('/dashboard');
         } else {
-          // Si no estamos logueados, significa que la acción de login falló y guardó un error.
+          // Si devuelve false, el error ya está guardado en el store.
           this.errorMessage = this.userStore.error || 'Credenciales incorrectas. Por favor, verifica tu correo y contraseña.';
         }
       } catch (error) {
-        // El error ya es manejado y guardado en el store, así que lo mostramos desde ahí.
+        // Este bloque es una salvaguarda. El error principal se maneja en el store.
         this.errorMessage = this.userStore.error || 'Ocurrió un error inesperado al intentar iniciar sesión.';
       } finally {
         this.isLoading = false;
