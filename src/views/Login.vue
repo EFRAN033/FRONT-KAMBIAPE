@@ -295,27 +295,27 @@ export default {
       }
 
       try {
-        // ✅ CAMBIO CLAVE: Esperamos el resultado booleano de la acción de login.
+        // ✅ CORRECCIÓN CLAVE: 'loginSuccess' ahora es 'true' o 'false'
+        // y espera a que TODO el proceso termine en el store.
         const loginSuccess = await this.userStore.login({
           email: this.email,
           password: this.password,
         });
 
-        // La comprobación ahora es fiable porque espera a que todo el proceso termine.
+        // Ahora esta comprobación es 100% fiable.
         if (loginSuccess) {
           if (this.rememberMe) {
             localStorage.setItem('rememberedEmail', this.email);
           } else {
             localStorage.removeItem('rememberedEmail');
           }
-          // Redirigimos al dashboard.
-          this.router.push('/dashboard');
+          this.router.push('/dashboard'); // O a la ruta que prefieras
         } else {
-          // Si devuelve false, el error ya está guardado en el store.
+          // Si la acción devolvió 'false', el error ya está en el store.
           this.errorMessage = this.userStore.error || 'Credenciales incorrectas. Por favor, verifica tu correo y contraseña.';
         }
       } catch (error) {
-        // Este bloque es una salvaguarda. El error principal se maneja en el store.
+        // Este bloque es solo una salvaguarda.
         this.errorMessage = this.userStore.error || 'Ocurrió un error inesperado al intentar iniciar sesión.';
       } finally {
         this.isLoading = false;
@@ -326,7 +326,7 @@ export default {
 </script>
 
 <style>
-/* Los estilos se mantienen, ya que son globales y no interfieren con la responsividad */
+/* ... Tus estilos se mantienen exactamente iguales ... */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
