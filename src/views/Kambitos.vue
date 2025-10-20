@@ -112,7 +112,7 @@
                                     <img :src="MonedaSVG" alt="Moneda" class="inline-h-8 w-8 mx-2" />
                                     <span class="font-bold text-lg text-[#d7037b]">{{ selectedPlan.amount }} Kambitos</span>
                                 </div>
-                                <button @click="purchaseCredits(selectedPlan.name, selectedPlan.amount)" class="purchase-button">
+                                <button @click="purchaseCredits(selectedPlan.name)" class="purchase-button">
                                     Cargar Kambitos
                                 </button>
                            </div>
@@ -142,9 +142,9 @@ const userStore = useUserStore();
 const userCredits = computed(() => userStore.userCredits || 0);
 
 const plans = [
-    { name: 'Básico', amount: 2, price: 'S/ 1.00', avatar: avatarBasico, tagline: 'Para empezar a destacar.', headline: 'Toma la Delantera.', subHeadline: 'Un pequeño paso para ti, un gran salto para tu cuenta. Empieza a diferenciarte.', fillLevel: '33%', liquidColor: 'hsl(190, 80%, 60%)' },
-    { name: 'Popular', amount: 5, price: 'S/ 2.00', avatar: avatarPopular, tagline: 'La elección inteligente.', headline: 'Conviértete en el Favorito.', subHeadline: 'Atrae más miradas y genera más confianza. Consigue los mejores intercambios.', fillLevel: '66%', liquidColor: 'hsl(250, 80%, 70%)' },
-    { name: 'Pro', amount: 10, price: 'S/ 5.00', avatar: avatarPro, tagline: 'Juega en otro nivel.', headline: 'Sé el Número Uno.', subHeadline: 'Llega a la cima y conviértete en un referente. Es para los que quieren ganar en grande.', fillLevel: '100%', liquidColor: 'hsl(320, 80%, 65%)' }
+    { name: 'Básico', amount: 2, price: 'S/ 1.00', priceValue: 1.00, avatar: avatarBasico, tagline: 'Para empezar a destacar.', headline: 'Toma la Delantera.', subHeadline: 'Un pequeño paso para ti, un gran salto para tu cuenta. Empieza a diferenciarte.', fillLevel: '33%', liquidColor: 'hsl(190, 80%, 60%)' },
+    { name: 'Popular', amount: 5, price: 'S/ 2.00', priceValue: 2.00, avatar: avatarPopular, tagline: 'La elección inteligente.', headline: 'Conviértete en el Favorito.', subHeadline: 'Atrae más miradas y genera más confianza. Consigue los mejores intercambios.', fillLevel: '66%', liquidColor: 'hsl(250, 80%, 70%)' },
+    { name: 'Pro', amount: 10, price: 'S/ 5.00', priceValue: 5.00, avatar: avatarPro, tagline: 'Juega en otro nivel.', headline: 'Sé el Número Uno.', subHeadline: 'Llega a la cima y conviértete en un referente. Es para los que quieren ganar en grande.', fillLevel: '100%', liquidColor: 'hsl(320, 80%, 65%)' }
 ];
 
 const selectedPlan = ref(plans[1]);
@@ -165,9 +165,57 @@ const liquidStyle = computed(() => ({
     '--liquid-shadow-color': selectedPlan.value.liquidColor,
 }));
 
-function purchaseCredits(packageName, amount) {
-    console.log(`Iniciando compra para: ${packageName} (${amount} Kambitos)`);
-    alert(`Funcionalidad de compra para "${packageName}" aún no implementada.`);
+async function purchaseCredits(planName) {
+    // 1. Encuentra el plan completo para obtener todos sus datos
+    const plan = plans.find(p => p.name === planName);
+    if (!plan) {
+        console.error('Plan no encontrado');
+        alert('Ha ocurrido un error al seleccionar el plan. Por favor, intenta de nuevo.');
+        return;
+    }
+
+    // 2. Obtiene el token de autenticación del usuario desde el store de Pinia
+    const token = userStore.token;
+    if (!token) {
+        alert('Debes iniciar sesión para poder comprar créditos.');
+        // Opcional: Redirigir al login
+        // router.push('/login');
+        return;
+    }
+    
+    console.log(`Iniciando compra para: ${plan.name} (${plan.amount} Kambitos por S/${plan.priceValue})`);
+
+    try {
+        // 3. Llama a tu backend para crear la preferencia de pago
+        const response = await fetch('http://localhost:8000/payment/create_preference', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // ¡Muy importante para la autenticación!
+            },
+            body: JSON.stringify({
+                quantity: plan.amount,
+                unit_price: plan.priceValue, // Usamos el valor numérico
+                title: `Compra de ${plan.amount} Kambitos`
+            })
+        });
+
+        const responseData = await response.json();
+
+        // 4. Si la respuesta no es exitosa, muestra un error
+        if (!response.ok) {
+            // Intenta mostrar el error específico del backend si está disponible
+            const errorDetail = responseData.detail || 'No se pudo iniciar el proceso de pago.';
+            throw new Error(errorDetail);
+        }
+
+        // 5. Si todo sale bien, redirige al usuario a la pasarela de Mercado Pago
+        window.location.href = responseData.init_point;
+
+    } catch (error) {
+        console.error('Hubo un problema con la compra:', error);
+        alert(`Error al procesar la compra: ${error.message}`);
+    }
 }
 
 const shape1 = ref(null);
