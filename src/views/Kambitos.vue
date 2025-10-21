@@ -211,6 +211,7 @@ import MonedaSVG from '@/assets/imagenes/Moneda.svg';
 import avatarBasico from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
 import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
 import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
+import api from '@/axios'; // <--- CAMBIO 1: Importamos la instancia central de Axios
 
 // --- Lógica de la tienda y estado del usuario (sin cambios) ---
 const userStore = useUserStore();
@@ -265,12 +266,11 @@ async function startPurchase(plan) {
     initializeCardForm();
 }
 
-// --- CORRECCIÓN 2: Lógica de inicialización del formulario mejorada ---
 async function initializeCardForm() {
     if (cardForm) cardForm.unmount();
     
-    // RECUERDA USAR TU PUBLIC KEY DE PRUEBAS
-    const publicKey = 'APP_USR-950fac67-631d-4a39-ad05-2fdf73576170'; 
+    // RECUERDA USAR TU PUBLIC KEY DE PRUEBAS O PRODUCCIÓN
+    const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY; 
     if (!window.MercadoPago) {
         paymentError.value = "El SDK de Mercado Pago no se ha cargado. Revisa tu conexión.";
         return;
@@ -284,7 +284,6 @@ async function initializeCardForm() {
             id: 'paymentForm',
             cardNumber: { id: 'form-checkout__cardNumber' },
             cardholderName: { id: 'form-checkout__cardholderName' },
-            // El campo de fecha de expiración ahora es un solo elemento
             cardExpirationDate: { id: 'form-checkout__cardExpirationDate' },
             securityCode: { id: 'form-checkout__securityCode' },
             installments: { id: 'form-checkout__installments' },
@@ -311,23 +310,17 @@ async function processPayment() {
     paymentError.value = null;
 
     try {
-        const { token, issuer, paymentMethodId, installments } = await cardForm.getCardToken();
-        if (!token) {
+        const cardTokenData = await cardForm.getCardToken();
+        if (!cardTokenData.token) {
             throw new Error("No se pudo generar el token. Revisa los datos de la tarjeta.");
         }
 
-        const authToken = userStore.token;
-        if (!authToken) {
-            alert('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
-            return;
-        }
-
         const paymentPayload = {
-            token,
-            issuer_id: issuer,
-            payment_method_id: paymentMethodId,
+            token: cardTokenData.token,
+            issuer_id: cardTokenData.issuer,
+            payment_method_id: cardTokenData.paymentMethodId,
             transaction_amount: planToPurchase.value.priceValue,
-            installments: Number(installments),
+            installments: Number(cardTokenData.installments),
             description: `Compra de ${planToPurchase.value.amount} Kambitos`,
             payer: {
                 email: userStore.user.email,
@@ -338,36 +331,30 @@ async function processPayment() {
             }
         };
 
-        const response = await fetch('http://localhost:8000/payment/process_payment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify(paymentPayload)
-        });
-
-        const responseData = await response.json();
-
-        if (!response.ok) {
-            throw new Error(responseData.detail || 'El pago fue rechazado.');
-        }
+        // --- CAMBIO 2: Reemplazar 'fetch' con 'api.post' ---
+        const { data: responseData } = await api.post('/payment/process_payment', paymentPayload);
 
         if (responseData.status === 'approved') {
             alert('¡Compra exitosa! Tus Kambitos han sido acreditados.');
-            await userStore.fetchUserProfile();
+            // Actualizamos el perfil del usuario para reflejar el nuevo saldo de créditos
+            if (userStore.user && userStore.user.id) {
+                await userStore.fetchUserProfile(userStore.user.id);
+            }
             showPaymentModal.value = false;
         } else {
+            // Si la API devuelve un estado que no es 'approved', lo mostramos como error
             paymentError.value = `Estado del pago: ${responseData.status}. ${responseData.detail}`;
         }
 
     } catch (error) {
         console.error('Error al procesar el pago:', error);
-        paymentError.value = error.message;
+        // Capturamos el error de la respuesta de la API si está disponible
+        paymentError.value = error.response?.data?.detail || error.message || 'Ocurrió un error inesperado al procesar el pago.';
     } finally {
         isProcessing.value = false;
     }
 }
+
 
 // --- Animación de mouse (sin cambios) ---
 const shape1 = ref(null);

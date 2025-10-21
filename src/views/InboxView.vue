@@ -48,7 +48,7 @@
 
         <div v-else class="relative h-[75vh] max-h-[850px] border border-slate-200 overflow-hidden lg:flex lg:flex-row">
           
-          <aside 
+          <aside
             class="w-full lg:w-[34%] flex-shrink-0 border-r border-slate-200 overflow-y-auto custom-scrollbar-unique transition-transform duration-300 ease-in-out lg:translate-x-0"
             :class="{ '-translate-x-full': isChatViewVisible }"
           >
@@ -138,7 +138,7 @@
             </div>
           </aside>
 
-          <section 
+          <section
             class="absolute inset-0 w-full h-full bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-in-out lg:static lg:flex-1 lg:translate-x-0"
             :class="{ 'translate-x-0': isChatViewVisible, 'translate-x-full': !isChatViewVisible }"
           >
@@ -174,11 +174,11 @@
                 <div v-if="loadingMessages" class="absolute inset-0 flex items-center justify-center bg-white/50 z-20">
                     <svg class="animate-spin h-8 w-8 text-[#d7037b]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                 </div>
-                
+
                 <div v-else-if="messages.length === 0" class="flex h-full items-center justify-center text-center text-slate-500">
                     <p>Aún no hay mensajes en esta conversación.<br>¡Envía el primero!</p>
                 </div>
-                
+
                 <div v-else class="h-full overflow-y-auto custom-scrollbar-unique space-y-4 p-5" ref="messagesContainer">
                   <div v-for="(message, index) in messages" :key="message.id" class="flex animate-fade-in-message" :style="{ animationDelay: `${index * 0.05}s` }" :class="message.sender_id === userStore.user?.id ? 'justify-end' : 'justify-start'">
                     <img v-if="message.sender_id !== userStore.user?.id" :src="getAvatarUrl(selectedConversation.user.avatar)" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
@@ -201,7 +201,7 @@
               <div class="p-4 border-t border-slate-200 bg-slate-50">
                 <form @submit.prevent="sendMessage" class="flex items-center gap-3">
                   <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" :disabled="!isChatActive" />
-                  
+
                   <button
                     type="button"
                     @click="isLocationModalVisible = true"
@@ -212,7 +212,7 @@
                   >
                     <MapPinIcon class="h-5 w-5" />
                   </button>
-                  
+
                   <button type="submit" :disabled="!newMessageText.trim() || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() || !isChatActive) ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
                     <PaperAirplaneIcon class="h-5 w-5" />
                   </button>
@@ -234,8 +234,8 @@
           </section>
 
           <transition name="slide-fade">
-            <aside 
-              v-if="selectedProfileUser" 
+            <aside
+              v-if="selectedProfileUser"
               class="absolute inset-0 w-full h-full bg-white transition-transform duration-300 ease-in-out lg:static lg:w-[30%] lg:flex-shrink-0 lg:border-l lg:border-slate-200 lg:translate-x-0 overflow-y-auto custom-scrollbar-unique"
               :class="{ 'translate-x-0': selectedProfileUser, 'translate-x-full': !selectedProfileUser }"
             >
@@ -249,7 +249,7 @@
                 <div class="flex flex-col items-center text-center">
                   <img :src="getAvatarUrl(selectedProfileUser.avatar)" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover mb-4 ring-2 ring-offset-2 ring-[#d7037b]/50">
                   <h3 class="text-xl font-bold">{{ formatUserName(selectedProfileUser.full_name) }}</h3>
-                  
+
                   <div v-if="selectedProfileUser.rating_count > 0" class="mt-2 flex items-center justify-center gap-1.5">
                     <div class="flex items-center text-yellow-400">
                       <StarIconSolid v-for="i in Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5"/>
@@ -277,7 +277,7 @@
                     {{ formatUbicacion(selectedProfileUser.ubicacion) }}
                   </p>
                 </div>
-                
+
                 <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
                   <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventario del Usuario</h4>
                   <div v-if="loadingProfileInventory" class="mt-4 text-center">
@@ -315,7 +315,7 @@
       </div>
     </main>
     <Footer />
-    
+
     <div v-if="showDetailsModal" @click.self="showDetailsModal = false" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative">
         <button @click="showDetailsModal = false" class="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-100">
@@ -362,10 +362,10 @@
             </button>
           </div>
         </div>
-        <textarea 
-          v-model="ratingComment" 
-          rows="3" 
-          placeholder="(Opcional) Deja un comentario sobre tu experiencia..." 
+        <textarea
+          v-model="ratingComment"
+          rows="3"
+          placeholder="(Opcional) Deja un comentario sobre tu experiencia..."
           class="w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-[#d7037b] focus:border-transparent">
         </textarea>
         <div class="mt-5 flex justify-end gap-3">
@@ -488,7 +488,7 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
-import axios from '@/axios';
+import api from '@/axios'; // <--- CAMBIO CLAVE: Importamos la instancia central de axios
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import { useToast } from 'vue-toastification';
@@ -543,8 +543,11 @@ const ratingComment = ref('');
 let ws = null;
 const isOtherUserTyping = ref(false);
 
-const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
-const WS_BASE_URL = 'ws://' + window.location.host + '/ws';
+// --- CAMBIO CLAVE: Lógica de WebSocket URL ---
+// Determina si estamos en un entorno seguro (https) para usar 'wss'
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const WS_BASE_URL = `${wsProtocol}//${window.location.host}/ws`;
+
 
 const isLocationModalVisible = ref(false);
 
@@ -654,7 +657,7 @@ const submitRating = async () => {
   };
 
   try {
-    await axios.post('/ratings', ratingData);
+    await api.post('/ratings', ratingData);
     toast.success("¡Gracias por tu valoración!");
     await updateProposalStatus('completed');
     if (userStore.user?.id) {
@@ -697,7 +700,7 @@ const confirmDelete = async () => {
   if (!conversationToActOn.value) return;
   const idToDelete = conversationToActOn.value.exchange.id;
   try {
-    await axios.delete(`/proposals/${idToDelete}`);
+    await api.delete(`/proposals/${idToDelete}`);
     conversations.value = conversations.value.filter(c => c.exchange.id !== idToDelete);
     if (selectedConversation.value?.exchange.id === idToDelete) {
       selectedConversation.value = null;
@@ -714,7 +717,7 @@ const confirmBlock = async () => {
   if (!conversationToActOn.value) return;
   const userToBlock = conversationToActOn.value.user;
   try {
-    await axios.post(`/users/${userToBlock.id}/block`);
+    await api.post(`/users/${userToBlock.id}/block`);
     toast.warning(`Has bloqueado a ${formatUserName(userToBlock.full_name)}.`);
     conversations.value = conversations.value.filter(c => c.user.id !== userToBlock.id);
     if (selectedConversation.value?.user.id === userToBlock.id) {
@@ -731,7 +734,7 @@ const confirmBlockAndReport = async () => {
   if (!conversationToActOn.value || !reportReason.value.trim()) return;
   const userToReport = conversationToActOn.value.user;
   try {
-    await axios.post(`/users/${userToReport.id}/report`, {
+    await api.post(`/users/${userToReport.id}/report`, {
       reason: reportReason.value.trim()
     });
     toast.error(`Has reportado y bloqueado a ${formatUserName(userToReport.full_name)}.`);
@@ -759,7 +762,7 @@ const closeBlockedUsersModal = () => {
 const fetchBlockedUsers = async () => {
   loadingBlockedUsers.value = true;
   try {
-    const { data } = await axios.get('/users/me/blocked');
+    const { data } = await api.get('/users/me/blocked');
     blockedUsers.value = data;
   } catch (error) {
     toast.error("No se pudo cargar la lista de bloqueados.");
@@ -770,7 +773,7 @@ const fetchBlockedUsers = async () => {
 
 const confirmUnblock = async (userToUnblock) => {
   try {
-    await axios.delete(`/users/${userToUnblock.id}/block`);
+    await api.delete(`/users/${userToUnblock.id}/block`);
     toast.success(`${formatUserName(userToUnblock.full_name)} ha sido desbloqueado.`);
     blockedUsers.value = blockedUsers.value.filter(u => u.id !== userToUnblock.id);
     await fetchConversations();
@@ -792,7 +795,7 @@ const closeProfilePanel = () => {
 const fetchProfileUserInventory = async (userId) => {
   loadingProfileInventory.value = true;
   try {
-    const { data } = await axios.get(`/users/${userId}/products`);
+    const { data } = await api.get(`/users/${userId}/products`);
     profileUserInventory.value = data;
   } catch (error) {
     console.error("Error al cargar el inventario del perfil:", error);
@@ -816,7 +819,7 @@ const formatUserName = (fullName) => {
 const getAvatarUrl = (path) => {
   if (!path) return defaultAvatar;
   if (path.startsWith('http') || path.startsWith('data:')) return path;
-  return `${API_BASE_URL}${path}`;
+  return path; // <-- CAMBIO CLAVE: Ya no se añade la URL base
 };
 
 const formatTime = (s) => s ? new Date(s).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
@@ -855,7 +858,7 @@ const connectWebSocket = () => {
 const fetchConversations = async () => {
   loadingConversations.value = true;
   try {
-    const { data } = await axios.get('/proposals/me');
+    const { data } = await api.get('/proposals/me');
     conversations.value = data;
   } catch (e) {
     toast.error('Error al cargar las conversaciones.');
@@ -869,24 +872,24 @@ const returnToConversationList = () => {
 };
 
 const selectConversation = async (conversation) => {
-  isChatViewVisible.value = true; 
+  isChatViewVisible.value = true;
 
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
-  
+
   selectedConversation.value = conversation;
   messages.value = [];
   loadingMessages.value = true;
   try {
-    const { data } = await axios.get(`/proposals/${conversation.exchange.id}/messages`);
+    const { data } = await api.get(`/proposals/${conversation.exchange.id}/messages`);
     messages.value = data;
 
     if (data.length === 0 && conversation.exchange.proposer_user_id === userStore.user?.id) {
       const offerTitle = conversation.exchange.offer?.title || 'producto ofrecido';
       const requestTitle = conversation.exchange.request?.title || 'producto solicitado';
-      
+
       const autoMessage = `¡Hacemos intercambio! Te propongo cambiar mi producto "${offerTitle}" por tu producto "${requestTitle}".`;
-      
+
       newMessageText.value = autoMessage;
       await sendMessage();
     }
@@ -920,7 +923,7 @@ const sendMessage = async () => {
   newMessageText.value = '';
 
   try {
-    const { data: sentMessageData } = await axios.post('/messages', {
+    const { data: sentMessageData } = await api.post('/messages', {
       proposal_id: selectedConversation.value.exchange.id,
       text: textToSend,
     });
@@ -949,7 +952,7 @@ const markMessagesAsRead = async (messagesToRead) => {
     unreadMessages.forEach(m => m.is_read = true);
     const messageIds = unreadMessages.map(m => m.id);
     try {
-        await axios.patch('/messages/read_status', { message_ids: messageIds, is_read: true });
+        await api.patch('/messages/read_status', { message_ids: messageIds, is_read: true });
     } catch (error) {
         console.error("Error al marcar mensajes como leídos:", error);
     }
@@ -958,16 +961,16 @@ const markMessagesAsRead = async (messagesToRead) => {
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
-  
+
   if (status === 'completed' && !isRatingModalVisible.value) {
     openRatingModal();
     return;
   }
 
   try {
-    await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
+    await api.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
-    
+
     if (status !== 'completed') {
         toast.success(`Propuesta ${statusTextMap[status]}.`);
     }

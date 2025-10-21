@@ -13,7 +13,6 @@
         <div class="max-w-5xl w-full animate-[pop-in] opacity-0">
           <ProductCard
             :product="selectedProduct"
-            :apiBase="API_BASE_URL" 
             @propose-trade="handleProposeTrade"
             @close="closeProductModal"
           />
@@ -277,7 +276,7 @@
         >
           <div class="relative overflow-hidden rounded-t-xl">
             <img
-              :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
+              :src="product.thumbnail_image_url"
               :alt="product.title"
               class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               loading="lazy"
@@ -366,15 +365,15 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
-import axios from 'axios';
-// ============== IMPORTAMOS PRODUCTCARD ==============
+import api from '@/axios'; // <--- CAMBIO 1: Importar la instancia central de Axios
 import ProductCard from './ProductCard.vue';
 
 /* =========================
    Config / Estado General
 ========================= */
 const userStore = useUserStore();
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// --- CAMBIO 2: ELIMINAR LA URL BASE DE AQUÍ ---
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const products = ref([]);
 const loading = ref(true);
@@ -440,8 +439,6 @@ const closeProductModal = () => {
 
 const handleProposeTrade = (product) => {
   console.log('Proponer intercambio por:', product.title);
-  // Aquí puedes agregar la lógica para el siguiente paso,
-  // por ahora, solo cerramos el modal.
   closeProductModal();
 };
 
@@ -486,17 +483,32 @@ const onSearchInput = (e) => {
 const fetchAllProducts = async () => {
   try {
     loading.value = true;
-    const res = await fetch(`${API_BASE_URL}/products_feed`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    // --- CAMBIO 4: Usar la instancia 'api' y la ruta relativa ---
+    const { data } = await api.get('/products_feed');
     const loggedId = userStore.user?.id;
-    products.value = loggedId ? data.filter(p => p.user_id !== loggedId) : data;
+    // --- CAMBIO 5: Normalizar la URL de la imagen aquí ---
+    products.value = (loggedId ? data.filter(p => p.user_id !== loggedId) : data).map(p => ({
+      ...p,
+      thumbnail_image_url: normalizeImageUrl(p.thumbnail_image_url)
+    }));
   } catch (err) {
     console.error('Error fetching:', err);
   } finally {
     loading.value = false;
   }
 };
+
+// --- CAMBIO 6: Función para normalizar la URL de la imagen ---
+const normalizeImageUrl = (url) => {
+  if (!url) {
+    return ''; // O una imagen por defecto
+  }
+  if (url.startsWith('http')) {
+    return url;
+  }
+  return url; // La ruta relativa ya es correcta
+};
+
 
 /* =========================
    Filtrado / Orden / Paginación

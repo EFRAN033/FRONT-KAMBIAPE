@@ -1,20 +1,30 @@
 // src/stores/user.js
 import { defineStore } from 'pinia';
-import axios from '@/axios';
+import api from '@/axios'; // Importa la instancia centralizada de Axios
 
-// --- ✨ 1. IMPORTAMOS TU AVATAR POR DEFECTO ÚNICO ✨ ---
+// --- ✨ IMPORTAMOS TU AVATAR POR DEFECTO ÚNICO ✨ ---
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 
-// Función auxiliar para normalizar las URLs de las imágenes.
+/**
+ * Función auxiliar para normalizar las URLs de las imágenes.
+ * Esta versión es más simple y robusta.
+ * - Si la URL está vacía, devuelve el avatar por defecto.
+ * - Si la URL ya es completa (http, https, data, blob), la devuelve tal cual.
+ * - Si la URL es una ruta relativa (ej: /uploaded_images/...), el navegador la
+ * resolverá correctamente basándose en el dominio actual (kambiape.com).
+ * Esto elimina la necesidad de VITE_APP_PUBLIC_URL aquí.
+ */
 const normalizeImageUrl = (url) => {
   if (!url) {
     return defaultAvatar;
   }
+  // Si ya es una URL completa, no hacemos nada.
   if (/^(https?:\/\/|data:|blob:)/i.test(url)) {
     return url;
   }
-  const baseUrl = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
-  return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  // Si es una ruta relativa (como "/uploaded_images/..."), el navegador la manejará.
+  // No necesitamos añadir el dominio manualmente.
+  return url;
 };
 
 export const useUserStore = defineStore('user', {
@@ -38,10 +48,8 @@ export const useUserStore = defineStore('user', {
       created_at: null,
       interests: [],
       credits: 0,
-      // ===== INICIO DE LA CORRECCIÓN =====
-      rating_score: 0, // <-- Añadido al estado inicial
-      rating_count: 0, // <-- Añadido al estado inicial
-      // ===== FIN DE LA CORRECCIÓN =====
+      rating_score: 0,
+      rating_count: 0,
     },
     loading: false,
     error: null,
@@ -89,12 +97,8 @@ export const useUserStore = defineStore('user', {
         created_at: data.created_at || null,
         interests: data.interests || [],
         credits: data.credits ?? 0,
-        // ===== INICIO DE LA CORRECCIÓN =====
-        // Estas líneas procesan los datos de valoración que vienen del backend
-        // y los guardan en nuestro estado.
         rating_score: data.rating_score ?? 0,
         rating_count: data.rating_count ?? 0,
-        // ===== FIN DE LA CORRECCIÓN =====
       };
       return processedData;
     },
@@ -103,7 +107,8 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.post('/login', credentials);
+        // Usa la instancia 'api' que ya tiene la baseURL configurada
+        const response = await api.post('/login', credentials);
         const accessToken = response.data.access_token;
         this.token = accessToken;
         localStorage.setItem('access_token', accessToken);
@@ -132,7 +137,8 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get(`/profile/${userId}`);
+        // La URL es relativa a la baseURL configurada en axios.js. ¡Correcto!
+        const response = await api.get(`/profile/${userId}`);
         const userData = this._processUserData(response.data);
         this.user = userData;
         localStorage.setItem('user', JSON.stringify(userData));
@@ -176,7 +182,7 @@ export const useUserStore = defineStore('user', {
             }
         }
 
-        const response = await axios.put(`/profile/${userId}`, finalPayload);
+        const response = await api.put(`/profile/${userId}`, finalPayload);
         const updatedUserData = this._processUserData(response.data);
         this.user = updatedUserData;
         localStorage.setItem('user', JSON.stringify(updatedUserData));
@@ -197,7 +203,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        await axios.put('/users/change-password', passwordData);
+        await api.put('/users/change-password', passwordData);
         return { success: true, message: 'Contraseña actualizada con éxito.' };
       } catch (err) {
         const errorMessage = err.response?.data?.detail || 'No se pudo cambiar la contraseña. Verifica tus datos.';
@@ -212,7 +218,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.post('/profile/picture', formData, {
+        const response = await api.post('/profile/picture', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
@@ -247,10 +253,8 @@ export const useUserStore = defineStore('user', {
         created_at: null,
         interests: [],
         credits: 0,
-        // ===== INICIO DE LA CORRECCIÓN =====
-        rating_score: 0, // <-- Añadido al estado de reseteo
-        rating_count: 0, // <-- Añadido al estado de reseteo
-        // ===== FIN DE LA CORRECCIÓN =====
+        rating_score: 0,
+        rating_count: 0,
       };
       localStorage.removeItem('user');
       localStorage.removeItem('access_token');

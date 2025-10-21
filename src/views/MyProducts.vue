@@ -363,13 +363,20 @@ const currentPreviewIndex = ref(0);
 const draggedIndex = ref(null);
 const dragOverIndex = ref(null);
 
-const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
 const FALLBACK_IMG = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="#f1f5f9"/><text x="50%" y="50%" font-family="Arial" font-size="16" text-anchor="middle" fill="#94a3b8">Sin imagen</text></svg>`)}`;
 
 const imageUrl = (path) => {
+  // Si no hay ruta, devuelve la imagen de reserva
   if (!path) return FALLBACK_IMG;
+
+  // Si la ruta ya es una URL completa (http/https) o una imagen en base64 (data:),
+  // la devolvemos tal cual.
   if (String(path).startsWith('http') || String(path).startsWith('data:')) return path;
-  return `${API_BASE_URL}${path}`;
+
+  // Si no, simplemente devolvemos la ruta que nos dio el backend (ej: "/uploaded_images/imagen.jpg").
+  // El navegador la pedirá a "https://kambiape.com/uploaded_images/imagen.jpg",
+  // y Nginx sabrá dónde encontrarla.
+  return path;
 };
 const onImgError = (e) => { e.target.src = FALLBACK_IMG; };
 
