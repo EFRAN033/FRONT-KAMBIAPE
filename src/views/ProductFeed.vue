@@ -3,14 +3,14 @@
     <Transition name="fade-overlay">
       <div
         v-if="selectedProduct"
-        class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm"
+        class="fixed inset-0 bg-black/60 flex items-start justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-modal-title"
         @keydown.esc="closeProductModal"
         @click.self="closeProductModal"
       >
-        <div class="max-w-5xl w-full animate-[pop-in] opacity-0">
+        <div class="max-w-5xl w-full animate-[pop-in] opacity-0 my-auto">
           <ProductCard
             :product="selectedProduct"
             @propose-trade="handleProposeTrade"
@@ -365,29 +365,21 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
-import api from '@/axios'; // <--- CAMBIO 1: Importar la instancia central de Axios
-import ProductCard from './ProductCard.vue';
+import ProductCard from '@/views/ProductCard.vue'; // Corregido: Asumiendo que ProductCard está en views
 
-/* =========================
-   Config / Estado General
-========================= */
 const userStore = useUserStore();
-// --- CAMBIO 2: ELIMINAR LA URL BASE DE AQUÍ ---
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const products = ref([]);
 const loading = ref(true);
 
-// ============== ESTADO DEL MODAL ==============
 const selectedProduct = ref(null);
 
-// Filtros
 const selectedCategory = ref('');
 const sortBy = ref('date-desc');
 const searchQuery = ref('');
 let searchTimer = null;
 
-// Dropdowns y accesibilidad
 const isCategoryDropdownOpen = ref(false);
 const isSortDropdownOpen = ref(false);
 const catBtnRef = ref(null);
@@ -398,13 +390,11 @@ const catOptionRefs = ref([]);
 const sortOptionRefs = ref([]);
 let focusedIndex = { cat: 0, sort: 0 };
 
-// Infinite scroll
 const pageSize = 12;
 const page = ref(1);
 const sentinelRef = ref(null);
 let io = null;
 
-// UI Hero cards
 const cards = ref([
   { id: 1, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80', alt: 'Cámara', badge: 'Preferido' },
   { id: 2, img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80', alt: 'Mochila', badge: 'Outdoor' },
@@ -415,9 +405,6 @@ const autoShuffle = ref(true);
 const hovering = ref(false);
 let shuffleTimer = null;
 
-/* =========================
-   Catálogos / Opciones
-========================= */
 const categories = ref(['Electrónica', 'Mobiliario', 'Deportes', 'Libros', 'Ropa y Accesorios', 'Hogar', 'Juguetes', 'Herramientas', 'Música', 'Videojuegos', 'Coleccionables', 'Arte', 'Otros']);
 const sortOptions = ref([
   { value: 'date-desc', label: 'Más recientes' },
@@ -426,15 +413,14 @@ const sortOptions = ref([
   { value: 'name-desc', label: 'Nombre (Z-A)' },
 ]);
 
-/* =========================
-   FUNCIONES DEL MODAL
-========================= */
 const openProductModal = (product) => {
   selectedProduct.value = product;
+  document.body.style.overflow = 'hidden'; // Evita scroll del fondo
 };
 
 const closeProductModal = () => {
   selectedProduct.value = null;
+  document.body.style.overflow = ''; // Restaura scroll del fondo
 };
 
 const handleProposeTrade = (product) => {
@@ -442,9 +428,6 @@ const handleProposeTrade = (product) => {
   closeProductModal();
 };
 
-/* =========================
-   Utilidades
-========================= */
 const calculateAgeDays = (dateString) => {
   const today = new Date();
   const productDate = new Date(dateString);
@@ -455,13 +438,10 @@ const calculateAgeDays = (dateString) => {
 const formatOwnerName = (fullName) => {
   if (!fullName || typeof fullName !== 'string') return 'Usuario';
   const parts = fullName.trim().split(/\s+/).filter(p => p);
-
   if (parts.length === 0) return 'Usuario';
   if (parts.length === 1) return parts[0].toUpperCase();
-
   const firstName = parts[0].toUpperCase();
   const initials = parts.slice(1).map(part => `${part.charAt(0).toUpperCase()}.`);
-  
   return `${firstName}, ${initials.join(' ')}`;
 };
 
@@ -470,7 +450,6 @@ const formatTitle = (title) => {
   return title.charAt(0).toUpperCase() + title.slice(1);
 };
 
-// Debounce búsqueda
 const onSearchInput = (e) => {
   const val = e.target.value;
   if (searchTimer) clearTimeout(searchTimer);
@@ -479,18 +458,15 @@ const onSearchInput = (e) => {
   }, 250);
 };
 
-// Fetch productos (feed público)
 const fetchAllProducts = async () => {
   try {
     loading.value = true;
-    // --- CAMBIO 4: Usar la instancia 'api' y la ruta relativa ---
-    const { data } = await api.get('/products_feed');
+    const res = await fetch(`${API_BASE_URL}/products_feed`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
     const loggedId = userStore.user?.id;
-    // --- CAMBIO 5: Normalizar la URL de la imagen aquí ---
-    products.value = (loggedId ? data.filter(p => p.user_id !== loggedId) : data).map(p => ({
-      ...p,
-      thumbnail_image_url: normalizeImageUrl(p.thumbnail_image_url)
-    }));
+    products.value = (loggedId ? data.filter(p => p.user_id !== loggedId) : data)
+      .map(p => ({ ...p, thumbnail_image_url: `${API_BASE_URL}${p.thumbnail_image_url}` }));
   } catch (err) {
     console.error('Error fetching:', err);
   } finally {
@@ -498,21 +474,6 @@ const fetchAllProducts = async () => {
   }
 };
 
-// --- CAMBIO 6: Función para normalizar la URL de la imagen ---
-const normalizeImageUrl = (url) => {
-  if (!url) {
-    return ''; // O una imagen por defecto
-  }
-  if (url.startsWith('http')) {
-    return url;
-  }
-  return url; // La ruta relativa ya es correcta
-};
-
-
-/* =========================
-   Filtrado / Orden / Paginación
-========================= */
 const filteredProducts = computed(() => {
   let out = [...products.value];
   if (searchQuery.value.trim()) {
@@ -543,36 +504,12 @@ const visibleProducts = computed(() => filteredProducts.value.slice(0, page.valu
 const hasMore = computed(() => filteredProducts.value.length > visibleProducts.value.length);
 const loadMore = () => { if (hasMore.value) page.value += 1; };
 
-/* =========================
-   Dropdowns Accesibles
-========================= */
 const toggleCategory = () => { isCategoryDropdownOpen.value = !isCategoryDropdownOpen.value; };
 const toggleSort = () => { isSortDropdownOpen.value = !isSortDropdownOpen.value; };
+const selectCategory = (c) => { selectedCategory.value = c; isCategoryDropdownOpen.value = false; page.value = 1; };
+const selectSortBy = (v) => { sortBy.value = v; isSortDropdownOpen.value = false; page.value = 1; };
+const resetFilters = () => { selectedCategory.value = ''; sortBy.value = 'date-desc'; searchQuery.value = ''; page.value = 1; };
 
-const selectCategory = (c) => {
-  selectedCategory.value = c;
-  isCategoryDropdownOpen.value = false;
-  page.value = 1;
-};
-const selectSortBy = (v) => {
-  sortBy.value = v;
-  isSortDropdownOpen.value = false;
-  page.value = 1;
-};
-
-/* =========================
-   Reset filtros
-========================= */
-const resetFilters = () => {
-  selectedCategory.value = '';
-  sortBy.value = 'date-desc';
-  searchQuery.value = '';
-  page.value = 1;
-};
-
-/* =========================
-   Hero shuffle
-========================= */
 const orderedCards = computed(() => {
   const arr = [...cards.value];
   return arr.slice(frontIndex.value).concat(arr.slice(0, frontIndex.value));
@@ -580,36 +517,30 @@ const orderedCards = computed(() => {
 const shuffle = () => { frontIndex.value = (frontIndex.value + 1) % cards.value.length; };
 const positionClass = (pos) => (pos === 0 ? 'z-30 ring-gray-200 shadow-2xl dark:ring-white/10' : pos === 1 ? 'z-20 ring-gray-200 shadow-xl opacity-95 dark:ring-white/10' : 'z-10 ring-gray-200 shadow opacity-85 dark:ring-white/10');
 const transformStyle = (pos) => pos === 0 ? { transform: 'translate(-50%, -50%) rotate(0deg) scale(1)' } : pos === 1 ? { transform: 'translate(calc(-50% + 18px), calc(-50% + 10px)) rotate(6deg) scale(0.96)' } : { transform: 'translate(calc(-50% - 18px), calc(-50% + 18px)) rotate(-8deg) scale(0.92)' };
-const startShuffleTimer = () => {
-  stopShuffleTimer();
-  shuffleTimer = setInterval(() => { if (autoShuffle.value) shuffle(); }, hovering.value ? 1800 : 2800);
-};
+const startShuffleTimer = () => { stopShuffleTimer(); shuffleTimer = setInterval(() => { if (autoShuffle.value) shuffle(); }, hovering.value ? 1800 : 2800); };
 const stopShuffleTimer = () => { if (shuffleTimer) { clearInterval(shuffleTimer); shuffleTimer = null; } };
 
-/* =========================
-   Lifecycle
-========================= */
 onMounted(() => {
   fetchAllProducts();
   startShuffleTimer();
-
   io = new IntersectionObserver((entries) => {
     entries.forEach((e) => { if (e.isIntersecting) loadMore(); });
   }, { rootMargin: '300px' });
   if (sentinelRef.value) io.observe(sentinelRef.value);
 });
+
 onBeforeUnmount(() => {
   stopShuffleTimer();
   if (io && sentinelRef.value) io.unobserve(sentinelRef.value);
   io = null;
+  document.body.style.overflow = ''; // Asegurarse de restaurar el scroll
 });
-watch([autoShuffle, hovering], () => { startShuffleTimer(); });
 
+watch([autoShuffle, hovering], () => { startShuffleTimer(); });
 watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 </script>
 
 <style scoped>
-/* Transiciones y animaciones */
 .product-list-enter-active,
 .product-list-leave-active { transition: all .35s ease }
 .product-list-enter-from,
@@ -625,13 +556,11 @@ watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 }
 .dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
 
-/* Transición para el overlay del modal */
 .fade-overlay-enter-active,
 .fade-overlay-leave-active { transition: opacity .3s ease; }
 .fade-overlay-enter-from,
 .fade-overlay-leave-to { opacity: 0; }
 
-/* Animación para el contenido del modal */
 @keyframes pop-in {
   0% { transform: scale(0.95); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
