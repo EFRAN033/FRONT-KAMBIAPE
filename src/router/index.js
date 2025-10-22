@@ -135,6 +135,14 @@ const routes = [
     }
   },
   {
+    path: '/terminos',
+    name: 'Terms',
+    component: TermsView,
+    meta: {
+      title: 'Términos y Condiciones | KambiaPe'
+    }
+  },
+  {
     path: '/cookies',
     name: 'Cookies',
     component: CookiesView,

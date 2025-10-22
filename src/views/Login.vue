@@ -17,9 +17,6 @@
             <router-link to="/nosotros" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
               ¿Qué es KambiaPe?
             </router-link>
-            <router-link to="/pricing" class="text-sm font-medium text-white/80 hover:text-white transition-colors">
-              Planes
-            </router-link>
           </nav>
 
           <div class="flex items-center space-x-4">
