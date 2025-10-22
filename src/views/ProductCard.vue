@@ -1,5 +1,5 @@
 <template>
-  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-2xl shadow-xl max-w-5xl mx-auto">
     <button @click="$emit('close')" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -10,7 +10,7 @@
         <div class="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
           <img :src="images[currentIndex]" :alt="product.title" class="w-full h-full object-cover">
         </div>
-        <div v-if="images.length > 1" class="mt-2 grid grid-cols-5 gap-2">
+        <div v-if="images.length > 1" class="mt-2 grid grid-cols-4 sm:grid-cols-5 gap-2">
           <button v-for="(img, index) in images" :key="index" @click="currentIndex = index" class="aspect-w-1 aspect-h-1 rounded-md overflow-hidden ring-2 transition" :class="currentIndex === index ? 'ring-brand-primary' : 'ring-transparent hover:ring-brand-primary/50'">
             <img :src="img" :alt="`${product.title} - imagen ${index + 1}`" class="w-full h-full object-cover">
           </button>
@@ -19,7 +19,7 @@
       <div>
         <div class="mb-4">
           <span class="inline-block bg-brand-light text-brand-dark text-xs font-semibold px-2 py-1 rounded-full mb-2">{{ product.category_name }}</span>
-          <h1 id="product-modal-title" class="text-3xl font-bold text-gray-900 dark:text-white">{{ product.title }}</h1>
+          <h1 id="product-modal-title" class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{{ product.title }}</h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">por {{ product.user_username }}</p>
         </div>
         <div class="prose prose-sm dark:prose-invert max-w-none mb-6">
@@ -62,7 +62,7 @@
               <p class="text-sm text-gray-600 dark:text-gray-300">No tienes productos en tu inventario para intercambiar.</p>
               <router-link to="/publicar" class="mt-2 inline-block text-brand-primary font-semibold hover:underline text-sm">Publica tu primer producto</router-link>
             </div>
-            <div v-else class="flex items-center gap-3">
+            <div v-else class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <select id="my-product-select" v-model="selectedUserProductId" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm">
                 <option :value="null" disabled>Elige un producto...</option>
                 <option v-for="userProduct in userProducts" :key="userProduct.id" :value="userProduct.id">
@@ -94,12 +94,11 @@ import { ref, onMounted, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
 import { useToast } from 'vue-toastification';
 import { useRouter } from 'vue-router';
-import api from '@/axios'; // <--- CAMBIO 1: Importamos la instancia central de axios
+import api from '@/axios';
 import placeholderImage from '@/assets/imagenes/defaul/7.svg';
 
 const props = defineProps({
   product: Object,
-  // --- CAMBIO 2: Eliminamos la prop 'apiBase' ---
 });
 
 const emit = defineEmits(['close', 'propose-trade']);
@@ -179,22 +178,18 @@ watch(() => props.product, (p) => {
   if (!p) return;
   if (Array.isArray(p.images) && p.images.length) {
     images.value = p.images.map(imgObject => normalizeImageUrl(imgObject.image_url));
-  } else if (p.thumbnail_image_url) { // Corregido para usar thumbnail si no hay galería
+  } else if (p.thumbnail_image_url) {
     images.value = [normalizeImageUrl(p.thumbnail_image_url)];
   }
 }, { immediate: true });
 
-// --- CAMBIO 3: Simplificamos la normalización de la URL ---
 function normalizeImageUrl(url) {
   if (!url) return placeholderImage;
-  // Si la URL ya es completa o es una data URI, la devolvemos.
   if (/^(https?:|data:)/i.test(url)) return url;
-  // Si es una ruta relativa, el navegador la manejará correctamente.
   return url;
 }
 
 onMounted(() => {
-  // Precarga las imágenes para una mejor experiencia de usuario
   images.value.forEach((src) => { const i = new Image(); i.src = src; });
 });
 </script>

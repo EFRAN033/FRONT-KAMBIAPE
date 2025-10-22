@@ -163,9 +163,9 @@ export const useUserStore = defineStore('user', {
           delete dataToFilter.fullName;
         }
         if (dataToFilter.dateOfBirth) {
-            const d = new Date(dataToFilter.dateOfBirth);
-            dataToFilter.date_of_birth = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-            delete dataToFilter.dateOfBirth;
+          // dataToFilter.dateOfBirth ya está en el formato "YYYY-MM-DD"
+          dataToFilter.date_of_birth = dataToFilter.dateOfBirth;
+          delete dataToFilter.dateOfBirth;
         }
         
         if (dataToFilter.districtId) {

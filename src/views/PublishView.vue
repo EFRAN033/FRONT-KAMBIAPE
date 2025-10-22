@@ -185,8 +185,11 @@
                         <div class="absolute inset-0 z-10 transition-colors" :class="{ 'bg-rose-100/50': dragOverIndex === i }"></div>
                         
                         <img :src="image" :alt="`Preview ${i+1}`" class="w-full h-36 object-cover"/>
-                        <button @click="removeImage(i)" class="absolute top-1 right-1 rounded-full bg-rose-600 text-white p-1 opacity-90 hover:opacity-100 transition" aria-label="Eliminar imagen">
-                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        
+                        <button @click="removeImage(i)" class="absolute top-1.5 right-1.5 z-20 rounded-full bg-rose-600 text-white p-1.5 opacity-90 hover:opacity-100 transition" aria-label="Eliminar imagen">
+                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                          </svg>
                         </button>
                         <div v-if="i === 0" class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
                           Portada
@@ -427,6 +430,8 @@ import axios from '@/axios'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification';
+// ¡NUEVA IMPORTACIÓN! (Recuerda hacer npm install browser-image-compression)
+import imageCompression from 'browser-image-compression';
 
 import image1 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
 import image2 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
@@ -548,23 +553,60 @@ const goToStepIfValid = (to) => { if (to===2 && validateStep1()) currentStep.val
 const goToNextStep = () => { if (validateStep1()) currentStep.value = 2 }
 const goToPreviousStep = () => { currentStep.value = 1 }
 const triggerFileInput = () => { fileInput.value?.click() }
-const handleFileChange = (e) => { processFiles(e.target.files) }
+
+// --- FUNCIÓN MODIFICADA (1) ---
+const handleFileChange = async (e) => { 
+  await processFiles(e.target.files) 
+}
 const handleDragOver = (e) => { e.currentTarget.classList.add('border-rose-500','bg-rose-50') }
 const handleDragLeave = (e) => { e.currentTarget.classList.remove('border-rose-500','bg-rose-50') }
-const handleDrop = (e) => { e.currentTarget.classList.remove('border-rose-500','bg-rose-50'); processFiles(e.dataTransfer.files) }
 
-const processFiles = (files) => {
+// --- FUNCIÓN MODIFICADA (2) ---
+const handleDrop = async (e) => { 
+  e.currentTarget.classList.remove('border-rose-500','bg-rose-50'); 
+  await processFiles(e.dataTransfer.files) 
+}
+
+// --- FUNCIÓN MODIFICADA (3) ---
+const processFiles = async (files) => { // <-- Se convirtió en async
   errorMessage.value = ''
-  if (product.photos.length + files.length > 4) { errorMessage.value = 'Máximo 4 imágenes.'; return }
+  if (product.photos.length + files.length > 4) { 
+    errorMessage.value = 'Máximo 4 imágenes.'; 
+    return 
+  }
+
+  // Opciones de compresión
+  const options = {
+    maxSizeMB: 1,           // Comprimir a un máximo de 1MB
+    maxWidthOrHeight: 1920, // Reducir la resolución si es muy grande
+    useWebWorker: true,     // Usar un worker para no bloquear el hilo principal
+  }
+
   for (const file of files) {
     if (file.type.startsWith('image/') && product.photos.length < 4) {
-      product.photos.push(file)
-      const reader = new FileReader()
-      reader.onload = (ev) => imagePreviews.value.push(ev.target.result)
-      reader.readAsDataURL(file)
+      
+      try {
+        // --- ¡AQUÍ OCURRE LA MAGIA! ---
+        const compressedFile = await imageCompression(file, options);
+        // --- FIN DE LA MAGIA ---
+
+        // Guardar el archivo comprimido (File object)
+        product.photos.push(compressedFile);
+        
+        // Generar la previsualización desde el archivo comprimido
+        const reader = new FileReader();
+        reader.onload = (ev) => imagePreviews.value.push(ev.target.result);
+        reader.readAsDataURL(compressedFile);
+
+      } catch (error) {
+        console.error('Error al comprimir la imagen:', error);
+        errorMessage.value = `Hubo un problema al procesar '${file.name}'.`;
+        // Opcional: si falla, podríamos subir el original, pero es mejor avisar.
+      }
     }
   }
 }
+
 
 const removeImage = (i) => { product.photos.splice(i,1); imagePreviews.value.splice(i,1) }
 

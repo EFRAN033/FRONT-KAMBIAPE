@@ -47,7 +47,7 @@
         </div>
 
         <div v-else class="relative h-[75vh] max-h-[850px] border border-slate-200 overflow-hidden lg:flex lg:flex-row">
-          
+
           <aside
             class="w-full lg:w-[34%] flex-shrink-0 border-r border-slate-200 overflow-y-auto custom-scrollbar-unique transition-transform duration-300 ease-in-out lg:translate-x-0"
             :class="{ '-translate-x-full': isChatViewVisible }"
@@ -98,7 +98,8 @@
                         </div>
                         <p class="text-[13px] text-slate-600 mt-0.5 truncate">
                           <span v-if="c.last_message?.sender_id === userStore.user?.id || (!c.last_message && c.exchange.proposer_user_id === userStore.user?.id)">Tú: </span>
-                          {{ c.last_message?.text || c.exchange.initial_message || 'Propuesta iniciada...' }}
+                          <span v-if="c.last_message?.image_url">[Imagen]</span>
+                          <span v-else>{{ c.last_message?.text || c.exchange.initial_message || 'Propuesta iniciada...' }}</span>
                         </p>
                         <div class="mt-1">
                           <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium capitalize ring-1" :class="statusBadgeClass(c.exchange.status)">
@@ -182,9 +183,10 @@
                 <div v-else class="h-full overflow-y-auto custom-scrollbar-unique space-y-4 p-5" ref="messagesContainer">
                   <div v-for="(message, index) in messages" :key="message.id" class="flex animate-fade-in-message" :style="{ animationDelay: `${index * 0.05}s` }" :class="message.sender_id === userStore.user?.id ? 'justify-end' : 'justify-start'">
                     <img v-if="message.sender_id !== userStore.user?.id" :src="getAvatarUrl(selectedConversation.user.avatar)" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
-                    <div class="max-w-[78%] px-4 py-3 rounded-[10px] shadow-[0_1px_0_rgba(0,0,0,0.04)]" :class="message.sender_id === userStore.user?.id ? 'bg-[#d7037b] text-white rounded-br-sm' : 'bg-slate-50 text-slate-800 border border-slate-200 rounded-bl-sm'">
-                      <p class="text-[15px] leading-relaxed break-words">{{ message.text }}</p>
-                      <div class="mt-1.5 flex items-center gap-1 text-[11px]" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
+                    <div class="max-w-[78%] rounded-[10px] shadow-[0_1px_0_rgba(0,0,0,0.04)]" :class="message.sender_id === userStore.user?.id ? 'bg-[#d7037b] text-white rounded-br-sm' : 'bg-slate-50 text-slate-800 border border-slate-200 rounded-bl-sm'">
+                      <img v-if="message.image_url" :src="getAvatarUrl(message.image_url)" alt="Imagen enviada" class="max-w-xs max-h-64 rounded-md my-1 cursor-pointer" @click="() => openImageModal(getAvatarUrl(message.image_url))"/>
+                      <p v-else class="text-[15px] leading-relaxed break-words px-4 py-3">{{ message.text }}</p>
+                      <div class="flex items-center gap-1 text-[11px] px-4 pb-2 pt-1" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
                         <span>{{ formatTime(message.timestamp) }}</span>
                         <span v-if="message.sender_id === userStore.user?.id">
                           <ExclamationCircleIcon v-if="message.error" class="h-4 w-4 inline-block text-red-300" title="Error al enviar"/>
@@ -199,7 +201,25 @@
               </div>
 
               <div class="p-4 border-t border-slate-200 bg-slate-50">
+                <div v-if="imagePreviewUrl" class="mb-2 relative w-24 h-24 border border-slate-300 rounded overflow-hidden">
+                    <img :src="imagePreviewUrl" alt="Vista previa" class="w-full h-full object-cover"/>
+                    <button @click="removeImagePreview" class="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5">
+                        <XMarkIcon class="w-4 h-4"/>
+                    </button>
+                </div>
                 <form @submit.prevent="sendMessage" class="flex items-center gap-3">
+                  <input type="file" ref="imageInput" @change="handleImageChange" accept="image/jpeg, image/png, image/gif, image/webp" class="hidden" />
+                  <button
+                    type="button"
+                    @click="triggerImageInput"
+                    :disabled="!isChatActive"
+                    class="p-3 text-sm font-semibold text-white transition-transform"
+                    :class="!isChatActive ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-500 hover:bg-slate-600 hover:scale-105 active:scale-95'"
+                    title="Adjuntar imagen"
+                  >
+                    <PaperClipIcon class="h-5 w-5"/>
+                  </button>
+
                   <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" :disabled="!isChatActive" />
 
                   <button
@@ -213,7 +233,7 @@
                     <MapPinIcon class="h-5 w-5" />
                   </button>
 
-                  <button type="submit" :disabled="!newMessageText.trim() || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() || !isChatActive) ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
+                  <button type="submit" :disabled="(!newMessageText.trim() && !selectedImageFile) || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() && !selectedImageFile) || !isChatActive ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
                     <PaperAirplaneIcon class="h-5 w-5" />
                   </button>
                 </form>
@@ -221,7 +241,7 @@
                   No puedes enviar mensajes a propuestas que han sido {{ statusText(selectedConversation.exchange.status).toLowerCase() }}s.
                 </p>
               </div>
-            </template>
+              </template>
             <template v-else-if="!isChatViewVisible">
               <div class="hidden lg:flex flex-1 items-center justify-center p-8 text-center text-slate-500">
                 <div class="flex flex-col items-center gap-3">
@@ -482,13 +502,19 @@
       </div>
     </div>
 
-  </div>
+    <div v-if="zoomedImageUrl" @click="closeImageModal" class="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <img :src="zoomedImageUrl" alt="Imagen ampliada" class="max-w-full max-h-full object-contain" @click.stop/>
+        <button @click="closeImageModal" class="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2">
+            <XMarkIcon class="w-6 h-6"/>
+        </button>
+    </div>
+    </div>
 </template>
 
 <script setup>
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
-import api from '@/axios'; // <--- CAMBIO CLAVE: Importamos la instancia central de axios
+import api from '@/axios';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import { useToast } from 'vue-toastification';
@@ -496,12 +522,14 @@ import {
   ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon,
   EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
   UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon,
-  MapPinIcon, ArrowLeftIcon
+  MapPinIcon, ArrowLeftIcon,
+  PaperClipIcon // <-- NUEVA IMPORTACIÓN
 } from '@heroicons/vue/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
 import suggestedPlacesData from '@/data/lugares_seguros.json';
+import imageCompression from 'browser-image-compression'; // <-- NUEVA IMPORTACIÓN
 
 const isChatViewVisible = ref(false);
 
@@ -543,13 +571,17 @@ const ratingComment = ref('');
 let ws = null;
 const isOtherUserTyping = ref(false);
 
-// --- CAMBIO CLAVE: Lógica de WebSocket URL ---
-// Determina si estamos en un entorno seguro (https) para usar 'wss'
 const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const WS_BASE_URL = `${wsProtocol}//${window.location.host}/ws`;
 
-
 const isLocationModalVisible = ref(false);
+
+// ===== INICIO CAMBIO: Refs para manejo de imagen =====
+const imageInput = ref(null); // Ref para el input file
+const selectedImageFile = ref(null); // Para guardar el archivo comprimido
+const imagePreviewUrl = ref(null); // Para mostrar la vista previa
+const zoomedImageUrl = ref(null); // Para el modal de imagen grande
+// ===== FIN CAMBIO =====
 
 const suggestedPlaces = computed(() => {
   if (!userStore.user || !userStore.user.districtId) {
@@ -561,19 +593,14 @@ const suggestedPlaces = computed(() => {
 const sendSuggestedLocation = (place) => {
   const locationMessage = `¡Hola! Para mayor seguridad, te sugiero que nos encontremos en un lugar público. ¿Qué te parece en "${place.nombre}"?`;
   newMessageText.value = locationMessage;
-  sendMessage();
+  sendMessage(); // Llama a sendMessage SIN parámetros ahora
   isLocationModalVisible.value = false;
 };
 
 const formatUbicacion = (ubicacion) => {
-  if (!ubicacion) {
-    return 'Ubicación no especificada.';
-  }
+  if (!ubicacion) return 'Ubicación no especificada.';
   const parts = ubicacion.split(',').map(part => part.trim());
-  if (parts.length >= 3) {
-    return parts.join(' - ');
-  }
-  return ubicacion;
+  return parts.length >= 3 ? parts.join(' - ') : ubicacion;
 };
 
 const filteredConversations = computed(() => {
@@ -583,9 +610,19 @@ const filteredConversations = computed(() => {
   }
   const q = search.value.trim().toLowerCase();
   if (q) {
-    list = list.filter(c => c.user.full_name?.toLowerCase().includes(q) || c.last_message?.text?.toLowerCase().includes(q));
+    list = list.filter(c =>
+      c.user.full_name?.toLowerCase().includes(q) ||
+      (c.last_message?.image_url ? '[imagen]'.includes(q) : c.last_message?.text?.toLowerCase().includes(q)) ||
+      c.exchange?.offer?.title?.toLowerCase().includes(q) ||
+      c.exchange?.request?.title?.toLowerCase().includes(q)
+    );
   }
-  return list.sort((a, b) => new Date(b.last_message?.timestamp || b.exchange.created_at) - new Date(a.last_message?.timestamp || a.exchange.created_at));
+  // Ordenar por la fecha del último mensaje o creación de la propuesta
+  return list.sort((a, b) => {
+      const dateA = a.last_message?.timestamp ? new Date(a.last_message.timestamp) : new Date(a.exchange.created_at);
+      const dateB = b.last_message?.timestamp ? new Date(b.last_message.timestamp) : new Date(b.exchange.created_at);
+      return dateB - dateA;
+  });
 });
 
 const totalUnreadMessages = computed(() => conversations.value.reduce((sum, c) => sum + (c.unread_count > 0 ? 1 : 0), 0));
@@ -614,17 +651,9 @@ const canComplete = computed(() => {
     return ex.status === 'accepted';
 });
 
-const openDetailsModal = () => {
-  showDetailsModal.value = true;
-};
-
-const openCancelModal = () => {
-  isCancelModalVisible.value = true;
-};
-
-const closeCancelModal = () => {
-  isCancelModalVisible.value = false;
-};
+const openDetailsModal = () => showDetailsModal.value = true;
+const openCancelModal = () => isCancelModalVisible.value = true;
+const closeCancelModal = () => isCancelModalVisible.value = false;
 
 const confirmCancel = async () => {
   await updateProposalStatus('cancelled');
@@ -639,8 +668,12 @@ const openRatingModal = () => {
 
 const closeRatingModal = () => {
   isRatingModalVisible.value = false;
-  updateProposalStatus('completed');
+  // Solo marcamos como completado si se omite, si se envía ya se hace en submitRating
+  if (ratingScore.value === 0) {
+      updateProposalStatus('completed');
+  }
 };
+
 
 const submitRating = async () => {
   if (ratingScore.value === 0) {
@@ -659,7 +692,7 @@ const submitRating = async () => {
   try {
     await api.post('/ratings', ratingData);
     toast.success("¡Gracias por tu valoración!");
-    await updateProposalStatus('completed');
+    await updateProposalStatus('completed'); // Marcar como completado DESPUÉS de valorar
     if (userStore.user?.id) {
       await userStore.fetchUserProfile(userStore.user.id);
     }
@@ -670,30 +703,12 @@ const submitRating = async () => {
   }
 };
 
-const toggleActionMenu = (id) => {
-  activeMenuId.value = activeMenuId.value === id ? null : id;
-};
-
-const openDeleteModal = (conversation) => {
-  conversationToActOn.value = conversation;
-  isDeleteModalVisible.value = true;
-  activeMenuId.value = null;
-};
+const toggleActionMenu = (id) => activeMenuId.value = activeMenuId.value === id ? null : id;
+const openDeleteModal = (c) => { conversationToActOn.value = c; isDeleteModalVisible.value = true; activeMenuId.value = null; };
 const closeDeleteModal = () => isDeleteModalVisible.value = false;
-
-const openBlockModal = (conversation) => {
-  conversationToActOn.value = conversation;
-  isBlockModalVisible.value = true;
-  activeMenuId.value = null;
-};
+const openBlockModal = (c) => { conversationToActOn.value = c; isBlockModalVisible.value = true; activeMenuId.value = null; };
 const closeBlockModal = () => isBlockModalVisible.value = false;
-
-const openReportModal = (conversation) => {
-  conversationToActOn.value = conversation;
-  isReportModalVisible.value = true;
-  reportReason.value = '';
-  activeMenuId.value = null;
-};
+const openReportModal = (c) => { conversationToActOn.value = c; reportReason.value = ''; isReportModalVisible.value = true; activeMenuId.value = null; };
 const closeReportModal = () => isReportModalVisible.value = false;
 
 const confirmDelete = async () => {
@@ -704,12 +719,14 @@ const confirmDelete = async () => {
     conversations.value = conversations.value.filter(c => c.exchange.id !== idToDelete);
     if (selectedConversation.value?.exchange.id === idToDelete) {
       selectedConversation.value = null;
+      isChatViewVisible.value = false; // Volver a la lista si se borra el chat actual
     }
     toast.success("Conversación eliminada.");
   } catch (error) {
     toast.error("No se pudo eliminar la conversación.");
   } finally {
     closeDeleteModal();
+    conversationToActOn.value = null;
   }
 };
 
@@ -719,14 +736,18 @@ const confirmBlock = async () => {
   try {
     await api.post(`/users/${userToBlock.id}/block`);
     toast.warning(`Has bloqueado a ${formatUserName(userToBlock.full_name)}.`);
+    // Filtrar conversaciones locales
     conversations.value = conversations.value.filter(c => c.user.id !== userToBlock.id);
     if (selectedConversation.value?.user.id === userToBlock.id) {
-      selectedConversation.value = null;
+        selectedConversation.value = null;
+        isChatViewVisible.value = false; // Volver a la lista
     }
+    await fetchBlockedUsers(); // Actualizar lista de bloqueados si está abierta
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo bloquear al usuario.");
   } finally {
     closeBlockModal();
+    conversationToActOn.value = null;
   }
 };
 
@@ -734,18 +755,20 @@ const confirmBlockAndReport = async () => {
   if (!conversationToActOn.value || !reportReason.value.trim()) return;
   const userToReport = conversationToActOn.value.user;
   try {
-    await api.post(`/users/${userToReport.id}/report`, {
-      reason: reportReason.value.trim()
-    });
+    await api.post(`/users/${userToReport.id}/report`, { reason: reportReason.value.trim() });
     toast.error(`Has reportado y bloqueado a ${formatUserName(userToReport.full_name)}.`);
+    // Filtrar conversaciones locales
     conversations.value = conversations.value.filter(c => c.user.id !== userToReport.id);
-    if (selectedConversation.value?.user.id === userToReport.id) {
-      selectedConversation.value = null;
+     if (selectedConversation.value?.user.id === userToReport.id) {
+        selectedConversation.value = null;
+        isChatViewVisible.value = false; // Volver a la lista
     }
+    await fetchBlockedUsers(); // Actualizar lista de bloqueados si está abierta
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo reportar al usuario.");
   } finally {
     closeReportModal();
+    conversationToActOn.value = null;
   }
 };
 
@@ -754,10 +777,7 @@ const openBlockedUsersModal = async () => {
   isBlockedUsersModalVisible.value = true;
   await fetchBlockedUsers();
 };
-
-const closeBlockedUsersModal = () => {
-  isBlockedUsersModalVisible.value = false;
-};
+const closeBlockedUsersModal = () => isBlockedUsersModalVisible.value = false;
 
 const fetchBlockedUsers = async () => {
   loadingBlockedUsers.value = true;
@@ -776,7 +796,7 @@ const confirmUnblock = async (userToUnblock) => {
     await api.delete(`/users/${userToUnblock.id}/block`);
     toast.success(`${formatUserName(userToUnblock.full_name)} ha sido desbloqueado.`);
     blockedUsers.value = blockedUsers.value.filter(u => u.id !== userToUnblock.id);
-    await fetchConversations();
+    await fetchConversations(); // Recargar conversaciones por si alguna vuelve a aparecer
   } catch (error) {
     toast.error("No se pudo desbloquear al usuario.");
   }
@@ -786,19 +806,14 @@ const openProfilePanel = (user) => {
   selectedProfileUser.value = user;
   fetchProfileUserInventory(user.id);
 };
-
-const closeProfilePanel = () => {
-  selectedProfileUser.value = null;
-  profileUserInventory.value = [];
-};
+const closeProfilePanel = () => { selectedProfileUser.value = null; profileUserInventory.value = []; };
 
 const fetchProfileUserInventory = async (userId) => {
   loadingProfileInventory.value = true;
   try {
     const { data } = await api.get(`/users/${userId}/products`);
     profileUserInventory.value = data;
-  } catch (error) {
-    console.error("Error al cargar el inventario del perfil:", error);
+  } catch {
     toast.error("No se pudo cargar el inventario del usuario.");
     profileUserInventory.value = [];
   } finally {
@@ -818,9 +833,22 @@ const formatUserName = (fullName) => {
 
 const getAvatarUrl = (path) => {
   if (!path) return defaultAvatar;
-  if (path.startsWith('http') || path.startsWith('data:')) return path;
-  return path; // <-- CAMBIO CLAVE: Ya no se añade la URL base
+  // Si ya es una URL completa (http, https, data:), la devuelve tal cual
+  if (/^(https?:\/\/|data:)/i.test(path)) {
+      return path;
+  }
+  // Si empieza con /uploaded_images (ya incluye la base), la devuelve
+  if (path.startsWith('/uploaded_images')) {
+      return path;
+  }
+  // Si no, asumimos que es una ruta relativa y le añadimos la base
+  // ¡OJO! Asegúrate que VITE_API_BASE_URL esté configurada en tu .env
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  // Quita barras iniciales redundantes antes de unir
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  return `${baseUrl}/${cleanPath}`;
 };
+
 
 const formatTime = (s) => s ? new Date(s).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
 
@@ -832,11 +860,7 @@ const scrollToBottom = () => {
   });
 };
 
-watch(messages, () => {
-  scrollToBottom();
-}, {
-  deep: true
-});
+watch(messages, () => scrollToBottom(), { deep: true });
 
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
@@ -847,13 +871,28 @@ const connectWebSocket = () => {
   ws.onclose = () => ws = null;
   ws.onerror = (error) => console.error("Error de WebSocket:", error);
   ws.onmessage = (event) => {
-    const response = JSON.parse(event.data);
-    if (response.type === 'new_message' && selectedConversation.value?.exchange.id === response.data.proposal_id) {
-      messages.value.push(response.data);
-      markMessagesAsRead([response.data]);
+    try {
+        const response = JSON.parse(event.data);
+        if (response.type === 'new_message' && selectedConversation.value?.exchange.id === response.data.proposal_id) {
+          messages.value.push(response.data);
+          markMessagesAsRead([response.data]); // Marcar como leído si estamos viendo el chat
+        } else if (response.type === 'new_message') {
+            // Actualizar contador y último mensaje en la lista de conversaciones
+            const convIndex = conversations.value.findIndex(c => c.exchange.id === response.data.proposal_id);
+            if (convIndex !== -1) {
+                conversations.value[convIndex].unread_count = (conversations.value[convIndex].unread_count || 0) + 1;
+                conversations.value[convIndex].last_message = response.data;
+                // Mover la conversación al principio de la lista
+                const updatedConv = conversations.value.splice(convIndex, 1)[0];
+                conversations.value.unshift(updatedConv);
+            }
+        }
+    } catch (e) {
+        console.error("Error procesando mensaje WebSocket:", e, event.data);
     }
   };
 };
+
 
 const fetchConversations = async () => {
   loadingConversations.value = true;
@@ -869,30 +908,33 @@ const fetchConversations = async () => {
 
 const returnToConversationList = () => {
   isChatViewVisible.value = false;
+  selectedConversation.value = null; // Deseleccionar conversación
 };
 
 const selectConversation = async (conversation) => {
   isChatViewVisible.value = true;
-
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
 
   selectedConversation.value = conversation;
   messages.value = [];
   loadingMessages.value = true;
+  // ===== INICIO CAMBIO: Limpiar preview al cambiar =====
+  removeImagePreview();
+  // ===== FIN CAMBIO =====
   try {
     const { data } = await api.get(`/proposals/${conversation.exchange.id}/messages`);
     messages.value = data;
 
     if (data.length === 0 && conversation.exchange.proposer_user_id === userStore.user?.id) {
-      const offerTitle = conversation.exchange.offer?.title || 'producto ofrecido';
-      const requestTitle = conversation.exchange.request?.title || 'producto solicitado';
-
-      const autoMessage = `¡Hacemos intercambio! Te propongo cambiar mi producto "${offerTitle}" por tu producto "${requestTitle}".`;
-
-      newMessageText.value = autoMessage;
-      await sendMessage();
+        const offerTitle = conversation.exchange.offer?.title || 'producto ofrecido';
+        const requestTitle = conversation.exchange.request?.title || 'producto solicitado';
+        const autoMessage = `¡Hacemos intercambio! Te propongo cambiar mi producto "${offerTitle}" por tu producto "${requestTitle}".`;
+        newMessageText.value = autoMessage;
+        // Llama a sendMessage sin parámetros, ya que ahora toma los valores de las refs
+        await sendMessage();
     }
+
 
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
@@ -904,15 +946,99 @@ const selectConversation = async (conversation) => {
   }
 };
 
+// ===== INICIO CAMBIO: Funciones para imagen =====
+const triggerImageInput = () => {
+    imageInput.value?.click();
+};
+
+const handleImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Resetear por si el usuario cancela la selección
+    selectedImageFile.value = null;
+    imagePreviewUrl.value = null;
+
+    // Validar tipo (ya lo hacemos en backend, pero doble check)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        toast.error('Tipo de imagen no válido. Solo JPG, PNG, GIF, WEBP.');
+        imageInput.value.value = ''; // Limpiar input
+        return;
+    }
+
+    // Comprimir imagen
+    const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+    };
+
+    try {
+        console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+        const compressedFile = await imageCompression(file, options);
+        console.log(`Compressed size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+
+        selectedImageFile.value = compressedFile;
+
+        // Generar vista previa
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreviewUrl.value = e.target?.result;
+        };
+        reader.readAsDataURL(compressedFile);
+
+    } catch (error) {
+        console.error('Error al comprimir imagen:', error);
+        toast.error('Hubo un problema al procesar la imagen.');
+        selectedImageFile.value = null;
+        imagePreviewUrl.value = null;
+    } finally {
+         // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
+         if (imageInput.value) imageInput.value.value = '';
+    }
+};
+
+const removeImagePreview = () => {
+    selectedImageFile.value = null;
+    imagePreviewUrl.value = null;
+    if (imageInput.value) imageInput.value.value = ''; // Limpiar el input file
+};
+
+const openImageModal = (url) => {
+    zoomedImageUrl.value = url;
+};
+const closeImageModal = () => {
+    zoomedImageUrl.value = null;
+};
+// ===== FIN CAMBIO =====
+
+
 const sendMessage = async () => {
-  if (!newMessageText.value.trim() || !isChatActive.value) return;
+  // Ahora valida si hay texto O imagen seleccionada
+  if ((!newMessageText.value.trim() && !selectedImageFile.value) || !isChatActive.value) return;
 
   const textToSend = newMessageText.value.trim();
+  const imageToSend = selectedImageFile.value;
+  const previewUrl = imagePreviewUrl.value; // Guardar preview para UI optimista
+
+  // --- VALIDACIÓN DE ENLACES (solo si hay texto) ---
+  if (textToSend) {
+      const linkRegex = /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|net|org|pe|io|xyz|link|store|dev|app|ai|gob|edu))/i;
+      if (linkRegex.test(textToSend)) {
+          toast.error("Por seguridad, no está permitido enviar enlaces en el chat.");
+          return;
+      }
+  }
+  // --- FIN VALIDACIÓN ---
+
   const tempId = `temp_${Date.now()}`;
 
+  // --- UI Optimista ---
   messages.value.push({
     id: tempId,
-    text: textToSend,
+    text: textToSend || null, // Enviar null si no hay texto
+    image_url: previewUrl, // Usar la URL de preview local temporalmente
     sender_id: userStore.user.id,
     timestamp: new Date().toISOString(),
     is_read: false,
@@ -920,23 +1046,55 @@ const sendMessage = async () => {
     error: false,
   });
 
+  // Limpiar inputs inmediatamente
   newMessageText.value = '';
+  removeImagePreview(); // Limpia el archivo y la preview
+
+  // --- Preparar FormData ---
+  const formData = new FormData();
+  formData.append('proposal_id', selectedConversation.value.exchange.id.toString());
+  if (textToSend) {
+      formData.append('text', textToSend);
+  }
+  if (imageToSend) {
+      // Usar un nombre de archivo genérico o el original si se quiere
+      formData.append('image', imageToSend, imageToSend.name || 'chat-image.jpg');
+  }
 
   try {
-    const { data: sentMessageData } = await api.post('/messages', {
-      proposal_id: selectedConversation.value.exchange.id,
-      text: textToSend,
+    // --- Enviar FormData ---
+    const { data: sentMessageData } = await api.post('/messages', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // Axios suele ponerlo solo, pero por si acaso
+      },
     });
 
+    // Actualizar mensaje temporal con datos reales del backend
     const messageIndex = messages.value.findIndex(m => m.id === tempId);
     if (messageIndex !== -1) {
-      messages.value[messageIndex] = { ...messages.value[messageIndex], ...sentMessageData, sending: false };
+      // Reemplazar completamente para asegurar que image_url sea la del servidor
+      messages.value[messageIndex] = {
+           ...sentMessageData, // Datos del servidor (incluye image_url correcta)
+           sending: false,
+           error: false
+       };
     }
 
+    // Actualizar último mensaje en la lista de conversaciones
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
-    if (convInList) convInList.last_message = sentMessageData;
+    if (convInList) {
+        convInList.last_message = sentMessageData;
+        // Mover al principio
+        const index = conversations.value.indexOf(convInList);
+        if (index > 0) {
+            conversations.value.splice(index, 1);
+            conversations.value.unshift(convInList);
+        }
+    }
+
 
   } catch (e) {
+    console.error("Error al enviar mensaje:", e.response?.data || e.message);
     toast.error('Error al enviar el mensaje.');
     const messageIndex = messages.value.findIndex(m => m.id === tempId);
     if (messageIndex !== -1) {
@@ -946,42 +1104,85 @@ const sendMessage = async () => {
   }
 };
 
+
 const markMessagesAsRead = async (messagesToRead) => {
-    const unreadMessages = messagesToRead.filter(m => !m.is_read && m.sender_id !== userStore.user.id);
+    const unreadMessages = messagesToRead.filter(m => m && !m.is_read && m.sender_id !== userStore.user?.id);
     if (unreadMessages.length === 0) return;
+
+    // Marcar localmente como leídos primero para UI rápida
     unreadMessages.forEach(m => m.is_read = true);
+
     const messageIds = unreadMessages.map(m => m.id);
     try {
         await api.patch('/messages/read_status', { message_ids: messageIds, is_read: true });
+        // Actualizar contador en la lista de conversaciones si está seleccionada
+         if (selectedConversation.value) {
+            const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
+            if (convInList) {
+                // Recalcular unread_count localmente basado en los mensajes actuales
+                 const localUnread = messages.value.filter(m => m && !m.is_read && m.sender_id !== userStore.user?.id).length;
+                 convInList.unread_count = localUnread;
+
+            }
+        }
     } catch (error) {
-        console.error("Error al marcar mensajes como leídos:", error);
+        console.error("Error al marcar mensajes como leídos en backend:", error);
+        // Opcional: Revertir el estado local si falla el backend
+        // unreadMessages.forEach(m => m.is_read = false);
     }
 };
+
 
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
 
+  // Si se va a completar y el modal no está visible, abrirlo
   if (status === 'completed' && !isRatingModalVisible.value) {
-    openRatingModal();
-    return;
-  }
-
-  try {
-    await api.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
-    selectedConversation.value.exchange.status = status;
-
-    if (status !== 'completed') {
-        toast.success(`Propuesta ${statusTextMap[status]}.`);
+    // Verificar si YA existe una valoración para esta propuesta por el usuario actual
+    try {
+        const { data: existingRatings } = await api.get(`/ratings/proposal/${selectedConversation.value.exchange.id}/me`);
+        if (existingRatings && existingRatings.length > 0) {
+             // Si ya valoró, simplemente marcar como completado sin abrir modal
+             console.log("Ya valorado, marcando como completado.");
+             // Llamada directa para cambiar estado sin abrir modal
+             await changeProposalStatusInternal(status);
+        } else {
+             // Si no ha valorado, abrir modal
+             openRatingModal();
+        }
+    } catch (error) {
+        console.error("Error verificando rating existente:", error);
+        toast.error("Error al verificar estado de valoración.");
+        // Fallback: abrir modal si hay error
+        openRatingModal();
     }
-
-    const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
-    if (convInList) convInList.exchange.status = status;
-  } catch (e) {
-    toast.error(e.response?.data?.detail || `Error al actualizar la propuesta.`);
+    return; // Detener aquí, la lógica sigue en submitRating o closeRatingModal
   }
+
+  // Si no es 'completed' o si se está omitiendo la valoración (desde closeRatingModal)
+  await changeProposalStatusInternal(status);
 };
 
+// Función auxiliar para cambiar el estado de la propuesta
+const changeProposalStatusInternal = async (status) => {
+    if (!selectedConversation.value) return;
+    const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
+
+    try {
+        await api.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
+        selectedConversation.value.exchange.status = status;
+
+        if (status !== 'completed') { // No mostrar toast para 'completada' si viene de valoración
+             toast.success(`Propuesta ${statusTextMap[status]}.`);
+        }
+
+        const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
+        if (convInList) convInList.exchange.status = status;
+    } catch (e) {
+        toast.error(e.response?.data?.detail || `Error al actualizar la propuesta a ${status}.`);
+    }
+};
 
 onMounted(() => {
   if(userStore.isLoggedIn){
@@ -1006,7 +1207,7 @@ const statusStripeClass = (status) => ({
 const statusBadgeClass = (status) => ({
   'bg-white text-sky-700 border border-sky-300': status === 'pending',
   'bg-white text-green-700 border border-green-300': status === 'accepted',
-  'bg-white text-red-700 border border-red-300': 'rejected',
+  'bg-white text-red-700 border border-red-300': status === 'rejected',
   'bg-white text-slate-600 border border-slate-300': status === 'cancelled',
   'bg-[#9e0154] text-white ring-1 ring-[#d7037b]/50': status === 'completed',
 });
