@@ -1,6 +1,6 @@
 <template>
-  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
-    <button @click="$emit('close')" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl max-w-5xl mx-auto">
+    <button @click="$emit('close')" class="absolute top-3 right-3 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
       </svg>
@@ -158,7 +158,7 @@
         </div>
       </div>
     </transition>
-    </div>
+  </div>
 
   <div v-else class="animate-pulse p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl">
     <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
@@ -288,10 +288,8 @@ const submitProposal = async () => {
     const newProposal = response.data;
 
     if (newProposal && newProposal.id) {
-      // ===== INICIO DE LA LÓGICA DEL MENSAJE AUTOMÁTICO =====
       const messageText = `¡Hola! Te propongo un cambio. Me interesa tu "${props.product.title}" y te ofrezco mi "${selectedProduct.value.title}". ¿Qué te parece?`;
       await sendInitialMessage(newProposal.id, messageText);
-      // ===== FIN DE LA LÓGICA DEL MENSAJE AUTOMÁTICO =====
     }
     
     toast.success('¡Propuesta enviada con éxito!');
@@ -325,6 +323,7 @@ const sendInitialMessage = async (proposalId, text) => {
   } catch (error) {
     console.error("Error al enviar el mensaje inicial:", error);
     if (error.response) {
+      // Es crucial que expandas este objeto en la consola si el error persiste
       console.error("Detalles del error del servidor:", error.response.data);
     }
     toast.warning('La propuesta fue creada, pero el mensaje inicial no se pudo enviar.');
@@ -346,7 +345,9 @@ watch(() => props.product, (p) => {
 
 function normalizeImageUrl(url, defaultImg = placeholderImage) {
   if (!url) return defaultImg;
-  if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) return url;
+  if (/^(https?:|data:)/i.test(url)) {
+    return url;
+  }
   return `${props.apiBase}${url}`;
 }
 

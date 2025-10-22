@@ -3,17 +3,16 @@
     <Transition name="fade-overlay">
       <div
         v-if="selectedProduct"
-        class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm"
+        class="fixed inset-0 bg-black/60 flex items-start justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-modal-title"
         @keydown.esc="closeProductModal"
         @click.self="closeProductModal"
       >
-        <div class="max-w-5xl w-full animate-[pop-in] opacity-0">
+        <div class="max-w-5xl w-full animate-[pop-in] opacity-0 my-auto">
           <ProductCard
             :product="selectedProduct"
-            :apiBase="API_BASE_URL" 
             @propose-trade="handleProposeTrade"
             @close="closeProductModal"
           />
@@ -411,10 +410,12 @@ const sortOptions = ref([
 
 const openProductModal = (product) => {
   selectedProduct.value = product;
+  document.body.style.overflow = 'hidden';
 };
 
 const closeProductModal = () => {
   selectedProduct.value = null;
+  document.body.style.overflow = '';
 };
 
 const handleProposeTrade = (product) => {
@@ -548,11 +549,14 @@ onMounted(() => {
   }, { rootMargin: '300px' });
   if (sentinelRef.value) io.observe(sentinelRef.value);
 });
+
 onBeforeUnmount(() => {
   stopShuffleTimer();
   if (io && sentinelRef.value) io.unobserve(sentinelRef.value);
   io = null;
+  document.body.style.overflow = ''; // Asegurarse de restaurar el scroll
 });
+
 watch([autoShuffle, hovering], () => { startShuffleTimer(); });
 watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 </script>
