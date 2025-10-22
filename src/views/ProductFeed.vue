@@ -3,16 +3,17 @@
     <Transition name="fade-overlay">
       <div
         v-if="selectedProduct"
-        class="fixed inset-0 bg-black/60 flex items-start justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm overflow-y-auto"
+        class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 sm:p-6 z-[60] backdrop-blur-sm"
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-modal-title"
         @keydown.esc="closeProductModal"
         @click.self="closeProductModal"
       >
-        <div class="max-w-5xl w-full animate-[pop-in] opacity-0 my-auto">
+        <div class="max-w-5xl w-full animate-[pop-in] opacity-0">
           <ProductCard
             :product="selectedProduct"
+            :apiBase="API_BASE_URL" 
             @propose-trade="handleProposeTrade"
             @close="closeProductModal"
           />
@@ -276,7 +277,7 @@
         >
           <div class="relative overflow-hidden rounded-t-xl">
             <img
-              :src="product.thumbnail_image_url"
+              :src="`${API_BASE_URL}${product.thumbnail_image_url}`"
               :alt="product.title"
               class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               loading="lazy"
@@ -365,21 +366,18 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
-import ProductCard from '@/views/ProductCard.vue'; // Corregido: Asumiendo que ProductCard está en views
+import ProductCard from './ProductCard.vue';
 
 const userStore = useUserStore();
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const products = ref([]);
 const loading = ref(true);
-
 const selectedProduct = ref(null);
-
 const selectedCategory = ref('');
 const sortBy = ref('date-desc');
 const searchQuery = ref('');
 let searchTimer = null;
-
 const isCategoryDropdownOpen = ref(false);
 const isSortDropdownOpen = ref(false);
 const catBtnRef = ref(null);
@@ -388,8 +386,6 @@ const catListRef = ref(null);
 const sortListRef = ref(null);
 const catOptionRefs = ref([]);
 const sortOptionRefs = ref([]);
-let focusedIndex = { cat: 0, sort: 0 };
-
 const pageSize = 12;
 const page = ref(1);
 const sentinelRef = ref(null);
@@ -415,12 +411,10 @@ const sortOptions = ref([
 
 const openProductModal = (product) => {
   selectedProduct.value = product;
-  document.body.style.overflow = 'hidden'; // Evita scroll del fondo
 };
 
 const closeProductModal = () => {
   selectedProduct.value = null;
-  document.body.style.overflow = ''; // Restaura scroll del fondo
 };
 
 const handleProposeTrade = (product) => {
@@ -464,11 +458,18 @@ const fetchAllProducts = async () => {
     const res = await fetch(`${API_BASE_URL}/products_feed`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    
     const loggedId = userStore.user?.id;
-    products.value = (loggedId ? data.filter(p => p.user_id !== loggedId) : data)
-      .map(p => ({ ...p, thumbnail_image_url: `${API_BASE_URL}${p.thumbnail_image_url}` }));
+    if (loggedId) {
+      // **LA CORRECCIÓN CLAVE**
+      // Asegura que ambos IDs sean números para una comparación segura
+      products.value = data.filter(p => Number(p.user_id) !== Number(loggedId));
+    } else {
+      products.value = data;
+    }
+
   } catch (err) {
-    console.error('Error fetching:', err);
+    console.error('Error fetching products:', err);
   } finally {
     loading.value = false;
   }
@@ -506,9 +507,24 @@ const loadMore = () => { if (hasMore.value) page.value += 1; };
 
 const toggleCategory = () => { isCategoryDropdownOpen.value = !isCategoryDropdownOpen.value; };
 const toggleSort = () => { isSortDropdownOpen.value = !isSortDropdownOpen.value; };
-const selectCategory = (c) => { selectedCategory.value = c; isCategoryDropdownOpen.value = false; page.value = 1; };
-const selectSortBy = (v) => { sortBy.value = v; isSortDropdownOpen.value = false; page.value = 1; };
-const resetFilters = () => { selectedCategory.value = ''; sortBy.value = 'date-desc'; searchQuery.value = ''; page.value = 1; };
+
+const selectCategory = (c) => {
+  selectedCategory.value = c;
+  isCategoryDropdownOpen.value = false;
+  page.value = 1;
+};
+const selectSortBy = (v) => {
+  sortBy.value = v;
+  isSortDropdownOpen.value = false;
+  page.value = 1;
+};
+
+const resetFilters = () => {
+  selectedCategory.value = '';
+  sortBy.value = 'date-desc';
+  searchQuery.value = '';
+  page.value = 1;
+};
 
 const orderedCards = computed(() => {
   const arr = [...cards.value];
@@ -517,25 +533,26 @@ const orderedCards = computed(() => {
 const shuffle = () => { frontIndex.value = (frontIndex.value + 1) % cards.value.length; };
 const positionClass = (pos) => (pos === 0 ? 'z-30 ring-gray-200 shadow-2xl dark:ring-white/10' : pos === 1 ? 'z-20 ring-gray-200 shadow-xl opacity-95 dark:ring-white/10' : 'z-10 ring-gray-200 shadow opacity-85 dark:ring-white/10');
 const transformStyle = (pos) => pos === 0 ? { transform: 'translate(-50%, -50%) rotate(0deg) scale(1)' } : pos === 1 ? { transform: 'translate(calc(-50% + 18px), calc(-50% + 10px)) rotate(6deg) scale(0.96)' } : { transform: 'translate(calc(-50% - 18px), calc(-50% + 18px)) rotate(-8deg) scale(0.92)' };
-const startShuffleTimer = () => { stopShuffleTimer(); shuffleTimer = setInterval(() => { if (autoShuffle.value) shuffle(); }, hovering.value ? 1800 : 2800); };
+const startShuffleTimer = () => {
+  stopShuffleTimer();
+  shuffleTimer = setInterval(() => { if (autoShuffle.value) shuffle(); }, hovering.value ? 1800 : 2800);
+};
 const stopShuffleTimer = () => { if (shuffleTimer) { clearInterval(shuffleTimer); shuffleTimer = null; } };
 
 onMounted(() => {
   fetchAllProducts();
   startShuffleTimer();
+
   io = new IntersectionObserver((entries) => {
     entries.forEach((e) => { if (e.isIntersecting) loadMore(); });
   }, { rootMargin: '300px' });
   if (sentinelRef.value) io.observe(sentinelRef.value);
 });
-
 onBeforeUnmount(() => {
   stopShuffleTimer();
   if (io && sentinelRef.value) io.unobserve(sentinelRef.value);
   io = null;
-  document.body.style.overflow = ''; // Asegurarse de restaurar el scroll
 });
-
 watch([autoShuffle, hovering], () => { startShuffleTimer(); });
 watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
 </script>
