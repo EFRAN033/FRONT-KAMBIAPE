@@ -3,9 +3,9 @@
     <Header />
 
     <main class="py-8 sm:py-10">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-
-        <header class="mb-6 sm:mb-8">
+      <div class="container mx-auto max-w-7xl lg:px-8" :class="{ 'px-4 sm:px-6': !isChatViewVisible }">
+        
+        <header class="mb-6 sm:mb-8 lg:block" :class="{ 'hidden': isChatViewVisible }">
           <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 class="text-[28px] sm:text-[34px] font-black tracking-tight">Intercambios · Mensajería</h1>
@@ -151,56 +151,89 @@
                   </button>
 
                   <img @click="openProfilePanel(selectedConversation.user)" :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow cursor-pointer lg:cursor-default" />
+                  
                   <div @click="openProfilePanel(selectedConversation.user)" class="min-w-0 cursor-pointer lg:cursor-default">
-                    <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
-                    <p class="text-[12px] text-slate-500" v-if="selectedConversation.user.ubicacion">{{ formatUbicacion(selectedConversation.user.ubicacion) }}</p>
-                    <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
-                    <p v-else class="text-[12px] text-slate-600 flex items-center gap-1 flex-wrap h-4">
-                      <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.offer.title }}</span>
-                      <ArrowRightIcon class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                      <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.request.title }}</span>
-                    </p>
+                    <div>
+                      <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
+                      <p class="text-[12px] text-slate-500 truncate" v-if="selectedConversation.user.ubicacion">{{ formatUbicacion(selectedConversation.user.ubicacion) }}</p>
+                    </div>
+                    <div class="mt-1">
+                      <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 animate-pulse">está escribiendo...</p>
+                      <p v-else class="text-[12px] text-slate-600 flex items-center gap-1">
+                        <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.offer.title }}</span>
+                        <ArrowRightIcon class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                        <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.request.title }}</span>
+                      </p>
+                    </div>
                   </div>
+
                 </div>
-                <div @click.stop class="flex gap-1.5 flex-shrink-0">
-                  <button v-if="canAcceptOrReject" @click="updateProposalStatus('accepted')" class="p-2 text-green-700 bg-green-50 hover:bg-green-100" title="Aceptar"><CheckIcon class="h-5 w-5" /></button>
-                  <button v-if="canAcceptOrReject" @click="updateProposalStatus('rejected')" class="p-2 text-red-700 bg-red-50 hover:bg-red-100" title="Rechazar"><XMarkIcon class="h-5 w-5" /></button>
-                  <button v-if="canCancel" @click="openCancelModal" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
-                  <button v-if="canComplete" @click="openRatingModal" class="p-2 text-blue-700 bg-blue-50 hover:bg-blue-100" title="Completar y Valorar"><StarIcon class="h-5 w-5" /></button>
-                  <button @click="openDetailsModal" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100" title="Detalles"><EyeIcon class="h-5 w-5" /></button>
+                 <div class="flex-shrink-0">
+                    <button @click="openDetailsModal" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100 rounded-full" title="Detalles del Intercambio">
+                        <EyeIcon class="h-5 w-5" />
+                    </button>
                 </div>
               </div>
+              
+              <ExchangeStatusBanner :exchange="selectedConversation.exchange">
+                 <template v-if="canAcceptOrReject">
+                    <button @click="updateProposalStatus('accepted')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-green-600 text-white hover:bg-green-700">Aceptar</button>
+                    <button @click="updateProposalStatus('rejected')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-white border border-slate-300 text-slate-800 hover:bg-slate-50">Rechazar</button>
+                 </template>
+                 <button v-if="canCancel" @click="openCancelModal" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-white border border-slate-300 text-slate-800 hover:bg-slate-50">Cancelar Propuesta</button>
+                 <button v-if="canComplete" @click="openRatingModal" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700">Completar y Valorar</button>
+              </ExchangeStatusBanner>
 
                <div class="relative flex-1 overflow-hidden">
                 <div v-if="loadingMessages" class="absolute inset-0 flex items-center justify-center bg-white/50 z-20">
                     <svg class="animate-spin h-8 w-8 text-[#d7037b]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                 </div>
 
-                <div v-else-if="messages.length === 0" class="flex h-full items-center justify-center text-center text-slate-500">
-                    <p>Aún no hay mensajes en esta conversación.<br>¡Envía el primero!</p>
-                </div>
+                <div class="h-full overflow-y-auto custom-scrollbar-unique space-y-4 p-5" ref="messagesContainer">
+                  <SystemMessage
+                    :text="`Intercambio por '${selectedConversation.exchange.offer.title}' iniciado`"
+                  >
+                    <template #icon><ArrowRightIcon class="h-4 w-4 text-slate-400" /></template>
+                  </SystemMessage>
+                  
+                  <div v-for="(message, index) in messages" :key="message.id">
+                    <SystemMessage v-if="message.is_system_message" :text="message.text">
+                        <template #icon>
+                            <CheckCircleIconSolid v-if="message.text.includes('aceptado')" class="h-4 w-4 text-green-500" />
+                            <XCircleIcon v-else-if="message.text.includes('rechazado')" class="h-4 w-4 text-red-500" />
+                            <NoSymbolIconSolid v-else-if="message.text.includes('cancelado')" class="h-4 w-4 text-slate-500" />
+                            <StarIconSolid v-else-if="message.text.includes('completado')" class="h-4 w-4 text-pink-500" />
+                        </template>
+                    </SystemMessage>
 
-                <div v-else class="h-full overflow-y-auto custom-scrollbar-unique space-y-4 p-5" ref="messagesContainer">
-                  <div v-for="(message, index) in messages" :key="message.id" class="flex animate-fade-in-message" :style="{ animationDelay: `${index * 0.05}s` }" :class="message.sender_id === userStore.user?.id ? 'justify-end' : 'justify-start'">
-                    <img v-if="message.sender_id !== userStore.user?.id" :src="getAvatarUrl(selectedConversation.user.avatar)" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
-                    <div class="max-w-[78%] rounded-[10px] shadow-[0_1px_0_rgba(0,0,0,0.04)]" :class="message.sender_id === userStore.user?.id ? 'bg-[#d7037b] text-white rounded-br-sm' : 'bg-slate-50 text-slate-800 border border-slate-200 rounded-bl-sm'">
-                      <img v-if="message.image_url" :src="getAvatarUrl(message.image_url)" alt="Imagen enviada" class="max-w-xs max-h-64 rounded-md my-1 cursor-pointer" @click="() => openImageModal(getAvatarUrl(message.image_url))"/>
-                      <p v-else class="text-[15px] leading-relaxed break-words px-4 py-3">{{ message.text }}</p>
-                      <div class="flex items-center gap-1 text-[11px] px-4 pb-2 pt-1" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
-                        <span>{{ formatTime(message.timestamp) }}</span>
-                        <span v-if="message.sender_id === userStore.user?.id">
-                          <ExclamationCircleIcon v-if="message.error" class="h-4 w-4 inline-block text-red-300" title="Error al enviar"/>
-                          <ClockIcon v-else-if="message.sending" class="h-4 w-4 inline-block animate-spin" title="Enviando..."/>
-                          <CheckCircleIcon v-else-if="message.is_read" class="h-4 w-4 inline-block text-blue-400" title="Visto" />
-                          <CheckCircleIcon v-else class="h-4 w-4 inline-block" title="Entregado" />
-                        </span>
+                    <div v-else class="flex animate-fade-in-message" :style="{ animationDelay: `${index * 0.05}s` }" :class="message.sender_id === userStore.user?.id ? 'justify-end' : 'justify-start'">
+                      <img v-if="message.sender_id !== userStore.user?.id" :src="getAvatarUrl(selectedConversation.user.avatar)" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
+                      <div class="max-w-[78%] rounded-[10px] shadow-[0_1px_0_rgba(0,0,0,0.04)]" :class="message.sender_id === userStore.user?.id ? 'bg-[#d7037b] text-white rounded-br-sm' : 'bg-slate-50 text-slate-800 border border-slate-200 rounded-bl-sm'">
+                        <img v-if="message.image_url" :src="getAvatarUrl(message.image_url)" alt="Imagen enviada" class="max-w-xs max-h-64 rounded-md my-1 cursor-pointer" @click="() => openImageModal(getAvatarUrl(message.image_url))"/>
+                        <p v-else class="text-[15px] leading-relaxed break-words px-4 py-3">{{ message.text }}</p>
+                        <div class="flex items-center gap-1 text-[11px] px-4 pb-2 pt-1" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
+                          <span>{{ formatTime(message.timestamp) }}</span>
+                          <span v-if="message.sender_id === userStore.user?.id">
+                            <ExclamationCircleIcon v-if="message.error" class="h-4 w-4 inline-block text-red-300" title="Error al enviar"/>
+                            <ClockIcon v-else-if="message.sending" class="h-4 w-4 inline-block animate-spin" title="Enviando..."/>
+                            <CheckCircleIcon v-else-if="message.is_read" class="h-4 w-4 inline-block text-blue-400" title="Visto" />
+                            <CheckCircleIcon v-else class="h-4 w-4 inline-block" title="Entregado" />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="p-4 border-t border-slate-200 bg-slate-50">
+              <div class="p-4 border-t border-slate-200 bg-slate-50 relative">
+                <div v-if="!isChatActive" class="absolute inset-0 bg-slate-100/80 backdrop-blur-sm z-10 flex items-center justify-center text-center">
+                    <div class="px-4 py-2 bg-white rounded-lg shadow border border-slate-200">
+                      <p class="font-semibold text-sm text-red-700">Este intercambio fue {{ statusText(selectedConversation.exchange.status).toLowerCase() }}.</p>
+                      <p class="text-xs text-slate-600">No se pueden enviar más mensajes.</p>
+                    </div>
+                </div>
+
                 <div v-if="imagePreviewUrl" class="mb-2 relative w-24 h-24 border border-slate-300 rounded overflow-hidden">
                     <img :src="imagePreviewUrl" alt="Vista previa" class="w-full h-full object-cover"/>
                     <button @click="removeImagePreview" class="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5">
@@ -209,39 +242,19 @@
                 </div>
                 <form @submit.prevent="sendMessage" class="flex items-center gap-3">
                   <input type="file" ref="imageInput" @change="handleImageChange" accept="image/jpeg, image/png, image/gif, image/webp" class="hidden" />
-                  <button
-                    type="button"
-                    @click="triggerImageInput"
-                    :disabled="!isChatActive"
-                    class="p-3 text-sm font-semibold text-white transition-transform"
-                    :class="!isChatActive ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-500 hover:bg-slate-600 hover:scale-105 active:scale-95'"
-                    title="Adjuntar imagen"
-                  >
+                  <button type="button" @click="triggerImageInput" class="p-3 bg-slate-500 hover:bg-slate-600 text-white transition-transform hover:scale-105 active:scale-95" title="Adjuntar imagen">
                     <PaperClipIcon class="h-5 w-5"/>
                   </button>
-
-                  <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" :disabled="!isChatActive" />
-
-                  <button
-                    type="button"
-                    @click="isLocationModalVisible = true"
-                    :disabled="!isChatActive"
-                    class="p-3 text-sm font-semibold text-white transition-transform"
-                    :class="!isChatActive ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#9e0154] hover:bg-[#d7037b] hover:scale-105 active:scale-95'"
-                    title="Sugerir lugar de encuentro"
-                  >
+                  <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" />
+                  <button type="button" @click="isLocationModalVisible = true" class="p-3 bg-[#9e0154] hover:bg-[#d7037b] text-white transition-transform hover:scale-105 active:scale-95" title="Sugerir lugar de encuentro">
                     <MapPinIcon class="h-5 w-5" />
                   </button>
-
-                  <button type="submit" :disabled="(!newMessageText.trim() && !selectedImageFile) || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() && !selectedImageFile) || !isChatActive ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
+                  <button type="submit" :disabled="!newMessageText.trim() && !selectedImageFile" class="px-4 py-3 bg-[#d7037b] text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" title="Enviar mensaje">
                     <PaperAirplaneIcon class="h-5 w-5" />
                   </button>
                 </form>
-                 <p v-if="!isChatActive" class="text-[12px] text-red-500 mt-2 text-center">
-                  No puedes enviar mensajes a propuestas que han sido {{ statusText(selectedConversation.exchange.status).toLowerCase() }}s.
-                </p>
               </div>
-              </template>
+            </template>
             <template v-else-if="!isChatViewVisible">
               <div class="hidden lg:flex flex-1 items-center justify-center p-8 text-center text-slate-500">
                 <div class="flex flex-col items-center gap-3">
@@ -450,7 +463,7 @@
                 <svg class="animate-spin h-8 w-8 text-[#d7037b] mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             </div>
             <div v-else-if="blockedUsers.length === 0" class="text-center py-8 text-slate-500">
-                <NoSymbolIcon class="h-12 w-12 mx-auto text-slate-300 mb-2"/>
+                <NoSymbolIconSolid class="h-12 w-12 mx-auto text-slate-300 mb-2"/>
                 <p>No tienes a nadie bloqueado.</p>
             </div>
             <ul v-else class="space-y-3">
@@ -517,20 +530,25 @@ import { useUserStore } from '@/stores/user';
 import api from '@/axios';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
+// ¡Asegúrate que la ruta sea correcta!
+import ExchangeStatusBanner from '@/assets/components/ExchangeStatusBanner.vue';
+import SystemMessage from '@/assets/components/SystemMessage.vue';
 import { useToast } from 'vue-toastification';
 import {
   ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon,
   EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
   UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon,
   MapPinIcon, ArrowLeftIcon,
-  PaperClipIcon // <-- NUEVA IMPORTACIÓN
+  PaperClipIcon
 } from '@heroicons/vue/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
+
+// Unifica los iconos sólidos en una sola línea
+import { StarIcon as StarIconSolid, CheckCircleIcon as CheckCircleIconSolid, XCircleIcon, NoSymbolIcon as NoSymbolIconSolid } from '@heroicons/vue/24/solid';
+
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
 import { useRouter } from 'vue-router';
 import suggestedPlacesData from '@/data/lugares_seguros.json';
-import imageCompression from 'browser-image-compression'; // <-- NUEVA IMPORTACIÓN
-
+import imageCompression from 'browser-image-compression';
 const isChatViewVisible = ref(false);
 
 const userStore = useUserStore();
@@ -576,12 +594,10 @@ const WS_BASE_URL = `${wsProtocol}//${window.location.host}/ws`;
 
 const isLocationModalVisible = ref(false);
 
-// ===== INICIO CAMBIO: Refs para manejo de imagen =====
-const imageInput = ref(null); // Ref para el input file
-const selectedImageFile = ref(null); // Para guardar el archivo comprimido
-const imagePreviewUrl = ref(null); // Para mostrar la vista previa
-const zoomedImageUrl = ref(null); // Para el modal de imagen grande
-// ===== FIN CAMBIO =====
+const imageInput = ref(null);
+const selectedImageFile = ref(null);
+const imagePreviewUrl = ref(null);
+const zoomedImageUrl = ref(null);
 
 const suggestedPlaces = computed(() => {
   if (!userStore.user || !userStore.user.districtId) {
@@ -593,7 +609,7 @@ const suggestedPlaces = computed(() => {
 const sendSuggestedLocation = (place) => {
   const locationMessage = `¡Hola! Para mayor seguridad, te sugiero que nos encontremos en un lugar público. ¿Qué te parece en "${place.nombre}"?`;
   newMessageText.value = locationMessage;
-  sendMessage(); // Llama a sendMessage SIN parámetros ahora
+  sendMessage();
   isLocationModalVisible.value = false;
 };
 
@@ -617,7 +633,6 @@ const filteredConversations = computed(() => {
       c.exchange?.request?.title?.toLowerCase().includes(q)
     );
   }
-  // Ordenar por la fecha del último mensaje o creación de la propuesta
   return list.sort((a, b) => {
       const dateA = a.last_message?.timestamp ? new Date(a.last_message.timestamp) : new Date(a.exchange.created_at);
       const dateB = b.last_message?.timestamp ? new Date(b.last_message.timestamp) : new Date(b.exchange.created_at);
@@ -668,12 +683,10 @@ const openRatingModal = () => {
 
 const closeRatingModal = () => {
   isRatingModalVisible.value = false;
-  // Solo marcamos como completado si se omite, si se envía ya se hace en submitRating
   if (ratingScore.value === 0) {
       updateProposalStatus('completed');
   }
 };
-
 
 const submitRating = async () => {
   if (ratingScore.value === 0) {
@@ -692,7 +705,7 @@ const submitRating = async () => {
   try {
     await api.post('/ratings', ratingData);
     toast.success("¡Gracias por tu valoración!");
-    await updateProposalStatus('completed'); // Marcar como completado DESPUÉS de valorar
+    await updateProposalStatus('completed');
     if (userStore.user?.id) {
       await userStore.fetchUserProfile(userStore.user.id);
     }
@@ -719,7 +732,7 @@ const confirmDelete = async () => {
     conversations.value = conversations.value.filter(c => c.exchange.id !== idToDelete);
     if (selectedConversation.value?.exchange.id === idToDelete) {
       selectedConversation.value = null;
-      isChatViewVisible.value = false; // Volver a la lista si se borra el chat actual
+      isChatViewVisible.value = false;
     }
     toast.success("Conversación eliminada.");
   } catch (error) {
@@ -736,13 +749,12 @@ const confirmBlock = async () => {
   try {
     await api.post(`/users/${userToBlock.id}/block`);
     toast.warning(`Has bloqueado a ${formatUserName(userToBlock.full_name)}.`);
-    // Filtrar conversaciones locales
     conversations.value = conversations.value.filter(c => c.user.id !== userToBlock.id);
     if (selectedConversation.value?.user.id === userToBlock.id) {
         selectedConversation.value = null;
-        isChatViewVisible.value = false; // Volver a la lista
+        isChatViewVisible.value = false;
     }
-    await fetchBlockedUsers(); // Actualizar lista de bloqueados si está abierta
+    await fetchBlockedUsers();
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo bloquear al usuario.");
   } finally {
@@ -757,13 +769,12 @@ const confirmBlockAndReport = async () => {
   try {
     await api.post(`/users/${userToReport.id}/report`, { reason: reportReason.value.trim() });
     toast.error(`Has reportado y bloqueado a ${formatUserName(userToReport.full_name)}.`);
-    // Filtrar conversaciones locales
     conversations.value = conversations.value.filter(c => c.user.id !== userToReport.id);
      if (selectedConversation.value?.user.id === userToReport.id) {
         selectedConversation.value = null;
-        isChatViewVisible.value = false; // Volver a la lista
+        isChatViewVisible.value = false;
     }
-    await fetchBlockedUsers(); // Actualizar lista de bloqueados si está abierta
+    await fetchBlockedUsers();
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo reportar al usuario.");
   } finally {
@@ -796,7 +807,7 @@ const confirmUnblock = async (userToUnblock) => {
     await api.delete(`/users/${userToUnblock.id}/block`);
     toast.success(`${formatUserName(userToUnblock.full_name)} ha sido desbloqueado.`);
     blockedUsers.value = blockedUsers.value.filter(u => u.id !== userToUnblock.id);
-    await fetchConversations(); // Recargar conversaciones por si alguna vuelve a aparecer
+    await fetchConversations();
   } catch (error) {
     toast.error("No se pudo desbloquear al usuario.");
   }
@@ -833,22 +844,12 @@ const formatUserName = (fullName) => {
 
 const getAvatarUrl = (path) => {
   if (!path) return defaultAvatar;
-  // Si ya es una URL completa (http, https, data:), la devuelve tal cual
-  if (/^(https?:\/\/|data:)/i.test(path)) {
-      return path;
-  }
-  // Si empieza con /uploaded_images (ya incluye la base), la devuelve
-  if (path.startsWith('/uploaded_images')) {
-      return path;
-  }
-  // Si no, asumimos que es una ruta relativa y le añadimos la base
-  // ¡OJO! Asegúrate que VITE_API_BASE_URL esté configurada en tu .env
+  if (/^(https?:\/\/|data:)/i.test(path)) return path;
+  if (path.startsWith('/uploaded_images')) return path;
   const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-  // Quita barras iniciales redundantes antes de unir
   const cleanPath = path.startsWith('/') ? path.substring(1) : path;
   return `${baseUrl}/${cleanPath}`;
 };
-
 
 const formatTime = (s) => s ? new Date(s).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
 
@@ -875,14 +876,12 @@ const connectWebSocket = () => {
         const response = JSON.parse(event.data);
         if (response.type === 'new_message' && selectedConversation.value?.exchange.id === response.data.proposal_id) {
           messages.value.push(response.data);
-          markMessagesAsRead([response.data]); // Marcar como leído si estamos viendo el chat
+          markMessagesAsRead([response.data]);
         } else if (response.type === 'new_message') {
-            // Actualizar contador y último mensaje en la lista de conversaciones
             const convIndex = conversations.value.findIndex(c => c.exchange.id === response.data.proposal_id);
             if (convIndex !== -1) {
                 conversations.value[convIndex].unread_count = (conversations.value[convIndex].unread_count || 0) + 1;
                 conversations.value[convIndex].last_message = response.data;
-                // Mover la conversación al principio de la lista
                 const updatedConv = conversations.value.splice(convIndex, 1)[0];
                 conversations.value.unshift(updatedConv);
             }
@@ -892,7 +891,6 @@ const connectWebSocket = () => {
     }
   };
 };
-
 
 const fetchConversations = async () => {
   loadingConversations.value = true;
@@ -908,7 +906,7 @@ const fetchConversations = async () => {
 
 const returnToConversationList = () => {
   isChatViewVisible.value = false;
-  selectedConversation.value = null; // Deseleccionar conversación
+  selectedConversation.value = null;
 };
 
 const selectConversation = async (conversation) => {
@@ -919,9 +917,7 @@ const selectConversation = async (conversation) => {
   selectedConversation.value = conversation;
   messages.value = [];
   loadingMessages.value = true;
-  // ===== INICIO CAMBIO: Limpiar preview al cambiar =====
   removeImagePreview();
-  // ===== FIN CAMBIO =====
   try {
     const { data } = await api.get(`/proposals/${conversation.exchange.id}/messages`);
     messages.value = data;
@@ -931,10 +927,8 @@ const selectConversation = async (conversation) => {
         const requestTitle = conversation.exchange.request?.title || 'producto solicitado';
         const autoMessage = `¡Hacemos intercambio! Te propongo cambiar mi producto "${offerTitle}" por tu producto "${requestTitle}".`;
         newMessageText.value = autoMessage;
-        // Llama a sendMessage sin parámetros, ya que ahora toma los valores de las refs
         await sendMessage();
     }
-
 
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
@@ -946,7 +940,6 @@ const selectConversation = async (conversation) => {
   }
 };
 
-// ===== INICIO CAMBIO: Funciones para imagen =====
 const triggerImageInput = () => {
     imageInput.value?.click();
 };
@@ -955,46 +948,29 @@ const handleImageChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Resetear por si el usuario cancela la selección
     selectedImageFile.value = null;
     imagePreviewUrl.value = null;
 
-    // Validar tipo (ya lo hacemos en backend, pero doble check)
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
         toast.error('Tipo de imagen no válido. Solo JPG, PNG, GIF, WEBP.');
-        imageInput.value.value = ''; // Limpiar input
+        imageInput.value.value = '';
         return;
     }
 
-    // Comprimir imagen
-    const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-    };
+    const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
 
     try {
-        console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
         const compressedFile = await imageCompression(file, options);
-        console.log(`Compressed size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
-
         selectedImageFile.value = compressedFile;
-
-        // Generar vista previa
         const reader = new FileReader();
-        reader.onload = (e) => {
-            imagePreviewUrl.value = e.target?.result;
-        };
+        reader.onload = (e) => { imagePreviewUrl.value = e.target?.result; };
         reader.readAsDataURL(compressedFile);
-
     } catch (error) {
-        console.error('Error al comprimir imagen:', error);
         toast.error('Hubo un problema al procesar la imagen.');
         selectedImageFile.value = null;
         imagePreviewUrl.value = null;
     } finally {
-         // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
          if (imageInput.value) imageInput.value.value = '';
     }
 };
@@ -1002,27 +978,19 @@ const handleImageChange = async (event) => {
 const removeImagePreview = () => {
     selectedImageFile.value = null;
     imagePreviewUrl.value = null;
-    if (imageInput.value) imageInput.value.value = ''; // Limpiar el input file
+    if (imageInput.value) imageInput.value.value = '';
 };
 
-const openImageModal = (url) => {
-    zoomedImageUrl.value = url;
-};
-const closeImageModal = () => {
-    zoomedImageUrl.value = null;
-};
-// ===== FIN CAMBIO =====
-
+const openImageModal = (url) => { zoomedImageUrl.value = url; };
+const closeImageModal = () => { zoomedImageUrl.value = null; };
 
 const sendMessage = async () => {
-  // Ahora valida si hay texto O imagen seleccionada
   if ((!newMessageText.value.trim() && !selectedImageFile.value) || !isChatActive.value) return;
 
   const textToSend = newMessageText.value.trim();
   const imageToSend = selectedImageFile.value;
-  const previewUrl = imagePreviewUrl.value; // Guardar preview para UI optimista
+  const previewUrl = imagePreviewUrl.value;
 
-  // --- VALIDACIÓN DE ENLACES (solo si hay texto) ---
   if (textToSend) {
       const linkRegex = /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|net|org|pe|io|xyz|link|store|dev|app|ai|gob|edu))/i;
       if (linkRegex.test(textToSend)) {
@@ -1030,71 +998,41 @@ const sendMessage = async () => {
           return;
       }
   }
-  // --- FIN VALIDACIÓN ---
 
   const tempId = `temp_${Date.now()}`;
-
-  // --- UI Optimista ---
   messages.value.push({
-    id: tempId,
-    text: textToSend || null, // Enviar null si no hay texto
-    image_url: previewUrl, // Usar la URL de preview local temporalmente
-    sender_id: userStore.user.id,
-    timestamp: new Date().toISOString(),
-    is_read: false,
-    sending: true,
-    error: false,
+    id: tempId, text: textToSend || null, image_url: previewUrl, sender_id: userStore.user.id,
+    timestamp: new Date().toISOString(), is_read: false, sending: true, error: false,
   });
 
-  // Limpiar inputs inmediatamente
   newMessageText.value = '';
-  removeImagePreview(); // Limpia el archivo y la preview
+  removeImagePreview();
 
-  // --- Preparar FormData ---
   const formData = new FormData();
   formData.append('proposal_id', selectedConversation.value.exchange.id.toString());
-  if (textToSend) {
-      formData.append('text', textToSend);
-  }
-  if (imageToSend) {
-      // Usar un nombre de archivo genérico o el original si se quiere
-      formData.append('image', imageToSend, imageToSend.name || 'chat-image.jpg');
-  }
+  if (textToSend) formData.append('text', textToSend);
+  if (imageToSend) formData.append('image', imageToSend, imageToSend.name || 'chat-image.jpg');
 
   try {
-    // --- Enviar FormData ---
     const { data: sentMessageData } = await api.post('/messages', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data', // Axios suele ponerlo solo, pero por si acaso
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-    // Actualizar mensaje temporal con datos reales del backend
     const messageIndex = messages.value.findIndex(m => m.id === tempId);
     if (messageIndex !== -1) {
-      // Reemplazar completamente para asegurar que image_url sea la del servidor
-      messages.value[messageIndex] = {
-           ...sentMessageData, // Datos del servidor (incluye image_url correcta)
-           sending: false,
-           error: false
-       };
+      messages.value[messageIndex] = { ...sentMessageData, sending: false, error: false };
     }
 
-    // Actualizar último mensaje en la lista de conversaciones
     const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
     if (convInList) {
         convInList.last_message = sentMessageData;
-        // Mover al principio
         const index = conversations.value.indexOf(convInList);
         if (index > 0) {
             conversations.value.splice(index, 1);
             conversations.value.unshift(convInList);
         }
     }
-
-
   } catch (e) {
-    console.error("Error al enviar mensaje:", e.response?.data || e.message);
     toast.error('Error al enviar el mensaje.');
     const messageIndex = messages.value.findIndex(m => m.id === tempId);
     if (messageIndex !== -1) {
@@ -1104,79 +1042,53 @@ const sendMessage = async () => {
   }
 };
 
-
 const markMessagesAsRead = async (messagesToRead) => {
     const unreadMessages = messagesToRead.filter(m => m && !m.is_read && m.sender_id !== userStore.user?.id);
     if (unreadMessages.length === 0) return;
-
-    // Marcar localmente como leídos primero para UI rápida
     unreadMessages.forEach(m => m.is_read = true);
-
     const messageIds = unreadMessages.map(m => m.id);
     try {
         await api.patch('/messages/read_status', { message_ids: messageIds, is_read: true });
-        // Actualizar contador en la lista de conversaciones si está seleccionada
          if (selectedConversation.value) {
             const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
             if (convInList) {
-                // Recalcular unread_count localmente basado en los mensajes actuales
                  const localUnread = messages.value.filter(m => m && !m.is_read && m.sender_id !== userStore.user?.id).length;
                  convInList.unread_count = localUnread;
-
             }
         }
     } catch (error) {
         console.error("Error al marcar mensajes como leídos en backend:", error);
-        // Opcional: Revertir el estado local si falla el backend
-        // unreadMessages.forEach(m => m.is_read = false);
     }
 };
-
 
 const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
-  const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
-
-  // Si se va a completar y el modal no está visible, abrirlo
   if (status === 'completed' && !isRatingModalVisible.value) {
-    // Verificar si YA existe una valoración para esta propuesta por el usuario actual
     try {
         const { data: existingRatings } = await api.get(`/ratings/proposal/${selectedConversation.value.exchange.id}/me`);
         if (existingRatings && existingRatings.length > 0) {
-             // Si ya valoró, simplemente marcar como completado sin abrir modal
-             console.log("Ya valorado, marcando como completado.");
-             // Llamada directa para cambiar estado sin abrir modal
              await changeProposalStatusInternal(status);
         } else {
-             // Si no ha valorado, abrir modal
              openRatingModal();
         }
     } catch (error) {
-        console.error("Error verificando rating existente:", error);
         toast.error("Error al verificar estado de valoración.");
-        // Fallback: abrir modal si hay error
         openRatingModal();
     }
-    return; // Detener aquí, la lógica sigue en submitRating o closeRatingModal
+    return;
   }
-
-  // Si no es 'completed' o si se está omitiendo la valoración (desde closeRatingModal)
   await changeProposalStatusInternal(status);
 };
 
-// Función auxiliar para cambiar el estado de la propuesta
 const changeProposalStatusInternal = async (status) => {
     if (!selectedConversation.value) return;
     const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
-
     try {
         await api.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
         selectedConversation.value.exchange.status = status;
-
-        if (status !== 'completed') { // No mostrar toast para 'completada' si viene de valoración
+        if (status !== 'completed') {
              toast.success(`Propuesta ${statusTextMap[status]}.`);
         }
-
         const convInList = conversations.value.find(c => c.exchange.id === selectedConversation.value.exchange.id);
         if (convInList) convInList.exchange.status = status;
     } catch (e) {
@@ -1219,7 +1131,6 @@ const statusText = (status) => ({
   cancelled: 'Cancelada',
   completed: 'Completada'
 }[status] || 'Desconocido');
-
 </script>
 
 <style>

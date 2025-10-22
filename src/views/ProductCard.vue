@@ -1,6 +1,6 @@
 <template>
-  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-2xl shadow-xl max-w-5xl mx-auto">
-    <button @click="$emit('close')" class="absolute top-3 right-3 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
+  <div v-if="product" class="relative flex flex-col bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-2xl shadow-xl h-full max-w-5xl mx-auto">
+    <button @click="$emit('close')" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm hover:scale-110 transition-transform" aria-label="Cerrar">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
       </svg>
@@ -86,17 +86,9 @@
         </div>
 
         <div class="mt-auto pt-6 sm:pt-8">
-           <button 
-            @click="openProposeModal" 
-            :disabled="isOwner"
-            class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-primary text-white font-bold shadow-lg transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40"
-            :class="{ 
-              'hover:scale-[1.03]': !isOwner, 
-              'opacity-50 cursor-not-allowed': isOwner 
-            }"
-          >
+           <button @click="openProposeModal" class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v6a6 6 0 11-12 0V5H4a2 2 0 01-2-2z"/></svg>
-            {{ isOwner ? 'Este es tu producto' : 'Proponer Intercambio' }}
+            Proponer Intercambio
           </button>
         </div>
       </aside>
@@ -125,7 +117,8 @@
                         class="flex items-center gap-4 p-2 rounded-md transition-all duration-200 ease-in-out" 
                         :class="{ 
                             'bg-blue-50 ring-2 ring-blue-400 shadow-sm': selectedProductId === item.id, 
-                            'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer': true
+                            'hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer': item.id !== product.id,
+                            'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800': item.id === product.id 
                         }"
                       >
                           <input 
@@ -134,17 +127,37 @@
                             v-model="selectedProductId" 
                             name="product-offer" 
                             class="sr-only"
+                            :disabled="item.id === product.id"
                           >
                           <img :src="normalizeImageUrl(item.images.length > 0 ? item.images[0].image_url : null)" :alt="item.title" class="w-12 h-12 object-cover rounded-md flex-shrink-0">
                           <div class="flex-grow">
                             <p class="font-semibold text-sm">{{ item.title }}</p>
                             <p class="text-xs text-gray-500">{{ item.condition }}</p>
                           </div>
+                          <span v-if="item.id === product.id" class="text-xs font-semibold text-gray-500 mr-2 flex-shrink-0">
+                              (Actual)
+                          </span>
                       </label>
                   </div>
               </div>
               <div v-else class="mt-2 text-center p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
                   <p>No tienes productos en tu inventario para proponer un intercambio.</p>
+              </div>
+            </div>
+
+            <div>
+              <label for="initial_message" class="text-sm font-medium text-gray-700 dark:text-gray-300">Añadir un mensaje (opcional):</label>
+              <textarea 
+                id="initial_message"
+                v-model="initialMessage"
+                rows="3"
+                :placeholder="placeholderMessage"
+                class="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              ></textarea>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button v-for="suggestion in suggestedMessages" :key="suggestion" @click.prevent="initialMessage = suggestion" type="button" class="px-3 py-1 text-xs rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200">
+                  {{ suggestion }}
+                </button>
               </div>
             </div>
             
@@ -187,25 +200,34 @@ const emit = defineEmits(['close']);
 
 const isModalOpen = ref(false);
 const submitting = ref(false);
+
 const userInventory = ref([]);
 const selectedProductId = ref(null);
 const isLoadingInventory = ref(false);
+
 const images = ref([]);
 const currentIndex = ref(0);
-const hasImages = computed(() => images.value.length > 0 && images.value[0] !== placeholderImage);
-const currentImage = computed(() => (images.value.length > 0 ? images.value[currentIndex.value] : placeholderImage));
+const hasImages = computed(() => images.value.length > 0);
+const currentImage = computed(() => hasImages.value ? images.value[currentIndex.value] : placeholderImage);
 
-const isOwner = computed(() => {
-  if (!userStore.user || !props.product) return false;
-  return Number(userStore.user.id) === Number(props.product.user_id);
-});
+const initialMessage = ref('');
+const suggestedMessages = ref([
+  '¿Sigue disponible?',
+  '¡Hola! Me interesa tu producto.',
+  '¿Te interesa algo de mi perfil?'
+]);
 
 const selectedProduct = computed(() => {
     if (!selectedProductId.value) return null;
     return userInventory.value.find(item => item.id === selectedProductId.value);
 });
 
-const placeholderImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
+const placeholderMessage = computed(() => {
+    if (selectedProduct.value) {
+        return `¡Hola! Me interesa tu "${props.product.title}". Te ofrezco mi "${selectedProduct.value.title}" a cambio. ¿Qué te parece?`;
+    }
+    return 'Selecciona un producto para ver un mensaje sugerido.';
+});
 
 const fetchUserInventory = async () => {
     if (!userStore.isLoggedIn) return;
@@ -250,46 +272,81 @@ const formattedDate = computed(() => {
 });
 const avatarSrc = computed(() => {
   const url = props.product?.user_avatar_url;
-  return normalizeImageUrl(url, defaultAvatar);
+  if (!url) return defaultAvatar;
+  if (/^https?:\/\//i.test(url) || url.startsWith('data:image')) return url;
+  return `${props.apiBase}${url}`;
 });
+
+const placeholderImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>';
 
 const prevImage = () => { currentIndex.value = (currentIndex.value - 1 + images.value.length) % images.value.length; };
 const nextImage = () => { currentIndex.value = (currentIndex.value + 1) % images.value.length; };
 const goTo = (i) => { currentIndex.value = i; };
 
 const openProposeModal = () => { 
-  if (!userStore.isLoggedIn) {
-      toast.info('Debes iniciar sesión para proponer un intercambio.');
-      router.push('/login');
-      return;
-  }
   isModalOpen.value = true;
-  fetchUserInventory();
+  if (userStore.isLoggedIn) {
+    fetchUserInventory();
+  }
 };
 const closeProposeModal = () => {
   isModalOpen.value = false;
   userInventory.value = [];
   selectedProductId.value = null;
+  initialMessage.value = '';
 };
 
 const submitProposal = async () => {
-  if (!selectedProductId.value || !selectedProduct.value) {
-    toast.error('Por favor, selecciona un producto para intercambiar.');
+  console.log("--- INICIANDO DEPURACIÓN DE PROPUESTA ---");
+
+  // 1. Validar que el usuario logueado no sea el dueño del producto
+  if (userStore.user.id === props.product.user_id) {
+    toast.error('No puedes hacer una propuesta por tu propio producto.');
+    console.error("Error de lógica: El usuario intentó hacer una propuesta a sí mismo.");
     return;
+  }
+  
+  // 2. Validar que se haya seleccionado un producto
+  if (!selectedProductId.value) {
+    toast.error('Por favor, selecciona un producto para intercambiar.');
+    console.error("Error de validación: No se seleccionó ningún producto para ofrecer.");
+    return;
+  }
+
+  // 3. Imprimir y verificar todos los IDs
+  const offeredId = selectedProductId.value;
+  const requestedId = props.product.id;
+  const receiverId = props.product.user_id;
+
+  console.log("ID del Producto Ofrecido:", offeredId, `(tipo: ${typeof offeredId})`);
+  console.log("ID del Producto Solicitado:", requestedId, `(tipo: ${typeof requestedId})`);
+  console.log("ID del Usuario Receptor:", receiverId, `(tipo: ${typeof receiverId})`);
+  console.log("Objeto 'product' completo recibido en props:", props.product);
+
+
+  // 4. Validar que todos los IDs sean números válidos
+  if (typeof offeredId !== 'number' || typeof requestedId !== 'number' || typeof receiverId !== 'number') {
+      toast.error('Error en los datos del producto. No se puede enviar la propuesta.');
+      console.error("Error Crítico de Tipos: Uno o más IDs no son de tipo 'number'. Abortando.");
+      return;
   }
 
   submitting.value = true;
   try {
+    // PASO 1: Crear la propuesta
     const proposalPayload = {
-      offered_product_id: selectedProductId.value,
-      requested_product_id: props.product.id,
+      offered_product_id: offeredId,
+      requested_product_id: requestedId,
     };
+    console.log("Enviando Payload para CREAR PROPUESTA (/proposals):", proposalPayload);
     const response = await axios.post('/proposals', proposalPayload);
     const newProposal = response.data;
 
+    // PASO 2: Si la propuesta se creó, enviar el mensaje inicial
     if (newProposal && newProposal.id) {
-      const messageText = `¡Hola! Te propongo un cambio. Me interesa tu "${props.product.title}" y te ofrezco mi "${selectedProduct.value.title}". ¿Qué te parece?`;
-      await sendInitialMessage(newProposal.id, messageText);
+      console.log("Propuesta creada con éxito. ID:", newProposal.id);
+      const messageText = initialMessage.value.trim() || placeholderMessage.value;
+      await sendInitialMessage(newProposal.id, messageText, receiverId);
     }
     
     toast.success('¡Propuesta enviada con éxito!');
@@ -297,35 +354,48 @@ const submitProposal = async () => {
     router.push({ name: 'Inbox' });
 
   } catch (error) {
-    const errorMessage = error.response?.data?.detail || 'Hubo un error al enviar la propuesta.';
-    console.error("Error al crear la propuesta:", error.response || error);
+    console.error("--- ERROR AL ENVIAR LA PROPUESTA ---");
+    console.error("Mensaje de error general:", error.message);
+    if (error.response) {
+      console.error("Status de la respuesta:", error.response.status);
+      console.error("Datos del error (IMPORTANTE, EXPANDIR ESTO):", error.response.data);
+    }
+    const errorMessage = error.response?.data?.detail[0]?.msg || error.response?.data?.detail || 'Hubo un error al enviar la propuesta.';
     toast.error(errorMessage);
   } finally {
+    console.log("--- FIN DE DEPURACIÓN DE PROPUESTA ---");
     submitting.value = false;
   }
 };
 
-const sendInitialMessage = async (proposalId, text) => {
-  try {
-    const receiverId = props.product?.user_id;
+const sendInitialMessage = async (proposalId, text, receiverId) => {
+  const messageText = text.trim();
 
-    if (!receiverId) {
-      console.error("Error: props.product.user_id no está disponible.");
-      toast.error("No se pudo identificar al destinatario del mensaje.");
-      return;
-    }
-    
-    await axios.post('/messages', {
-      proposal_id: proposalId,
-      text: text,
-      receiver_id: receiverId,
-    });
+  if (!messageText) {
+    console.warn("Mensaje inicial vacío, no se enviará.");
+    return; 
+  }
+
+  const payload = {
+    proposal_id: proposalId,
+    text: messageText,
+    receiver_id: receiverId,
+  };
+
+  console.log("Enviando Payload para CREAR MENSAJE (/messages):", payload);
+
+  try {
+    await axios.post('/messages', payload);
+    console.log("Mensaje inicial enviado con éxito.");
   } catch (error) {
-    console.error("Error al enviar el mensaje inicial:", error);
+    console.error("--- ERROR AL ENVIAR MENSAJE INICIAL ---");
+    console.error("Mensaje de error general:", error.message);
     if (error.response) {
+      console.error("Status de la respuesta:", error.response.status);
       // Es crucial que expandas este objeto en la consola si el error persiste
-      console.error("Detalles del error del servidor:", error.response.data);
+      console.error("Datos del error del servidor (IMPORTANTE, EXPANDIR ESTO):", error.response.data);
     }
+    // No relanzamos el error para que la creación de la propuesta se considere exitosa
     toast.warning('La propuesta fue creada, pero el mensaje inicial no se pudo enviar.');
   }
 };
@@ -336,28 +406,19 @@ watch(() => props.product, (p) => {
   if (!p) return;
   if (Array.isArray(p.images) && p.images.length) {
     images.value = p.images.map(imgObject => normalizeImageUrl(imgObject.image_url));
-  } else if (p.thumbnail_image_url) {
-    images.value = [normalizeImageUrl(p.thumbnail_image_url)];
-  } else {
-    images.value = [placeholderImage];
+  } else if (p.image_url) {
+    images.value = [normalizeImageUrl(p.image_url)];
   }
 }, { immediate: true });
 
-function normalizeImageUrl(url, defaultImg = placeholderImage) {
-  if (!url) return defaultImg;
-  if (/^(https?:|data:)/i.test(url)) {
-    return url;
-  }
+function normalizeImageUrl(url) {
+  if (!url) return placeholderImage;
+  if (/^https?:/i.test(url) || url.startsWith('data:image')) return url;
   return `${props.apiBase}${url}`;
 }
 
 onMounted(() => {
-  images.value.forEach((src) => { 
-    if (src !== placeholderImage) {
-      const i = new Image(); 
-      i.src = src; 
-    }
-  });
+  images.value.forEach((src) => { const i = new Image(); i.src = src; });
 });
 </script>
 
@@ -377,5 +438,9 @@ onMounted(() => {
 .fade-img-enter-from,
 .fade-img-leave-to {
   opacity: 0;
+}
+:root {
+  --brand-primary: #2563eb;
+  --brand-accent-pink: #ec4899;
 }
 </style>

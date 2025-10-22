@@ -23,7 +23,7 @@
     </header>
 
     <div class="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
-      <div class="max-w-4xl mx-auto">
+      <div class="max-w-4xl mx-auto pb-24">
         <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
           <div class="col-span-1 flex flex-col items-center justify-center p-6 sm:p-8 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
             <div
@@ -75,7 +75,7 @@
           <div class="col-span-1 md:col-span-2 p-5 sm:p-6 flex flex-col">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ capitalizeFirstLetter(userProfile.fullName) }}</h1>
             <p class="text-gray-500 dark:text-slate-400 -mt-1">{{ userProfile.email }}</p>
-            
+
             <div class="mt-4">
               <div v-if="userProfile.rating_count > 0" class="flex items-center gap-3">
                 <div class="star-rating" :aria-label="`Valoración de ${userProfile.rating_score} de 5 estrellas.`">
@@ -122,13 +122,6 @@
               <template v-if="!editMode">
                 <button @click="enterEditMode" class="btn-brand w-full sm:w-auto">Editar Perfil</button>
                 <button @click="logout" class="btn-ghost w-full sm:w-auto">Salir</button>
-              </template>
-              <template v-else>
-                <button @click="saveProfile" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto">
-                  <svg v-if="userStore.loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  <span v-else>Guardar Cambios</span>
-                </button>
-                <button @click="cancelEdit" class="btn-ghost w-full sm:w-auto">Cancelar</button>
               </template>
             </div>
           </div>
@@ -294,7 +287,25 @@
             </div>
           </section>
         </main>
-      </div>
+
+        <Transition name="edit-bar-slide">
+          <div v-if="editMode" class="fixed bottom-0 left-0 right-0 z-40">
+            <div class="container mx-auto px-4 sm:px-6">
+              <div class="max-w-4xl mx-auto">
+                <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-slate-700 p-3 rounded-t-2xl shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.1)]">
+                  <div class="flex items-center justify-end gap-3">
+                    <button @click="cancelEdit" class="btn-ghost w-full sm:w-auto">Cancelar</button>
+                    <button @click="saveProfile" :disabled="userStore.loading" class="btn-brand disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto">
+                      <svg v-if="userStore.loading" class="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      <span v-else>Guardar Cambios</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+        </div>
     </div>
   </div>
 </template>
@@ -793,4 +804,15 @@ watch(userProfile, (newProfile) => {
 .reveal-initial{ opacity:0; transform: translateY(10px); }
 .reveal-active{ animation: animate-in-up .5s ease-out forwards; }
 @keyframes animate-in-up{ from{ opacity:0; transform: translateY(10px); } to{ opacity:1; transform: translateY(0); } }
+
+/* NUEVOS ESTILOS: Para la transición de la barra de edición flotante */
+.edit-bar-slide-enter-active,
+.edit-bar-slide-leave-active {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.5, 1), opacity 0.3s ease;
+}
+.edit-bar-slide-enter-from,
+.edit-bar-slide-leave-to {
+  opacity: 0;
+  transform: translateY(100%);
+}
 </style>
