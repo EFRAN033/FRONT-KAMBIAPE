@@ -151,13 +151,16 @@
                   <img @click="openProfilePanel(selectedConversation.user)" :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow cursor-pointer lg:cursor-default" />
                   <div @click="openProfilePanel(selectedConversation.user)" class="min-w-0 cursor-pointer lg:cursor-default">
                     <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
-                    <p class="text-[12px] text-slate-500" v-if="selectedConversation.user.ubicacion">{{ formatUbicacion(selectedConversation.user.ubicacion) }}</p>
-                    <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 h-4 animate-pulse">está escribiendo...</p>
-                    <p v-else class="text-[12px] text-slate-600 flex items-center gap-1 flex-wrap h-4">
-                      <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.offer.title }}</span>
-                      <ArrowRightIcon class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                      <span class="font-medium text-slate-800 truncate">{{ selectedConversation.exchange.request.title }}</span>
-                    </p>
+                    
+                    <div class="h-4">
+                      <p v-if="isOtherUserTyping" class="text-[12px] text-green-600 animate-pulse">
+                        está escribiendo...
+                      </p>
+                      <p v-else-if="selectedConversation.user.ubicacion" class="text-[12px] text-slate-500">
+                        {{ formatUbicacion(selectedConversation.user.ubicacion) }}
+                      </p>
+                    </div>
+
                   </div>
                 </div>
                 <div @click.stop class="flex-shrink-0 flex items-center gap-1.5">
@@ -235,7 +238,14 @@
 
               <div class="p-4 border-t border-slate-200 bg-slate-50">
                 <form @submit.prevent="sendMessage" class="flex items-center gap-3">
-                  <input type="text" v-model="newMessageText" placeholder="Escribe tu mensaje…" class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" :disabled="!isChatActive" />
+                  <input 
+                    type="text" 
+                    v-model="newMessageText" 
+                    @input="handleTypingInput"
+                    placeholder="Escribe tu mensaje…" 
+                    class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" 
+                    :disabled="!isChatActive" 
+                  />
                   
                   <button
                     type="button"
@@ -351,6 +361,55 @@
     </main>
     <Footer />
     
+    <transition name="modal-fade">
+      <div v-if="isLocationModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="isLocationModalVisible = false">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg m-4 transform transition-all modal-container">
+          
+          <div class="relative text-center bg-gradient-to-br from-[#d7037b] to-[#9e0154] px-6 py-8 rounded-t-lg">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 bg-white/20 rounded-full">
+              <MapPinIcon class="h-8 w-8 text-white" />
+            </div>
+            <h3 class="text-xl font-bold text-white mt-4">Sugerir Lugar de Encuentro</h3>
+            <p class="text-sm text-white/80 mt-1">Elige un lugar público y seguro para proponerlo en el chat.</p>
+             <button @click="isLocationModalVisible = false" class="absolute top-3 right-3 p-1.5 text-white/60 hover:text-white hover:bg-white/20 rounded-full transition-colors">
+              <XMarkIcon class="h-5 w-5" />
+            </button>
+          </div>
+
+          <div class="p-4 sm:p-6 max-h-[55vh] overflow-y-auto custom-scrollbar-unique">
+            <ul v-if="suggestedPlaces.length > 0" class="space-y-3">
+              <li 
+                v-for="place in suggestedPlaces" 
+                :key="place.id"
+                class="flex items-center justify-between gap-4 p-4 border border-slate-200 rounded-md hover:border-[#d7037b] hover:bg-pink-50 transition-all duration-200 group"
+              >
+                <div class="flex items-start gap-4">
+                  <div class="mt-1 flex-shrink-0 text-[#9e0154] opacity-50 group-hover:opacity-100 transition-opacity">
+                    <MapPinIcon class="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p class="font-semibold text-slate-800 leading-tight">{{ place.nombre }}</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ place.direccion }}</p>
+                  </div>
+                </div>
+                <button @click="sendSuggestedLocation(place)" class="flex-shrink-0 px-3 py-1.5 text-xs font-bold text-white bg-[#9e0154] rounded-full shadow-sm hover:bg-[#d7037b] transition-transform hover:scale-105 active:scale-95">
+                  Sugerir
+                </button>
+              </li>
+            </ul>
+            <div v-else class="text-center text-slate-500 py-10 px-4">
+              <div class="mx-auto flex items-center justify-center h-16 w-16 bg-slate-100 rounded-full border-2 border-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p class="font-semibold text-slate-700 mt-4">No se encontraron lugares</p>
+              <p class="text-sm mt-1 max-w-xs mx-auto">Lo sentimos, parece que aún no hemos registrado puntos de encuentro seguros para tu distrito.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
     </div>
 </template>
 
@@ -404,10 +463,16 @@ const isCancelModalVisible = ref(false);
 const isRatingModalVisible = ref(false);
 const ratingScore = ref(0);
 const ratingComment = ref('');
-let ws = null;
-const isOtherUserTyping = ref(false);
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
 const isLocationModalVisible = ref(false);
+let ws = null;
+
+// --- NUEVO ---
+// Variables para controlar el estado de "escribiendo..."
+const isOtherUserTyping = ref(false);
+let typingTimer = null;
+const typingSignalSent = ref(false);
+// --- FIN NUEVO ---
 
 const suggestedPlaces = computed(() => {
   if (!userStore.user || !userStore.user.districtId) {
@@ -696,6 +761,33 @@ watch(messages, () => {
   deep: true
 });
 
+// --- NUEVO ---
+// Función para enviar eventos de "typing" al WebSocket
+const sendTypingEvent = (type) => {
+  if (ws && ws.readyState === WebSocket.OPEN && selectedConversation.value) {
+    ws.send(JSON.stringify({
+      type: type, // 'typing_start' o 'typing_stop'
+      proposal_id: selectedConversation.value.exchange.id,
+    }));
+  }
+};
+
+// --- NUEVO ---
+// Manejador del input de texto para controlar el estado de "escribiendo..."
+const handleTypingInput = () => {
+  if (!typingSignalSent.value) {
+    sendTypingEvent('typing_start');
+    typingSignalSent.value = true;
+  }
+  // Reiniciar el temporizador cada vez que el usuario escribe
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => {
+    sendTypingEvent('typing_stop');
+    typingSignalSent.value = false;
+  }, 2000); // 2 segundos de inactividad para considerar que dejó de escribir
+};
+// --- FIN NUEVO ---
+
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
   if (ws && ws.readyState === WebSocket.OPEN) return;
@@ -717,6 +809,8 @@ const connectWebSocket = () => {
   ws.onmessage = (event) => {
     const response = JSON.parse(event.data);
     
+    // --- MODIFICADO ---
+    // Ahora el manejador de mensajes puede diferenciar entre tipos de eventos
     if (response.type === 'new_message') {
       const newMessage = response.data;
       
@@ -733,7 +827,7 @@ const connectWebSocket = () => {
       }
       
       if (selectedConversation.value?.exchange.id === newMessage.proposal_id) {
-        
+        isOtherUserTyping.value = false; // Si llega un mensaje, ya no está escribiendo
         const existingMsgIndex = messages.value.findIndex(m => m.tempId && m.sender_id === newMessage.sender_id && m.text === newMessage.text);
 
         if (existingMsgIndex !== -1) {
@@ -744,6 +838,16 @@ const connectWebSocket = () => {
 
         markMessagesAsRead([newMessage]);
       }
+    } else if (response.type === 'user_typing') {
+        // Si el evento es 'user_typing' y corresponde a la conversación abierta, mostrar el indicador
+        if (selectedConversation.value?.exchange.id === response.data.proposal_id) {
+            isOtherUserTyping.value = true;
+        }
+    } else if (response.type === 'user_stopped_typing') {
+        // Si el evento es 'user_stopped_typing', ocultar el indicador
+        if (selectedConversation.value?.exchange.id === response.data.proposal_id) {
+            isOtherUserTyping.value = false;
+        }
     }
   };
 };
@@ -755,6 +859,15 @@ const sendMessage = async () => {
     toast.error('No se pudo conectar al chat. Intenta recargar la página.');
     return;
   }
+  
+  // --- NUEVO ---
+  // Al enviar un mensaje, también enviamos una señal de 'typing_stop'
+  clearTimeout(typingTimer);
+  if (typingSignalSent.value) {
+    sendTypingEvent('typing_stop');
+    typingSignalSent.value = false;
+  }
+  // --- FIN NUEVO ---
 
   const textToSend = newMessageText.value.trim();
   const tempId = `temp_${Date.now()}`; 
@@ -770,7 +883,10 @@ const sendMessage = async () => {
     error: false,
   });
   
+  // --- MODIFICADO ---
+  // El payload ahora incluye el 'type' del evento
   const messagePayload = {
+    type: 'new_message',
     proposal_id: selectedConversation.value.exchange.id,
     text: textToSend,
   };
@@ -807,6 +923,11 @@ const returnToConversationList = () => {
 
 const selectConversation = async (conversation) => {
   isChatViewVisible.value = true; 
+
+  // --- NUEVO ---
+  // Reseteamos el estado de "escribiendo..." al cambiar de conversación
+  isOtherUserTyping.value = false;
+  // --- FIN NUEVO ---
 
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
@@ -897,6 +1018,10 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  // --- NUEVO ---
+  // Limpiamos el temporizador al desmontar el componente para evitar memory leaks
+  clearTimeout(typingTimer);
+  // --- FIN NUEVO ---
   if (ws) {
     ws.close();
   }
@@ -970,5 +1095,29 @@ const statusText = (status) => ({
 }
 .action-btn-complete {
   @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded-full shadow-sm transition-transform hover:scale-105;
+}
+
+/* Estilos para la transición del nuevo modal */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.modal-fade-enter-active .modal-container,
+.modal-fade-leave-active .modal-container {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.modal-fade-enter-from .modal-container,
+.modal-fade-leave-to .modal-container {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+}
+.modal-fade-enter-to .modal-container,
+.modal-fade-leave-from .modal-container {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 </style>
