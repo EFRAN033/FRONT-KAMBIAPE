@@ -25,25 +25,30 @@
           </header>
   
           <!-- Buscador (UX, no intrusivo) -->
-          <div class="mb-10">
+          <div class="mb-10 max-w-2xl mx-auto">
             <div class="relative group">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <svg class="h-5 w-5 text-slate-400 transition-colors group-focus-within:text-[#d7037b]" viewBox="0 0 24 24" fill="none">
+                  <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
+                </svg>
+              </div>
+
               <input
                 type="search"
                 v-model="query"
-                placeholder="Buscar en las preguntas…"
-                class="w-full bg-transparent border-b-2 border-slate-300/80 focus:border-transparent outline-none px-0 py-3 text-slate-900 placeholder-slate-400
-                       transition peer"
+                placeholder="Encuentra respuestas al instante..."
+                class="w-full rounded-full border-2 border-slate-200 bg-white py-3 pl-12 pr-5 text-slate-900 placeholder-slate-400 shadow-sm
+                      outline-none transition-all duration-300 ease-in-out
+                      focus:border-[#d7037b] focus:ring-4 focus:ring-[#d7037b]/20"
                 aria-label="Buscar preguntas frecuentes"
               />
-              <span class="pointer-events-none absolute left-0 -bottom-[2px] h-[2px] w-0 bg-gradient-to-r from-[#d7037b] via-[#b90266] to-[#9e0154]
-                           transition-[width] duration-500 ease-out peer-focus:w-full"></span>
-              <svg class="absolute right-0 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none">
-                <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
-              </svg>
             </div>
-            <p v-if="query" class="mt-2 text-xs text-slate-500">
-              {{ filteredFaqs.length }} resultado{{ filteredFaqs.length === 1 ? '' : 's' }} para “{{ query }}”.
+
+            <p v-if="query" class="mt-3 text-center text-sm text-slate-600 transition-opacity duration-300">
+              <span class="font-bold text-[#9e0154]">{{ filteredFaqs.length }}</span>
+              resultado{{ filteredFaqs.length === 1 ? '' : 's' }} para
+              <span class="font-semibold text-slate-800">“{{ query }}”</span>.
             </p>
           </div>
   

@@ -5,7 +5,7 @@
     <main class="py-8 sm:py-10">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
 
-        <header class="mb-6 sm:mb-8">
+        <header class="mb-6 sm:mb-8" :class="{ 'hidden': isChatViewVisible, 'lg:block': isChatViewVisible }">
           <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 class="text-[28px] sm:text-[34px] font-black tracking-tight">Intercambios · Mensajería</h1>
@@ -143,12 +143,11 @@
             :class="{ 'translate-x-0': isChatViewVisible, 'translate-x-full': !isChatViewVisible }"
           >
             <template v-if="selectedConversation">
-              <div class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between transition-colors sticky top-0 z-10">
+              <div class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between transition-colors sticky top-0 z-20">
                 <div class="flex items-center gap-3 min-w-0">
                   <button @click="returnToConversationList" class="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full lg:hidden">
                     <ArrowLeftIcon class="h-5 w-5" />
                   </button>
-
                   <img @click="openProfilePanel(selectedConversation.user)" :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow cursor-pointer lg:cursor-default" />
                   <div @click="openProfilePanel(selectedConversation.user)" class="min-w-0 cursor-pointer lg:cursor-default">
                     <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
@@ -161,37 +160,73 @@
                     </p>
                   </div>
                 </div>
-                <div @click.stop class="flex gap-1.5 flex-shrink-0">
-                  <button v-if="canAcceptOrReject" @click="updateProposalStatus('accepted')" class="p-2 text-green-700 bg-green-50 hover:bg-green-100" title="Aceptar"><CheckIcon class="h-5 w-5" /></button>
-                  <button v-if="canAcceptOrReject" @click="updateProposalStatus('rejected')" class="p-2 text-red-700 bg-red-50 hover:bg-red-100" title="Rechazar"><XMarkIcon class="h-5 w-5" /></button>
-                  <button v-if="canCancel" @click="openCancelModal" class="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200" title="Cancelar Propuesta"><NoSymbolIcon class="h-5 w-5" /></button>
-                  <button v-if="canComplete" @click="openRatingModal" class="p-2 text-blue-700 bg-blue-50 hover:bg-blue-100" title="Completar y Valorar"><StarIcon class="h-5 w-5" /></button>
-                  <button @click="openDetailsModal" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100" title="Detalles"><EyeIcon class="h-5 w-5" /></button>
+                <div @click.stop class="flex-shrink-0 flex items-center gap-1.5">
+                   <button @click="openDetailsModal" class="p-2 text-[#9e0154] bg-pink-50 hover:bg-pink-100 rounded-full" title="Detalles del Intercambio">
+                    <EyeIcon class="h-5 w-5" />
+                  </button>
                 </div>
               </div>
 
-               <div class="relative flex-1 overflow-hidden">
-                <div v-if="loadingMessages" class="absolute inset-0 flex items-center justify-center bg-white/50 z-20">
+              <div v-if="canAcceptOrReject || canCancel || canComplete"
+                   class="flex justify-center items-center p-2 text-center border-b animate-fade-in-down"
+                   :class="{
+                      'bg-blue-50 border-blue-200': selectedConversation.exchange.status === 'pending',
+                      'bg-green-50 border-green-200': selectedConversation.exchange.status === 'accepted'
+                   }">
+                
+                <div v-if="canAcceptOrReject" class="flex items-center justify-center gap-3">
+                  <span class="hidden sm:inline text-sm font-semibold text-blue-800">¿Aceptas?</span>
+                  <button @click="updateProposalStatus('accepted')" class="action-btn-accept">
+                    <CheckIcon class="h-4 w-4" /> Aceptar
+                  </button>
+                  <button @click="updateProposalStatus('rejected')" class="action-btn-reject">
+                    <XMarkIcon class="h-4 w-4" /> Rechazar
+                  </button>
+                </div>
+
+                <div v-if="canCancel" class="flex items-center justify-center gap-3">
+                  <span class="hidden sm:inline text-sm font-semibold text-slate-700">Esperando...</span>
+                  <button @click="openCancelModal" class="action-btn-cancel">
+                    <NoSymbolIcon class="h-4 w-4" /> Cancelar
+                  </button>
+                </div>
+
+                <div v-if="canComplete" class="flex items-center justify-center gap-3">
+                   <span class="hidden sm:inline text-sm font-semibold text-green-800">¡Acordado!</span>
+                  <button @click="openRatingModal" class="action-btn-complete">
+                    <StarIcon class="h-4 w-4" /> Completar
+                  </button>
+                </div>
+              </div>
+
+               <div class="relative flex-1 overflow-hidden bg-slate-100">
+                <div v-if="loadingMessages" class="absolute inset-0 flex items-center justify-center bg-white/50 z-30">
                     <svg class="animate-spin h-8 w-8 text-[#d7037b]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                 </div>
                 
-                <div v-else-if="messages.length === 0" class="flex h-full items-center justify-center text-center text-slate-500">
-                    <p>Aún no hay mensajes en esta conversación.<br>¡Envía el primero!</p>
-                </div>
-                
-                <div v-else class="h-full overflow-y-auto custom-scrollbar-unique space-y-4 p-5" ref="messagesContainer">
-                  <div v-for="(message, index) in messages" :key="message.id || message.tempId" class="flex animate-fade-in-message" :style="{ animationDelay: `${index * 0.05}s` }" :class="message.sender_id === userStore.user?.id ? 'justify-end' : 'justify-start'">
-                    <img v-if="message.sender_id !== userStore.user?.id" :src="getAvatarUrl(selectedConversation.user.avatar)" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
-                    <div class="max-w-[78%] px-4 py-3 rounded-[10px] shadow-[0_1px_0_rgba(0,0,0,0.04)]" :class="message.sender_id === userStore.user?.id ? 'bg-[#d7037b] text-white rounded-br-sm' : 'bg-slate-50 text-slate-800 border border-slate-200 rounded-bl-sm'">
-                      <p class="text-[15px] leading-relaxed break-words">{{ message.text }}</p>
-                      <div class="mt-1.5 flex items-center gap-1 text-[11px]" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
-                        <span>{{ formatTime(message.timestamp) }}</span>
-                        <span v-if="message.sender_id === userStore.user?.id">
-                          <ExclamationCircleIcon v-if="message.error" class="h-4 w-4 inline-block text-red-300" title="Error al enviar"/>
-                          <ClockIcon v-else-if="message.sending" class="h-4 w-4 inline-block animate-spin" title="Enviando..."/>
-                          <CheckCircleIcon v-else-if="message.is_read" class="h-4 w-4 inline-block text-blue-400" title="Visto" />
-                          <CheckCircleIcon v-else class="h-4 w-4 inline-block" title="Entregado" />
-                        </span>
+                <div class="h-full overflow-y-auto custom-scrollbar-unique space-y-4 p-5" ref="messagesContainer">
+                  <div v-if="messages.length === 0" class="flex h-full items-center justify-center text-center text-slate-500">
+                    <div>
+                      <p>Aún no hay mensajes en esta conversación.</p>
+                      <p class="text-xs">¡Envía el primero!</p>
+                    </div>
+                  </div>
+                  
+                  <div v-else v-for="(message, index) in messages" :key="message.id || message.tempId">
+                    <SystemMessage v-if="message.is_system_message" :text="message.text" />
+                    <div v-else class="flex animate-fade-in-message" :style="{ animationDelay: `${index * 0.05}s` }" :class="message.sender_id === userStore.user?.id ? 'justify-end' : 'justify-start'">
+                      <img v-if="message.sender_id !== userStore.user?.id" :src="getAvatarUrl(selectedConversation.user.avatar)" class="h-7 w-7 rounded-full border border-white shadow mr-2 mt-1.5 hidden sm:block" />
+                      <div class="max-w-[78%] px-4 py-3 rounded-[10px] shadow-[0_1px_0_rgba(0,0,0,0.04)]" :class="message.sender_id === userStore.user?.id ? 'bg-[#d7037b] text-white rounded-br-sm' : 'bg-white text-slate-800 border border-slate-200 rounded-bl-sm'">
+                        <p class="text-[15px] leading-relaxed break-words">{{ message.text }}</p>
+                        <div class="mt-1.5 flex items-center gap-1 text-[11px]" :class="message.sender_id === userStore.user?.id ? 'justify-end text-white/80' : 'justify-start text-slate-500'">
+                          <span>{{ formatTime(message.timestamp) }}</span>
+                          <span v-if="message.sender_id === userStore.user?.id">
+                            <ExclamationCircleIcon v-if="message.error" class="h-4 w-4 inline-block text-red-300" title="Error al enviar"/>
+                            <ClockIcon v-else-if="message.sending" class="h-4 w-4 inline-block animate-spin" title="Enviando..."/>
+                            <CheckCircleIcon v-else-if="message.is_read" class="h-4 w-4 inline-block text-blue-400" title="Visto" />
+                            <CheckCircleIcon v-else class="h-4 w-4 inline-block" title="Entregado" />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -316,173 +351,7 @@
     </main>
     <Footer />
     
-    <div v-if="showDetailsModal" @click.self="showDetailsModal = false" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative">
-        <button @click="showDetailsModal = false" class="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-100">
-          <XMarkIcon class="w-6 h-6 text-slate-600" />
-        </button>
-        <h3 class="text-xl font-bold text-slate-800 mb-4">Detalles del Intercambio</h3>
-        <div v-if="selectedConversation" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold text-slate-700 mb-2">Producto Ofrecido</h4>
-            <div class="border rounded-lg p-4">
-              <img :src="getAvatarUrl(selectedConversation.exchange.offer.thumbnail_image_url)" class="w-full h-48 object-cover rounded-md mb-3"/>
-              <p class="font-bold">{{selectedConversation.exchange.offer.title}}</p>
-              <p class="text-sm text-slate-600">{{selectedConversation.exchange.offer.description}}</p>
-            </div>
-          </div>
-          <div>
-            <h4 class="font-semibold text-slate-700 mb-2">Producto Solicitado</h4>
-            <div class="border rounded-lg p-4">
-              <img :src="getAvatarUrl(selectedConversation.exchange.request.thumbnail_image_url)" class="w-full h-48 object-cover rounded-md mb-3"/>
-              <p class="font-bold">{{selectedConversation.exchange.request.title}}</p>
-              <p class="text-sm text-slate-600">{{selectedConversation.exchange.request.description}}</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-    <div v-if="isRatingModalVisible" class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h3 class="text-lg font-bold text-slate-900">¡Intercambio completado!</h3>
-        <p class="mt-2 text-sm text-slate-600">
-          Valora tu experiencia con <span class="font-semibold">{{ formatUserName(selectedConversation.user.full_name) }}</span> para ayudar a la comunidad.
-        </p>
-        <div class="my-5 flex justify-center">
-          <div class="flex items-center gap-2">
-            <button
-              v-for="star in 5"
-              :key="star"
-              @click="ratingScore = star"
-              class="text-3xl transition-transform duration-150 ease-in-out"
-              :class="star <= ratingScore ? 'text-yellow-400 scale-110' : 'text-slate-300 hover:text-yellow-300'"
-              :title="`${star} de 5 estrellas`"
-            >
-              <StarIcon class="w-8 h-8" :class="star <= ratingScore ? 'fill-current' : ''"/>
-            </button>
-          </div>
-        </div>
-        <textarea 
-          v-model="ratingComment" 
-          rows="3" 
-          placeholder="(Opcional) Deja un comentario sobre tu experiencia..." 
-          class="w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-[#d7037b] focus:border-transparent">
-        </textarea>
-        <div class="mt-5 flex justify-end gap-3">
-          <button @click="closeRatingModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Omitir</button>
-          <button @click="submitRating" :disabled="ratingScore === 0" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:bg-blue-300 disabled:cursor-not-allowed">
-            Enviar Valoración
-          </button>
-        </div>
-      </div>
-    </div>
-    <div v-if="isCancelModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h3 class="text-lg font-semibold text-slate-900">Confirmar Cancelación</h3>
-        <p class="mt-2 text-sm text-slate-600">¿Estás seguro de que quieres cancelar esta propuesta de intercambio? Esta acción no se puede deshacer.</p>
-        <div class="mt-5 flex justify-end gap-3">
-          <button @click="closeCancelModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">No, mantener</button>
-          <button @click="confirmCancel" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">Sí, cancelar</button>
-        </div>
-      </div>
-    </div>
-    <div v-if="isDeleteModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h3 class="text-lg font-semibold text-slate-900">Eliminar conversación</h3>
-        <p class="mt-2 text-sm text-slate-600">¿Seguro que quieres eliminar esta conversación? Esta acción es irreversible.</p>
-        <div class="mt-5 flex justify-end gap-3">
-          <button @click="closeDeleteModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
-          <button @click="confirmDelete" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">Eliminar</button>
-        </div>
-      </div>
-    </div>
-    <div v-if="isBlockModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h3 class="text-lg font-semibold text-slate-900">Bloquear Usuario</h3>
-        <p class="mt-2 text-sm text-slate-600">¿Seguro que quieres bloquear a <span class="font-bold">{{ formatUserName(conversationToActOn?.user.full_name) }}</span>? No podrán enviarte más mensajes ni propuestas.</p>
-        <div class="mt-5 flex justify-end gap-3">
-          <button @click="closeBlockModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
-          <button @click="confirmBlock" class="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-md">Bloquear</button>
-        </div>
-      </div>
-    </div>
-    <div v-if="isReportModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h3 class="text-lg font-semibold text-slate-900">Reportar y Bloquear Usuario</h3>
-        <p class="mt-2 text-sm text-slate-600">Estás a punto de reportar y bloquear a <span class="font-bold">{{ formatUserName(conversationToActOn?.user.full_name) }}</span>. Por favor, danos un motivo.</p>
-        <textarea v-model="reportReason" rows="3" placeholder="Ej: Es un estafador, me está acosando, etc." class="mt-4 w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-[#d7037b] focus:border-transparent"></textarea>
-        <div class="mt-5 flex justify-end gap-3">
-          <button @click="closeReportModal" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md">Cancelar</button>
-          <button @click="confirmBlockAndReport" :disabled="!reportReason.trim()" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:bg-red-300 disabled:cursor-not-allowed">Reportar y Bloquear</button>
-        </div>
-      </div>
-    </div>
-    <div v-if="isBlockedUsersModalVisible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-xl p-0 w-full max-w-md mx-4">
-        <div class="flex items-center justify-between p-4 border-b border-slate-200">
-            <h3 class="text-lg font-semibold text-slate-900">Usuarios Bloqueados</h3>
-            <button @click="closeBlockedUsersModal" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200">
-                <XMarkIcon class="w-5 h-5" />
-            </button>
-        </div>
-        <div class="p-6 max-h-[60vh] overflow-y-auto">
-            <div v-if="loadingBlockedUsers" class="text-center py-8">
-                <svg class="animate-spin h-8 w-8 text-[#d7037b] mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            </div>
-            <div v-else-if="blockedUsers.length === 0" class="text-center py-8 text-slate-500">
-                <NoSymbolIcon class="h-12 w-12 mx-auto text-slate-300 mb-2"/>
-                <p>No tienes a nadie bloqueado.</p>
-            </div>
-            <ul v-else class="space-y-3">
-                <li v-for="user in blockedUsers" :key="user.id" class="flex items-center justify-between p-2 rounded-md hover:bg-slate-50">
-                    <div class="flex items-center gap-3">
-                        <img :src="getAvatarUrl(user.avatar)" :alt="user.full_name" class="h-10 w-10 rounded-full object-cover"/>
-                        <span class="font-medium text-sm">{{ formatUserName(user.full_name) }}</span>
-                    </div>
-                    <button @click="confirmUnblock(user)" class="px-3 py-1 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md">
-                        Desbloquear
-                    </button>
-                </li>
-            </ul>
-        </div>
-      </div>
-    </div>
-    <div v-if="isLocationModalVisible" @click.self="isLocationModalVisible = false" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-0 relative">
-        <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/95">
-          <h3 class="text-lg font-bold text-slate-800">Sugerir un Lugar Seguro</h3>
-          <button @click="isLocationModalVisible = false" class="p-2 rounded-full hover:bg-slate-100">
-            <XMarkIcon class="w-6 h-6 text-slate-600" />
-          </button>
-        </div>
-        <div class="p-5">
-            <p class="text-sm text-slate-600 mb-4">Haz clic en un lugar para enviarlo como sugerencia en el chat. Recomendamos siempre lugares públicos y concurridos.</p>
-            <ul v-if="suggestedPlaces.length > 0" class="space-y-3">
-              <li
-                v-for="place in suggestedPlaces"
-                :key="place.id"
-                @click="sendSuggestedLocation(place)"
-                class="flex items-start p-3 rounded-lg border border-slate-200 hover:bg-pink-50 hover:border-pink-300 cursor-pointer transition-all duration-200"
-              >
-                <div class="p-2 bg-pink-100 rounded-full mr-4">
-                    <MapPinIcon class="h-5 w-5 text-[#d7037b]" />
-                </div>
-                <div>
-                  <p class="font-semibold text-[#9e0154]">{{ place.nombre }}</p>
-                  <p class="text-xs text-slate-500">{{ place.tipo }}</p>
-                </div>
-              </li>
-            </ul>
-            <div v-else class="text-center py-8 text-slate-500">
-              <NoSymbolIcon class="h-12 w-12 mx-auto text-slate-300 mb-2"/>
-              <p>No hay lugares seguros sugeridos para tu ubicación actual.</p>
-              <p class="text-xs mt-1">Asegúrate de haber configurado tu distrito en tu perfil.</p>
-            </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
 </template>
 
 <script setup>
@@ -491,6 +360,7 @@ import { useUserStore } from '@/stores/user';
 import axios from '@/axios';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
+import SystemMessage from '@/assets/components/SystemMessage.vue';
 import { useToast } from 'vue-toastification';
 import {
   ChatBubbleLeftRightIcon, ChatBubbleOvalLeftIcon, ArrowRightIcon, CheckIcon, XMarkIcon,
@@ -504,7 +374,6 @@ import { useRouter } from 'vue-router';
 import suggestedPlacesData from '@/data/lugares_seguros.json';
 
 const isChatViewVisible = ref(false);
-
 const userStore = useUserStore();
 const toast = useToast();
 const router = useRouter();
@@ -521,7 +390,6 @@ const messagesContainer = ref(null);
 const selectedProfileUser = ref(null);
 const profileUserInventory = ref([]);
 const loadingProfileInventory = ref(false);
-
 const activeMenuId = ref(null);
 const isDeleteModalVisible = ref(false);
 const isBlockModalVisible = ref(false);
@@ -529,23 +397,16 @@ const isReportModalVisible = ref(false);
 const conversationToActOn = ref(null);
 const reportReason = ref('');
 const isConversationMenuOpen = ref(false);
-
 const isBlockedUsersModalVisible = ref(false);
 const blockedUsers = ref([]);
 const loadingBlockedUsers = ref(false);
-
 const isCancelModalVisible = ref(false);
-
 const isRatingModalVisible = ref(false);
 const ratingScore = ref(0);
 const ratingComment = ref('');
-
 let ws = null;
 const isOtherUserTyping = ref(false);
-
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
-// Se elimina WS_BASE_URL porque se construye dinámicamente
-
 const isLocationModalVisible = ref(false);
 
 const suggestedPlaces = computed(() => {
@@ -835,10 +696,9 @@ watch(messages, () => {
   deep: true
 });
 
-// --- INICIO DE MODIFICACIÓN WEBSOCKET ---
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
-  if (ws && ws.readyState === WebSocket.OPEN) return; // Evita reconexiones innecesarias
+  if (ws && ws.readyState === WebSocket.OPEN) return;
 
   const wsUrl = `ws://${window.location.host}/ws/${userStore.user.id}`;
   
@@ -849,7 +709,6 @@ const connectWebSocket = () => {
   ws.onclose = () => {
     console.log("WebSocket desconectado.");
     ws = null;
-    // Opcional: podrías intentar reconectar aquí tras unos segundos
   };
 
   ws.onerror = (error) => console.error("Error de WebSocket:", error);
@@ -928,8 +787,6 @@ const sendMessage = async () => {
     };
   }
 };
-// --- FIN DE MODIFICACIÓN WEBSOCKET ---
-
 
 const fetchConversations = async () => {
   loadingConversations.value = true;
@@ -963,7 +820,6 @@ const selectConversation = async (conversation) => {
     const convInList = conversations.value.find(c => c.exchange.id === conversation.exchange.id);
     if (convInList) convInList.unread_count = 0;
     
-    // Mark messages as read after fetching them
     markMessagesAsRead(messages.value);
 
   } catch (e) {
@@ -977,21 +833,27 @@ const markMessagesAsRead = async (messagesToRead) => {
     const unreadMessages = messagesToRead.filter(m => !m.is_read && m.sender_id !== userStore.user.id);
     if (unreadMessages.length === 0) return;
     
-    // Optimistically update UI
     unreadMessages.forEach(m => {
         const msgInState = messages.value.find(stateMsg => stateMsg.id === m.id);
         if(msgInState) msgInState.is_read = true;
     });
 
-    const messageIds = unreadMessages.map(m => m.id).filter(id => id !== null); // Filter out temp messages
+    const messageIds = unreadMessages.map(m => m.id).filter(id => id !== null);
     if (messageIds.length === 0) return;
 
     try {
         await axios.patch('/messages/read_status', { message_ids: messageIds, is_read: true });
     } catch (error) {
         console.error("Error al marcar mensajes como leídos:", error);
-        // Optionally revert UI update on error
     }
+};
+
+const addSystemMessage = (text) => {
+  messages.value.push({
+    id: `sys_${Date.now()}`,
+    text: text,
+    is_system_message: true,
+  });
 };
 
 const updateProposalStatus = async (status) => {
@@ -1006,6 +868,11 @@ const updateProposalStatus = async (status) => {
   try {
     await axios.put(`/proposals/${selectedConversation.value.exchange.id}/status`, { status });
     selectedConversation.value.exchange.status = status;
+    
+    if (status === 'accepted') addSystemMessage('La propuesta ha sido aceptada.');
+    if (status === 'rejected') addSystemMessage('La propuesta fue rechazada.');
+    if (status === 'cancelled') addSystemMessage('La propuesta ha sido cancelada.');
+    if (status === 'completed') addSystemMessage('El intercambio ha sido completado.');
     
     if (status !== 'completed') {
         toast.success(`Propuesta ${statusTextMap[status]}.`);
@@ -1027,6 +894,7 @@ onMounted(() => {
     router.push('/login');
   }
 });
+
 onBeforeUnmount(() => {
   if (ws) {
     ws.close();
@@ -1071,8 +939,14 @@ const statusText = (status) => ({
 }
 @keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .animate-spin-slow{animation:spin-slow 8s linear infinite}
+
 @keyframes fade-in-message{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .animate-fade-in-message{animation:fade-in-message .28s ease-out both}
+
+@keyframes fade-in-down {from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);}}
+.animate-fade-in-down { animation: fade-in-down 0.3s ease-out forwards; }
+
+
 .custom-scrollbar-unique::-webkit-scrollbar{width:8px;height:8px}
 .custom-scrollbar-unique::-webkit-scrollbar-track{background:rgba(226,232,240,.4)}
 .custom-scrollbar-unique::-webkit-scrollbar-thumb{background:rgba(215,3,123,.4);border-radius:10px;border:1px solid rgba(215,3,123,.25)}
@@ -1082,5 +956,18 @@ const statusText = (status) => ({
   padding:.28rem .5rem; font-size:.75rem; font-weight:700; line-height:1;
   border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
 }
-.dark .badge-sq{ border-color:#334155; color:#e2e8f0; background:#0b1220; box-shadow:0 1px 0 rgba(0,0,0,.3); }
+
+/* Nuevos estilos para los botones de acción compactos */
+.action-btn-accept {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-green-600 rounded-full shadow-sm transition-transform hover:scale-105;
+}
+.action-btn-reject {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-red-800 bg-red-200 rounded-full shadow-sm transition-transform hover:scale-105;
+}
+.action-btn-cancel {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-slate-800 bg-slate-200 rounded-full shadow-sm transition-transform hover:scale-105;
+}
+.action-btn-complete {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded-full shadow-sm transition-transform hover:scale-105;
+}
 </style>
