@@ -11,7 +11,7 @@
       <div class="md:col-span-1">
         <div class="relative rounded-lg overflow-hidden shadow-lg aspect-square bg-white sm:bg-gray-100 dark:bg-gray-800 sm:dark:bg-gray-700">
           <transition name="fade-img" mode="out-in">
-            <img :key="currentImage" :src="currentImage" :alt="product.title" class="w-full h-full object-contain" loading="lazy" />
+            <img :key="currentImage" :src="currentImage" :alt="product.title" class="w-full h-full object-cover" loading="lazy" />
           </transition>
           
           <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
@@ -194,7 +194,7 @@ const toast = useToast();
 
 const props = defineProps({
   product: { type: Object, required: true },
-  apiBase: { type: String, default: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000' }
+  apiBase: { type: String, default: import.meta.env.VITE_API_BASE_URL || '' }
 });
 const emit = defineEmits(['close']);
 
