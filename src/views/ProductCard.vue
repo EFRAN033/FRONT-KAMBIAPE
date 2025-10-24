@@ -368,6 +368,9 @@ const submitProposal = async () => {
   }
 };
 
+// =================================================================
+// =========               INICIO DEL CAMBIO               =========
+// =================================================================
 const sendInitialMessage = async (proposalId, text, receiverId) => {
   const messageText = text.trim();
 
@@ -376,29 +379,39 @@ const sendInitialMessage = async (proposalId, text, receiverId) => {
     return; 
   }
 
-  const payload = {
+  // 1. Crear un objeto FormData
+  const formData = new FormData();
+
+  // 2. Añadir los campos que el backend espera (proposal_id y text)
+  formData.append('proposal_id', proposalId);
+  formData.append('text', messageText);
+
+  // El campo `receiver_id` no es necesario, ya que el backend no lo pide.
+  // El backend puede deducir quién es el receptor a partir de la propuesta (proposalId).
+  
+  console.log("Enviando FormData para CREAR MENSAJE (/messages):", {
     proposal_id: proposalId,
     text: messageText,
-    receiver_id: receiverId,
-  };
-
-  console.log("Enviando Payload para CREAR MENSAJE (/messages):", payload);
+  });
 
   try {
-    await axios.post('/messages', payload);
+    // 3. Enviar el objeto FormData
+    // Axios se encargará de establecer el 'Content-Type' a 'multipart/form-data'
+    await axios.post('/messages', formData);
     console.log("Mensaje inicial enviado con éxito.");
   } catch (error) {
     console.error("--- ERROR AL ENVIAR MENSAJE INICIAL ---");
     console.error("Mensaje de error general:", error.message);
     if (error.response) {
       console.error("Status de la respuesta:", error.response.status);
-      // Es crucial que expandas este objeto en la consola si el error persiste
       console.error("Datos del error del servidor (IMPORTANTE, EXPANDIR ESTO):", error.response.data);
     }
-    // No relanzamos el error para que la creación de la propuesta se considere exitosa
     toast.warning('La propuesta fue creada, pero el mensaje inicial no se pudo enviar.');
   }
 };
+// =================================================================
+// =========                 FIN DEL CAMBIO                =========
+// =================================================================
 
 watch(() => props.product, (p) => {
   images.value = [];
