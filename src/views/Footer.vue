@@ -132,7 +132,7 @@
            <p class="text-[12px] sm:text-[13px]">
              © {{ year }} <span class="font-lobster">KambiaPe</span>. Todos los derechos reservados.
              <span class="mx-2 hidden sm:inline-block">|</span>
-             <span class="block sm:inline-block mt-1 sm:mt-0">God Is Goo00000d</span>
+             <span class="block sm:inline-block mt-1 sm:mt-0">god</span>
            </p>
           <div class="flex items-center gap-3 sm:gap-4">
             <router-link to="/terminos" class="text-[12px] sm:text-[13px] hover:text-white">Términos</router-link>
