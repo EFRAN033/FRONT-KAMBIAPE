@@ -132,16 +132,16 @@
            <p class="text-[12px] sm:text-[13px]">
              © {{ year }} <span class="font-lobster">KambiaPe</span>. Todos los derechos reservados.
              <span class="mx-2 hidden sm:inline-block">|</span>
-             <span class="block sm:inline-block mt-1 sm:mt-0">god</span>
+             <span class="block sm:inline-block mt-1 sm:mt-0">god is good</span>
            </p>
           <div class="flex items-center gap-3 sm:gap-4">
             <router-link to="/terminos" class="text-[12px] sm:text-[13px] hover:text-white">Términos</router-link>
-            <router-link to="/privacidad" class="text-[12px] sm:text-[13px] hover:text-white">Privacidad</router-link>
+            <router-link to="/privacy" class="text-[12px] sm:text-[13px] hover:text-white">Privacidad</router-link>
           </div>
         </div>
       </div>
     </div>
-
+    
     <TransitionRoot :show="isCommentModalVisible" as="template">
       <Dialog @close="closeCommentModal" class="relative z-50">
         <TransitionChild
@@ -313,6 +313,4 @@ const submitComment = async () => {
   }
 }
 const year = computed(() => new Date().getFullYear())
-
-// Se eliminó la variable 'lang'
 </script>
