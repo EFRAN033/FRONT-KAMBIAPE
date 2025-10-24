@@ -368,7 +368,7 @@ import { useUserStore } from '@/stores/user';
 import ProductCard from './ProductCard.vue';
 
 const userStore = useUserStore();
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const products = ref([]);
 const loading = ref(true);
@@ -456,7 +456,7 @@ const onSearchInput = (e) => {
 const fetchAllProducts = async () => {
   try {
     loading.value = true;
-    const res = await fetch(`${API_BASE_URL}/products_feed`);
+    const res = await fetch(`/api/products_feed`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     
