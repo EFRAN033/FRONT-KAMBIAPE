@@ -23,14 +23,14 @@ import ConfigurationView from '../views/Configuration.vue';
 import MyProducts from '../views/MyProducts.vue';
 
 // +++ ✨ Nueva importación para la vista de Kambitos ✨ +++
-// (Asegúrate de haber creado este archivo en la carpeta 'views')
-import KambitosView from '../views/Kambitos.vue'; 
+import KambitosView from '../views/Kambitos.vue';
 
 // --- IMPORTACIONES PARA PÁGINAS INFORMATIVAS ---
 import FAQsView from '../views/FAQsView.vue';
 import CookiesView from '../views/Cookies.vue';
-// === ✨ Importación para la nueva página de Términos ✨ ===
 import TermsView from '../views/TermsView.vue';
+// === ✨ Nueva importación para la Política de Privacidad ✨ ===
+import PrivacyPolicyView from '../views/PrivacyPolicyView.vue';
 
 // --- ✨ IMPORTACIÓN AÑADIDA PARA LA VISTA DE DETALLE DEL PRODUCTO ✨ ---
 import ProductCard from '../views/ProductCard.vue';
@@ -150,13 +150,13 @@ const routes = [
       title: 'Política de Cookies | KambiaPe'
     }
   },
-  // === ✨ Nueva ruta para Términos y Condiciones ✨ ===
+  // === ✨ Nueva ruta para la Política de Privacidad ✨ ===
   {
-    path: '/terminos',
-    name: 'Terms',
-    component: TermsView,
+    path: '/privacy',
+    name: 'PrivacyPolicy',
+    component: PrivacyPolicyView,
     meta: {
-      title: 'Términos y Condiciones | KambiaPe'
+      title: 'Política de Privacidad | KambiaPe'
     }
   },
 
