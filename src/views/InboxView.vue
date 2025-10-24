@@ -700,7 +700,8 @@ const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
   if (ws && ws.readyState === WebSocket.OPEN) return;
 
-  const wsUrl = `ws://${window.location.host}/ws/${userStore.user.id}`;
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${protocol}//${window.location.host}/ws/${userStore.user.id}`;
   
   ws = new WebSocket(wsUrl);
 
