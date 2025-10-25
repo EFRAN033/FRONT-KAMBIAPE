@@ -50,6 +50,7 @@ export const useUserStore = defineStore('user', {
       credits: 0,
       rating_score: 0,
       rating_count: 0,
+      role: 'user', // <--- 1. AÑADIDO ESTO
     },
     loading: false,
     error: null,
@@ -57,6 +58,11 @@ export const useUserStore = defineStore('user', {
 
   getters: {
     isLoggedIn: (state) => !!state.token && !!state.user && !!state.user.id,
+    
+    // --- 2. ¡AQUÍ ESTÁ EL GETTER QUE FALTABA! ---
+    isAdmin: (state) => state.user && state.user.role === 'admin',
+    // ------------------------------------------
+
     userFullName: (state) => state.user?.fullName || null,
     userFirstName: (state) => {
       if (!state.user?.fullName) return null;
@@ -79,6 +85,41 @@ export const useUserStore = defineStore('user', {
       document.documentElement.classList.toggle('dark', this.isDarkMode);
     },
 
+    // --- ¡AQUÍ ESTÁN LAS FUNCIONES QUE AÑADIMOS ANTES! ---
+    /**
+     * Acción para setear manualmente el token de autenticación.
+     * Usado por el Login de Admin.
+     */
+    setToken(newToken) {
+      this.token = newToken;
+      if (newToken) {
+        // Configura el header de Axios para futuras peticiones
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        localStorage.setItem('access_token', newToken);
+      } else {
+        // Si el token es nulo, bórralo
+        delete api.defaults.headers.common['Authorization'];
+        localStorage.removeItem('access_token');
+      }
+    },
+
+    /**
+     * Acción para setear manualmente los datos del usuario.
+     * Usado por el Login de Admin.
+     */
+    setUser(newUserData) {
+      if (newUserData) {
+        // Usamos tu helper para procesar los datos que vienen del backend
+        const processedData = this._processUserData(newUserData);
+        this.user = processedData;
+        localStorage.setItem('user', JSON.stringify(processedData));
+      } else {
+        // Si el usuario es nulo, limpiamos los datos
+        this.clearUser(); // Reutiliza tu función de logout
+      }
+    },
+    // --- FIN DE LAS NUEVAS FUNCIONES ---
+
     _processUserData(data) {
       const processedData = {
         id: data.id || null,
@@ -99,6 +140,7 @@ export const useUserStore = defineStore('user', {
         credits: data.credits ?? 0,
         rating_score: data.rating_score ?? 0,
         rating_count: data.rating_count ?? 0,
+        role: data.role || 'user', // <--- 3. AÑADIDO ESTO (¡MUY IMPORTANTE!)
       };
       return processedData;
     },
@@ -110,8 +152,11 @@ export const useUserStore = defineStore('user', {
         // Usa la instancia 'api' que ya tiene la baseURL configurada
         const response = await api.post('/login', credentials);
         const accessToken = response.data.access_token;
-        this.token = accessToken;
-        localStorage.setItem('access_token', accessToken);
+        
+        // --- ✨ REUTILIZAMOS LA NUEVA ACCIÓN ---
+        this.setToken(accessToken); 
+        // this.token = accessToken; // (Línea antigua)
+        // localStorage.setItem('access_token', accessToken); // (Línea antigua)
 
         const base64Url = accessToken.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -255,16 +300,21 @@ export const useUserStore = defineStore('user', {
         credits: 0,
         rating_score: 0,
         rating_count: 0,
+        role: 'user', // <--- 4. AÑADIDO ESTO
       };
       localStorage.removeItem('user');
-      localStorage.removeItem('access_token');
-      this.token = null;
+      // --- ✨ MODIFICACIÓN: Llama a la nueva acción ---
+      this.setToken(null); // Esto limpia el token del state, localStorage y axios
+      // localStorage.removeItem('access_token'); // (Línea antigua)
+      // this.token = null; // (Línea antigua)
     },
 
     async initializeUser() {
       const storedToken = localStorage.getItem('access_token');
       if (storedToken) {
-        this.token = storedToken;
+        // --- ✨ MODIFICACIÓN: Llama a la nueva acción ---
+        this.setToken(storedToken); // Esto setea el token en el state y en axios
+        // this.token = storedToken; // (Línea antigua)
         try {
             const base64Url = storedToken.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
