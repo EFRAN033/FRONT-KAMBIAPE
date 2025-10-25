@@ -35,6 +35,14 @@ import PrivacyPolicyView from '../views/PrivacyPolicyView.vue';
 // --- ✨ IMPORTACIÓN AÑADIDA PARA LA VISTA DE DETALLE DEL PRODUCTO ✨ ---
 import ProductCard from '../views/ProductCard.vue';
 
+// --- ✨ NUEVAS IMPORTACIONES PARA EL PANEL DE ADMIN (CORREGIDAS) ✨ ---
+// (La ruta ahora apunta a 'views/Admin/' con 'A' mayúscula)
+import AdminLogin from '../views/Admin/Login-admin.vue';
+import AdminSidebar from '../views/Admin/Sidebar-admin.vue'; 
+import AdminDashboard from '../views/Admin/Dashboard-admin.vue';
+import AdminHeroSection from '../views/Admin/HeroSection-admin.vue';
+import AdminUsers from '../views/Admin/Users-admin.vue';
+
 
 const routes = [
   {
@@ -161,18 +169,67 @@ const routes = [
   },
 
   // === ✨ RUTA DE DETALLES CORREGIDA ✨ ===
-  // Esta ruta ahora pasará el 'id' del producto como una propiedad al componente.
   {
     path: '/product/:id',
-    name: 'ProductDetail', // Nombre de ruta corregido para mayor claridad
+    name: 'ProductDetail',
     component: ProductCard,
-    props: true, // ¡Importante! Esto permite que el :id de la URL se pase como una prop al componente.
+    props: true,
     meta: {
       title: 'Detalle del Producto | KambiaPe'
     }
   },
 
-  // Catch-all route for unmatched paths
+  // --- ⬇️⬇️ NUEVAS RUTAS DE ADMINISTRACIÓN AÑADIDAS ⬇️⬇️ ---
+  {
+    path: '/admin/login',
+    name: 'admin-login',
+    component: AdminLogin,
+    meta: {
+      title: 'Admin Login | KambiaPe'
+    }
+  },
+  {
+    path: '/admin',
+    name: 'admin-layout', 
+    component: AdminSidebar, // <-- Usa tu componente de Sidebar/Layout
+    meta: {
+      requiresAdminAuth: true // <-- Protege rutas de admin
+    },
+    children: [
+      {
+        path: '',
+        redirect: '/admin/dashboard' // Redirige /admin a /admin/dashboard
+      },
+      {
+        path: 'dashboard',
+        name: 'admin-dashboard',
+        component: AdminDashboard,
+        meta: {
+          title: 'Admin Dashboard | KambiaPe'
+        }
+      },
+      {
+        path: 'hero-section',
+        name: 'admin-hero',
+        component: AdminHeroSection,
+        meta: {
+          title: 'Editar Hero | KambiaPe'
+        }
+      },
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: AdminUsers,
+        meta: {
+          title: 'Gestionar Usuarios | KambiaPe'
+        }
+      }
+    ]
+  },
+  // --- ⬆️⬆️ FIN DE LAS RUTAS DE ADMINISTRACIÓN ⬆️⬆️ ---
+
+
+  // Catch-all route for unmatched paths (DEBE SER LA ÚLTIMA)
   {
     path: '/:pathMatch(.*)*',
     redirect: '/'
@@ -200,16 +257,38 @@ const router = createRouter({
   }
 });
 
+// --- ⬇️⬇️ GUARDIÁN DE RUTAS ACTUALIZADO ⬇️⬇️ ---
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
+  
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const requiresAdminAuth = to.matched.some(record => record.meta.requiresAdminAuth);
   
   document.title = to.meta.title || 'KambiaPe';
 
-  if (requiresAuth && !userStore.isLoggedIn) {
-    next('/login');
-  } else {
-    next();
+  // 1. Si la ruta requiere ser ADMIN
+  if (requiresAdminAuth) {
+    // Asumimos que tu store tiene un getter o estado 'isAdmin'
+    // (necesitarás añadir esto a tu 'src/stores/user.js')
+    if (userStore.isAdmin) { 
+      next(); // Es admin, permitir acceso
+    } else {
+      // Si es un usuario logueado pero no admin, lo sacamos al home
+      if (userStore.isLoggedIn) {
+        next('/');
+      } else {
+      // Si no es admin y no está logueado, redirigir a login de admin
+        next('/admin/login'); 
+      }
+    }
+  } 
+  // 2. Si la ruta requiere ser USUARIO REGULAR (tu lógica original)
+  else if (requiresAuth && !userStore.isLoggedIn) {
+    next('/login'); // No está logueado, redirigir a login de usuario
+  } 
+  // 3. Rutas públicas
+  else {
+    next(); // Permitir acceso
   }
 });
 
