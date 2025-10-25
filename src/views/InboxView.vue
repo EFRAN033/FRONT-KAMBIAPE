@@ -396,7 +396,7 @@
                 <div class="flex flex-col items-center">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">SU PRODUCTO</span>
                     <div class="w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-sm p-3 transition-all hover:shadow-md">
-                        <div class="aspect-square w-full rounded-md overflow-hidden bg-slate-100">
+                        <div classs="aspect-square w-full rounded-md overflow-hidden bg-slate-100">
                             <img :src="getAvatarUrl(theirProduct.thumbnail_image_url)" alt="" class="w-full h-full object-cover">
                         </div>
                         <div class="text-center mt-3 px-1">
@@ -479,6 +479,58 @@
               <p class="text-sm mt-1 max-w-xs mx-auto">Lo sentimos, parece que aún no hemos registrado puntos de encuentro seguros para tu distrito.</p>
             </div>
           </div>
+        </div>
+      </div>
+    </transition>
+    
+    <transition name="modal-fade">
+      <div v-if="isRatingModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="closeRatingModal">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 transform transition-all modal-container">
+          
+          <div class="relative text-center bg-gradient-to-br from-[#d7037b] to-[#9e0154] px-6 py-8 rounded-t-lg">
+            
+            <h3 class="text-xl font-bold text-white">Completar y Valorar</h3>
+            <p v-if="selectedConversation" class="text-sm text-white/80 mt-1">Valora tu experiencia con {{ formatUserName(selectedConversation.user.full_name) }}.</p>
+              <button @click="closeRatingModal" class="absolute top-3 right-3 p-1.5 text-white/60 hover:text-white hover:bg-white/20 rounded-full transition-colors">
+              <XMarkIcon class="h-5 w-5" />
+            </button>
+          </div>
+
+          <form @submit.prevent="submitRating" class="p-6">
+            <div class="flex flex-col items-center">
+              <p class="text-sm font-medium text-slate-700 mb-3">¿Cómo calificarías el intercambio?</p>
+              <div class="flex items-center space-x-1">
+                <button 
+                  v-for="star in 5" 
+                  :key="star" 
+                  type="button"
+                  @click="ratingScore = star"
+                  class="p-1 text-yellow-400 hover:text-yellow-500 transition-colors"
+                >
+                  <StarIconSolid v-if="star <= ratingScore" class="h-8 w-8" />
+                  <StarIcon v-else class="h-8 w-8 text-slate-300" />
+                </button>
+              </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end gap-3">
+              <button 
+                type="button" 
+                @click="closeRatingModal" 
+                class="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                :disabled="ratingScore === 0"
+                class="px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#d7037b] to-[#9e0154] hover:from-[#9e0154] hover:to-[#9e0154] rounded-md shadow-lg shadow-pink-500/20 transition-all duration-300 transform hover:scale-105 active:scale-95"
+                :class="{ 'opacity-50 cursor-not-allowed': ratingScore === 0 }"
+              >
+                Enviar y Completar
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </transition>
@@ -650,10 +702,18 @@ const openRatingModal = () => {
   isRatingModalVisible.value = true;
 };
 
+// ===========================================
+// ==== INICIO: FUNCIÓN CORREGIDA ====
+// ===========================================
 const closeRatingModal = () => {
   isRatingModalVisible.value = false;
-  updateProposalStatus('completed');
+  // No llamamos a updateProposalStatus aquí.
+  // Si el usuario cierra el modal, es porque
+  // ha cancelado el proceso de valoración/completado.
 };
+// ===========================================
+// ==== FIN: FUNCIÓN CORREGIDA ====
+// ===========================================
 
 const submitRating = async () => {
   if (ratingScore.value === 0) {
@@ -672,13 +732,19 @@ const submitRating = async () => {
   try {
     await axios.post('/ratings', ratingData);
     toast.success("¡Gracias por tu valoración!");
-    await updateProposalStatus('completed');
+    
+    // Ahora que la valoración se envió,
+    // llamamos a updateProposalStatus para
+    // marcar el intercambio como 'completado'.
+    await updateProposalStatus('completed'); 
+    
     if (userStore.user?.id) {
       await userStore.fetchUserProfile(userStore.user.id);
     }
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo enviar la valoración.");
   } finally {
+    // Cerramos el modal solo después de que todo termine
     isRatingModalVisible.value = false;
   }
 };
@@ -1072,6 +1138,12 @@ const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
   
+  // Esta lógica es la que FUERZA a que aparezca el modal de valoración.
+  // Si el status es 'completed' Y el modal NO está visible,
+  // llama a openRatingModal() y se detiene.
+  // El flujo continuará solo cuando el usuario envíe la valoración (submitRating),
+  // que llama a esta función de nuevo, pero esta vez isRatingModalVisible será true,
+  // saltando este 'if' y ejecutando la llamada API.
   if (status === 'completed' && !isRatingModalVisible.value) {
     openRatingModal();
     return;
@@ -1086,6 +1158,8 @@ const updateProposalStatus = async (status) => {
     if (status === 'cancelled') addSystemMessage('La propuesta ha sido cancelada.');
     if (status === 'completed') addSystemMessage('El intercambio ha sido completado.');
     
+    // Solo mostramos toast si NO es 'completed',
+    // porque 'completed' tiene su propio toast en submitRating.
     if (status !== 'completed') {
         toast.success(`Propuesta ${statusTextMap[status]}.`);
     }
@@ -1127,7 +1201,7 @@ const statusStripeClass = (status) => ({
 
 const statusBadgeClass = (status) => ({
   'bg-white text-sky-700 border border-sky-300': status === 'pending',
-  'bg-white text-green-700 border border-green-300': status === 'accepted',
+  'bg-white text-green-700 border border-green-300': status ==='accepted',
   'bg-white text-red-700 border border-red-300': status === 'rejected',
   'bg-white text-slate-600 border border-slate-300': status === 'cancelled',
   'bg-[#9e0154] text-white ring-1 ring-[#d7037b]/50': status === 'completed',
@@ -1165,7 +1239,7 @@ const statusText = (status) => ({
 
 .custom-scrollbar-unique::-webkit-scrollbar{width:8px;height:8px}
 .custom-scrollbar-unique::-webkit-scrollbar-track{background:rgba(226,232,240,.4)}
-.custom-scrollbar-unique::-webkit-scrollbar-thumb{background:rgba(215,3,123,.4);border-radius:10px;border:1px solid rgba(215,3,123,.25)}
+.custom-scrollbar-unique::-webkit-scrollbar-thumb{background:rgba(215,3,123,.4);border-radius:10px;border:1px solid rgba(215,3,1J.vue3,.25)}
 .custom-scrollbar-unique::-webkit-scrollbar-thumb:hover{background:rgba(215,3,123,.65)}
 .badge-sq{
   display:inline-flex; align-items:center; gap:.35rem;
