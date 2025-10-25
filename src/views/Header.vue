@@ -367,6 +367,9 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
+// Este watch ahora solo se encarga de cargar el conteo inicial de mensajes
+// cuando el usuario inicia sesión. La actualización en tiempo real la
+// gestiona el store de inbox a través de WebSockets.
 watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   if (isLoggedIn) {
     inboxStore.fetchUnreadCount();
