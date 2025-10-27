@@ -3,7 +3,7 @@
     <section class="relative bg-gradient-to-br from-gray-50 via-white to-pink-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-pink-950/10 rounded-3xl ring-1 ring-gray-200/50 dark:ring-gray-700/50 overflow-hidden shadow-xl">
 
       <div aria-hidden="true" class="pointer-events-none absolute inset-0">
-        <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/20 to-brand-dark/20 blur-3xl animate-pulse-slow"></div>
+        <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/10 to-brand-dark/10 blur-3xl animate-pulse-slow"></div>
         <div class="absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-purple-400/10 blur-3xl"></div>
         <div class="absolute inset-0 opacity-[0.08] dark:opacity-[0.15]"
              style="background-image: radial-gradient(circle at 1px 1px, #a6045d 1px, transparent 1px);
