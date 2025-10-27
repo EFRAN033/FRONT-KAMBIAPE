@@ -42,6 +42,8 @@ import AdminSidebar from '../views/Admin/Sidebar-admin.vue';
 import AdminDashboard from '../views/Admin/Dashboard-admin.vue';
 import AdminHeroSection from '../views/Admin/HeroSection-admin.vue';
 import AdminUsers from '../views/Admin/Users-admin.vue';
+// --- ✨ NUEVA IMPORTACIÓN PARA EDITAR NOSOTROS ✨ ---
+import EditAboutAdmin from '../views/Admin/Editabout-admin.vue';
 
 
 const routes = [
@@ -212,6 +214,15 @@ const routes = [
         component: AdminHeroSection,
         meta: {
           title: 'Editar Hero | KambiaPe'
+        }
+      },
+      // --- ✨ RUTA AÑADIDA PARA EDITAR "NOSOTROS" ✨ ---
+      {
+        path: 'edit-about',
+        name: 'admin-edit-about',
+        component: EditAboutAdmin,
+        meta: {
+          title: 'Editar Nosotros | KambiaPe'
         }
       },
       {
