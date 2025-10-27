@@ -289,8 +289,19 @@
           </div>
 
           <div class="flex flex-col flex-grow p-3 sm:p-5">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 truncate">{{ formatTitle(product.title) }}</h3>
             
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate min-w-0">
+                {{ formatTitle(product.title) }}
+              </h3>
+              
+              <span
+                v-if="userStore.user && product.user_username === userStore.user.fullName"
+                class="flex-shrink-0 rounded-full bg-white/70 dark:bg-gray-700/60 px-3 py-1 text-xs font-bold text-accentBlue dark:text-blue-300 ring-2 ring-inset ring-accentBlue/50 dark:ring-blue-400/60 backdrop-blur-sm"
+              >
+                Tuyo
+              </span>
+            </div>
             <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
               Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ formatOwnerName(product.user_username) || 'Usuario' }}</span>
             </div>
@@ -409,9 +420,9 @@ const sentinelRef = ref(null);
 let io = null;
 
 const cards = ref([
-  { id: 1, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80', alt: 'Cámara', badge: 'Preferido' },
-  { id: 2, img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80', alt: 'Mochila', badge: 'Outdoor' },
-  { id: 3, img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1000&q=80', alt: 'Teclado', badge: 'Tech' },
+  { id: 1, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit:crop&w=1000&q=80', alt: 'Cámara', badge: 'Preferido' },
+  { id: 2, img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit:crop&w=1000&q=80', alt: 'Mochila', badge: 'Outdoor' },
+  { id: 3, img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit:crop&w=1000&q=80', alt: 'Teclado', badge: 'Tech' },
 ]);
 const frontIndex = ref(0);
 const autoShuffle = ref(true);

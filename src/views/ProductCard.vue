@@ -86,12 +86,25 @@
         </div>
 
         <div class="mt-auto pt-6 sm:pt-8">
-           <button @click="openProposeModal" class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40">
+           <button 
+             v-if="!userStore.user || userStore.user.id !== product.user_id"
+             @click="openProposeModal" 
+             class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-primary text-white font-bold shadow-lg hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-brand-primary/40"
+            >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v6a6 6 0 11-12 0V5H4a2 2 0 01-2-2z"/></svg>
             Proponer Intercambio
           </button>
+          
+          <button 
+             v-else
+             disabled
+             class="w-full inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 font-bold shadow cursor-not-allowed"
+            >
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+             Tu Producto
+           </button>
         </div>
-      </aside>
+        </aside>
     </div>
 
     <transition name="fade">
@@ -368,9 +381,6 @@ const submitProposal = async () => {
   }
 };
 
-// =================================================================
-// =========               INICIO DEL CAMBIO               =========
-// =================================================================
 const sendInitialMessage = async (proposalId, text, receiverId) => {
   const messageText = text.trim();
 
@@ -409,9 +419,6 @@ const sendInitialMessage = async (proposalId, text, receiverId) => {
     toast.warning('La propuesta fue creada, pero el mensaje inicial no se pudo enviar.');
   }
 };
-// =================================================================
-// =========                 FIN DEL CAMBIO                =========
-// =================================================================
 
 watch(() => props.product, (p) => {
   images.value = [];

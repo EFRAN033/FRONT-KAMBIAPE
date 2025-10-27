@@ -179,7 +179,6 @@ const routes = [
     }
   },
 
-  // --- ⬇️⬇️ NUEVAS RUTAS DE ADMINISTRACIÓN AÑADIDAS ⬇️⬇️ ---
   {
     path: '/admin/login',
     name: 'admin-login',
@@ -190,15 +189,14 @@ const routes = [
   },
   {
     path: '/admin',
-    name: 'admin-layout', 
-    component: AdminSidebar, // <-- Usa tu componente de Sidebar/Layout
+    component: AdminSidebar, 
     meta: {
-      requiresAdminAuth: true // <-- Protege rutas de admin
+      requiresAdminAuth: true 
     },
     children: [
       {
         path: '',
-        redirect: '/admin/dashboard' // Redirige /admin a /admin/dashboard
+        redirect: '/admin/dashboard'
       },
       {
         path: 'dashboard',
