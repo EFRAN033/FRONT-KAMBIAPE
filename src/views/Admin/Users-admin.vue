@@ -2,7 +2,6 @@
   <div class="p-8 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold mb-6 text-gray-800">Gestionar Usuarios</h1>
 
-    <!-- Tabla Principal de Usuarios -->
     <div class="bg-white rounded-lg shadow-md overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
@@ -42,7 +41,6 @@
             </td>
             <td class="px-6 py-4 text-sm text-gray-500">{{ formatDateTime(user.created_at) }}</td>
             <td class="px-6 py-4 text-sm font-medium">
-              <!-- Menú desplegable de acciones -->
               <div class="relative inline-block text-left">
                 <button @click="toggleActions(user.id)" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                   Acciones
@@ -67,13 +65,10 @@
     </div>
   </div>
 
-  <!-- Modal 1: Ver Detalles del Usuario -->
   <UserDetailsModal v-if="showDetailsModal" :user="selectedUser" @close="showDetailsModal = false" />
 
-  <!-- Modal 2: Editar Créditos -->
   <EditCreditsModal v-if="showCreditsModal" :user="selectedUser" @close="showCreditsModal = false" @credits-updated="handleCreditsUpdated" />
 
-  <!-- Modal 3: Historial de Intercambios -->
   <HistoryModal v-if="showHistoryModal" :user="selectedUser" @close="showHistoryModal = false" />
 
 </template>
@@ -85,11 +80,11 @@ import axios from '@/axios';
 // =================================================================
 // INICIO DE LA CORRECCIÓN
 // =================================================================
-// Importar los componentes de los modales usando el alias @ (que apunta a src/)
-// Asegúrate de que estos archivos existan en 'src/components/admin/modals/'
-import UserDetailsModal from '@/components/admin/modals/UserDetailsModal.vue';
-import EditCreditsModal from '@/components/admin/modals/EditCreditsModal.vue';
-import HistoryModal from '@/components/admin/modals/HistoryModal.vue';
+// Corregimos la ruta para que incluya 'assets/'
+// Esta ruta ahora coincide con la estructura de tu proyecto
+import UserDetailsModal from '@/assets/components/admin/modals/UserDetailsModal.vue';
+import EditCreditsModal from '@/assets/components/admin/modals/EditCreditsModal.vue';
+import HistoryModal from '@/assets/components/admin/modals/HistoryModal.vue';
 // =================================================================
 // FIN DE LA CORRECCIÓN
 // =================================================================
@@ -114,8 +109,7 @@ const formatDateTime = (dateTimeString) => {
 const fetchUsers = async () => {
   loading.value = true;
   try {
-    // La ruta en tu Users-admin.vue original era '/api/admin/users'
-    // Asegúrate que esta sea la ruta correcta donde tu backend sirve la lista de usuarios.
+    // Esta era la ruta en tu archivo original 'Users-admin.vue'
     const response = await axios.get('/api/admin/users');
     users.value = response.data;
   } catch (error) {
@@ -156,7 +150,7 @@ const openHistory = (user) => {
 const toggleBan = async (user) => {
   const newStatus = !user.is_active;
   const actionText = newStatus ? 'activar' : 'banear';
-  // Usamos un modal de confirmación simple en lugar de alert/confirm
+  
   if (!window.confirm(`¿Estás seguro de que quieres ${actionText} a ${user.full_name}?`)) {
     actionsOpenFor.value = null;
     return;
@@ -179,7 +173,7 @@ const toggleBan = async (user) => {
 
 // 3. Eliminar Usuario
 const deleteUser = async (userId) => {
-  // Usamos un modal de confirmación simple
+  
   if (!window.confirm('¿Estás seguro? Esta acción es PERMANENTE y borrará al usuario y todos sus datos.')) {
     actionsOpenFor.value = null;
     return;
