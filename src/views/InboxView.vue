@@ -1008,8 +1008,22 @@ const connectWebSocket = () => {
   };
 };
 
+// ===========================================
+// ==== INICIO: FUNCIÓN MODIFICADA ====
+// ===========================================
 const sendMessage = async () => {
   if (!newMessageText.value.trim() || !isChatActive.value) return;
+
+  // --- NUEVO: Validación de enlaces ---
+  const textToSend = newMessageText.value.trim();
+  // Regex para detectar patrones comunes de URL (http, www, domain.com, domain.pe, etc.)
+  const urlRegex = /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|org|net|es|pe|io|dev|xyz|info))\b/i;
+  
+  if (urlRegex.test(textToSend)) {
+    toast.error("No está permitido enviar enlaces o URLs en los mensajes.");
+    return; // Detiene la ejecución si se encuentra un enlace
+  }
+  // --- FIN NUEVO ---
 
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     toast.error('No se pudo conectar al chat. Intenta recargar la página.');
@@ -1025,13 +1039,13 @@ const sendMessage = async () => {
   }
   // --- FIN NUEVO ---
 
-  const textToSend = newMessageText.value.trim();
+  // const textToSend = newMessageText.value.trim(); // <-- Esta línea se movió arriba para la validación
   const tempId = `temp_${Date.now()}`; 
 
   messages.value.push({
     id: null,
     tempId: tempId,
-    text: textToSend,
+    text: textToSend, // Usamos la variable ya validada
     sender_id: userStore.user.id,
     timestamp: new Date().toISOString(),
     is_read: false,
@@ -1044,7 +1058,7 @@ const sendMessage = async () => {
   const messagePayload = {
     type: 'new_message',
     proposal_id: selectedConversation.value.exchange.id,
-    text: textToSend,
+    text: textToSend, // Usamos la variable ya validada
   };
 
   ws.send(JSON.stringify(messagePayload));
@@ -1060,6 +1074,9 @@ const sendMessage = async () => {
     };
   }
 };
+// ===========================================
+// ==== FIN: FUNCIÓN MODIFICADA ====
+// ===========================================
 
 const fetchConversations = async () => {
   loadingConversations.value = true;

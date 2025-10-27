@@ -2,16 +2,15 @@
   <header class="bg-gradient-to-r from-[#d7037b] to-[#9e0154] shadow-lg sticky top-0 z-50 border-b border-white/10 backdrop-blur-sm">
     <div class="container mx-auto px-4 sm:px-6 py-3">
       <div class="flex items-center justify-between">
-        <router-link
-          to="/"
+        <a
+          href="/"
           class="flex items-center group focus-visible:outline-none focus-visible:ring-0"
           aria-label="KambiaPe - Inicio"
         >
           <span class="text-2xl font-bold text-white font-lobster">
             Kambia<span class="font-extrabold">Pe</span>
           </span>
-        </router-link>
-
+        </a>
         <nav class="hidden lg:flex items-center space-x-1">
           <router-link
             v-for="link in navLinks.filter(l => l.path !== '/buzon')"

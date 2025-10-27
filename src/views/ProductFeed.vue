@@ -316,15 +316,29 @@
                     </span>
                 </div>
             </div>
-            <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
+            
+            <div class="flex justify-between items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
+              <button
+                @click.stop="toggleLike(product)"
+                class="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                aria-label="Dar me gusta"
+              >
+                <img 
+                  :src="product.isLiked ? likeOnIcon : likeOffIcon" 
+                  alt="Me gusta" 
+                  class="h-4 w-4 sm:h-5 sm:w-5 object-contain transition-transform duration-150 ease-in-out"
+                  :class="{ 'scale-110': product.isLiked }"
+                />
+              </button>
+              
               <button
                 @click="openProductModal(product)"
-                class="bg-brand-primary text-white px-4 py-2 rounded-full text-sm font-medium transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+                class="bg-brand-primary text-white px-2 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium rounded-lg transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
               >
                 Intercambiar
               </button>
             </div>
-          </div>
+            </div>
         </article>
       </TransitionGroup>
 
@@ -366,6 +380,10 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useUserStore } from '@/stores/user';
 import ProductCard from './ProductCard.vue';
+
+// Asumimos que @ apunta a tu carpeta /src
+import likeOnIcon from '@/assets/imagenes/likeon.svg';
+import likeOffIcon from '@/assets/imagenes/likeof.png';
 
 const userStore = useUserStore();
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -453,6 +471,25 @@ const onSearchInput = (e) => {
   }, 250);
 };
 
+const toggleLike = (productToToggle) => {
+  // Encuentra el producto en el array principal de 'products'
+  const productInArray = products.value.find(p => p.id === productToToggle.id);
+  
+  if (productInArray) {
+    // Modifica la propiedad reactiva
+    productInArray.isLiked = !productInArray.isLiked;
+    
+    // NOTA: Aquí es donde harías la llamada a tu API para guardar el like
+    // try {
+    //   await fetch(`/api/products/${productInArray.id}/toggle-like`, { method: 'POST' });
+    // } catch (err) {
+    //   console.error('Error al guardar el like:', err);
+    //   productInArray.isLiked = !productInArray.isLiked; // Revertir si falla
+    // }
+  }
+};
+
+
 const fetchAllProducts = async () => {
   try {
     loading.value = true;
@@ -460,14 +497,14 @@ const fetchAllProducts = async () => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     
-    const loggedId = userStore.user?.id;
-    if (loggedId) {
-      // **LA CORRECCIÓN CLAVE**
-      // Asegura que ambos IDs sean números para una comparación segura
-      products.value = data.filter(p => Number(p.user_id) !== Number(loggedId));
-    } else {
-      products.value = data;
-    }
+    // Añade una propiedad 'isLiked' (frontend-only) a cada producto
+    const processedData = data.map(product => ({
+      ...product,
+      isLiked: false // Por defecto, no le gusta
+    }));
+    
+    // Asigna los productos procesados
+    products.value = processedData;
 
   } catch (err) {
     console.error('Error fetching products:', err);
