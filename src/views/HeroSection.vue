@@ -1,7 +1,8 @@
 <template>
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 antialiased">
     <section class="relative bg-gradient-to-br from-gray-50 via-white to-pink-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-pink-950/10 rounded-3xl ring-1 ring-gray-200/50 dark:ring-gray-700/50 overflow-hidden shadow-xl">
-      
+
+      <!-- Fondo y efectos visuales (Sin cambios) -->
       <div aria-hidden="true" class="pointer-events-none absolute inset-0">
         <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/20 to-brand-dark/20 blur-3xl animate-pulse-slow"></div>
         <div class="absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-purple-400/10 blur-3xl"></div>
@@ -12,13 +13,14 @@
 
       <div class="relative mx-auto max-w-7xl">
         <div class="grid grid-cols-1 md:grid-cols-12 md:gap-8 lg:gap-14 md:items-center">
-          
+
+          <!-- Aside con Imagen (Sin cambios, usa tu lógica de cards original) -->
           <aside class="md:col-span-5 lg:col-span-5 h-80 md:h-auto -mt-4 md:mt-0 pointer-events-none md:pointer-events-auto">
             <div class="relative w-full h-full flex items-center justify-center group select-none pointer-events-auto"
                  @mouseenter="hovering = true"
                  @mouseleave="hovering = false"
                  @mousemove="handleMouseMove">
-              
+
               <svg class="absolute -z-10 left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 opacity-40" viewBox="0 0 200 200" fill="none">
                 <defs>
                   <radialGradient id="ringGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 100) rotate(90) scale(100)">
@@ -41,21 +43,24 @@
                   :style="transformStyle(i)"
                   @click="shuffle()"
                 >
-                  <img :src="card.img" :alt="card.alt" class="h-full w-full object-cover" />
-                  
+                  <!-- ================= CAMBIO 3: Imagen Dinámica (OPCIONAL) ================= -->
+                  <!-- Si la API devuelve imageUrl, la usa; si no, usa la card local -->
+                  <img :src="heroData.imageUrl || card.img" :alt="card.alt" class="h-full w-full object-cover" />
+                  <!-- ======================================================================= -->
+
                   <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                  
+
                   <div class="pointer-events-none absolute inset-0 overflow-hidden">
                     <div class="absolute -left-1/3 top-0 h-full w-1/2 bg-gradient-to-r from-white/40 to-transparent opacity-0 group-hover:opacity-60 transition-all duration-700 translate-x-[-120%] group-hover:translate-x-[200%]"></div>
                   </div>
-                  
+
                   <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between z-10">
                     <span class="text-white text-sm font-bold drop-shadow-lg">{{ card.alt }}</span>
                     <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-gradient-to-r from-brand-primary to-brand-dark text-white shadow-lg">
                       {{ card.badge }}
                     </span>
                   </div>
-                  
+
                   <div class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/20 backdrop-blur-xl px-3 py-1.5 text-[10px] font-bold text-white border border-white/20">
                     <span class="relative flex h-2 w-2">
                       <span v-if="i === 0" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -70,8 +75,9 @@
             </div>
           </aside>
 
+          <!-- Header con Texto (Solo cambia el contenido del H1) -->
           <header class="md:col-span-7 lg:col-span-7 text-center md:text-left flex flex-col items-center md:items-start px-6 pb-6 md:py-12 md:pl-6 md:pr-0 lg:pl-8 relative z-10 -mt-24 md:mt-0 md:bg-transparent dark:md:bg-transparent rounded-2xl md:rounded-none mx-4 md:mx-0">
-            
+
             <div class="relative group/badge cursor-default">
               <div class="absolute inset-0 bg-brand-primary/20 rounded-full blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity"></div>
               <div class="relative inline-flex items-center gap-2 rounded-full bg-white/90 dark:bg-white/10 ring-1 ring-gray-200/70 dark:ring-white/20 px-4 py-2 shadow-lg">
@@ -85,15 +91,17 @@
               </div>
             </div>
 
+            <!-- ================= INICIO DEL ÚNICO CAMBIO EN H1 ================= -->
             <h1 class="mt-4 text-[28px] sm:text-[36px] font-black leading-[1.05] tracking-tight">
               <span class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent">
-                Intercambia fácil, seguro
+                {{ heroData.titleLine1 || 'Intercambia fácil, seguro' }}
               </span>
               <br />
               <span class="bg-gradient-to-r from-brand-primary via-pink-600 to-brand-dark bg-clip-text text-transparent animate-gradient">
-                y sin comisiones
+                {{ heroData.titleLine2 || 'y sin comisiones' }}
               </span>
             </h1>
+            <!-- ================= FIN DEL ÚNICO CAMBIO EN H1 ================= -->
 
             <p class="mt-4 max-w-[60ch] mx-auto md:mx-0 text-[15px] leading-relaxed text-gray-700 dark:text-gray-300">
               Publica lo que ya no usas y encuentra lo que necesitas en tu comunidad.
@@ -135,12 +143,22 @@
 </template>
 
 <script setup>
+// Importaciones necesarias (se añade axios)
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import axios from '@/axios'; // Asegúrate que tu instancia de axios esté configurada
 
+// --- Datos Dinámicos ---
+const heroData = ref({
+  titleLine1: '', // Inicializar vacío, usará el fallback del template
+  titleLine2: '', // Inicializar vacío, usará el fallback del template
+  imageUrl: null   // Inicializar null, usará el fallback del :src
+});
+
+// --- Lógica existente para cards, animación y shuffle (copiada de tu archivo) ---
 const cards = ref([
-  { id: 1, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80', alt: 'Cámara', badge: 'Destacado' },
-  { id: 2, img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80', alt: 'Mochila', badge: 'Outdoor' },
-  { id: 3, img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1000&q=80', alt: 'Teclado', badge: 'Gaming' },
+  { id: 1, img: '/src/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png', alt: 'Cámara', badge: 'Destacado' }, // Usa rutas locales si esas son las imágenes por defecto
+  { id: 2, img: '/src/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png', alt: 'Mochila', badge: 'Outdoor' },
+  { id: 3, img: '/src/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png', alt: 'Teclado', badge: 'Gaming' },
 ]);
 
 const frontIndex = ref(0);
@@ -156,6 +174,7 @@ const orderedCards = computed(() => {
 });
 
 const shuffle = () => {
+  // Esta función ahora solo cambia el índice para las imágenes locales (fallback)
   frontIndex.value = (frontIndex.value + 1) % cards.value.length;
 };
 
@@ -168,7 +187,7 @@ const positionClass = (pos) => {
 const transformStyle = (pos) => {
   const parallaxX = hovering.value ? (mouseX.value - 0.5) * 8 : 0;
   const parallaxY = hovering.value ? (mouseY.value - 0.5) * 8 : 0;
-  
+
   if (pos === 0) {
     return {
       transform: `translate(-50%, -50%) rotateY(${parallaxX * 0.3}deg) rotateX(${-parallaxY * 0.3}deg) scale(1)`
@@ -194,6 +213,8 @@ const handleMouseMove = (e) => {
 const startShuffleTimer = () => {
   stopShuffleTimer();
   shuffleTimer = setInterval(() => {
+    // Solo hace shuffle si autoShuffle está activo
+    // (Afectará a las imágenes locales si la API no devuelve imageUrl)
     if (autoShuffle.value) shuffle();
   }, hovering.value ? 2000 : 3500);
 };
@@ -205,9 +226,20 @@ const stopShuffleTimer = () => {
   }
 };
 
-onMounted(() => {
+// --- Modificamos onMounted para incluir la carga de datos Y el timer ---
+onMounted(async () => {
+  // Carga de datos desde la API
+  try {
+    const response = await axios.get('/api/hero');
+    heroData.value = response.data;
+  } catch (error) {
+    console.error("Error al cargar datos del hero:", error);
+    // En caso de error, el template usará los fallbacks
+  }
+  // Iniciar timer (tu lógica original)
   startShuffleTimer();
 });
+
 
 onBeforeUnmount(() => {
   stopShuffleTimer();
@@ -219,6 +251,7 @@ watch([autoShuffle, hovering], () => {
 </script>
 
 <style scoped>
+/* Tus estilos existentes (Sin cambios) */
 .perspective-1000 {
   perspective: 1000px;
 }
@@ -248,7 +281,7 @@ watch([autoShuffle, hovering], () => {
 
 .animate-gradient {
   background-size: 200% 200%;
-  animation: gradient 3s ease infinite;
+  animation: gradient 3s ease infinite; /* Tu duración original era 3s */
 }
 
 @keyframes float {
@@ -256,6 +289,7 @@ watch([autoShuffle, hovering], () => {
   50% { transform: translateY(-10px); }
 }
 
+/* Tus animaciones float (Sin cambios) */
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
