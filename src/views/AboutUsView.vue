@@ -63,34 +63,32 @@
               <div id="galeria" class="group relative overflow-hidden border-t border-b border-slate-200 bg-white scroll-mt-28 sm:scroll-mt-32">
                 <div class="px-3">
                   <div class="strip-track flex animate-strip will-change-transform group-hover:[animation-play-state:paused]">
-                    <div class="strip-segment flex items-stretch gap-4">
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1460602594182-8568137446ce?q=80&w=1600&auto=format&fit=crop" alt="Voluntariado local"></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1600&auto=format&fit=crop" alt="Taller de programación"></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1523978591478-c753949ff840?q=80&w=1600&auto=format&fit=crop" alt="Huertos urbanos"></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1600&auto=format&fit=crop" alt="Robótica escolar"></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1492496913980-501348b61469?q=80&w=1600&auto=format&fit=crop" alt="Reciclaje creativo"></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop" alt="Conectividad digital"></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop" alt="Playas limpias"></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1523246191808-8b3f0062cc48?q=80&w=1600&auto=format&fit=crop" alt="Negocio digital"></div>
+                    
+                    <div v-if="data.gallery" class="strip-segment flex items-stretch gap-4">
+                      <div v-for="(image, index) in data.gallery" 
+                           :key="`gallery-a-${index}`"
+                           class="h-28 w-48 border border-slate-200 overflow-hidden"
+                           :class="index % 2 === 0 ? '[clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]' : '[clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]'">
+                        <img class="h-full w-full object-cover object-center" :src="image.imageUrl" :alt="image.alt">
+                      </div>
                     </div>
-                    <div class="strip-segment flex items-stretch gap-4" aria-hidden="true">
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1460602594182-8568137446ce?q=80&w=1600&auto=format&fit=crop" alt=""></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1600&auto=format&fit=crop" alt=""></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1523978591478-c753949ff840?q=80&w=1600&auto=format&fit=crop" alt=""></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1600&auto=format&fit=crop" alt=""></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1492496913980-501348b61469?q=80&w=1600&auto=format&fit=crop" alt=""></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop" alt=""></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop" alt=""></div>
-                      <div class="h-28 w-48 border border-slate-200 overflow-hidden [clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]"><img class="h-full w-full object-cover object-center" src="https://images.unsplash.com/photo-1523246191808-8b3f0062cc48?q=80&w=1600&auto=format&fit=crop" alt=""></div>
+
+                    <div v-if="data.gallery" class="strip-segment flex items-stretch gap-4" aria-hidden="true">
+                      <div v-for="(image, index) in data.gallery" 
+                           :key="`gallery-b-${index}`"
+                           class="h-28 w-48 border border-slate-200 overflow-hidden"
+                           :class="index % 2 === 0 ? '[clip-path:polygon(0%_0%,100%_0%,100%_92%,0%_100%)]' : '[clip-path:polygon(0%_6%,100%_0%,100%_100%,0%_100%)]'">
+                        <img class="h-full w-full object-cover object-center" :src="image.imageUrl" alt="">
+                      </div>
                     </div>
+
                   </div>
                 </div>
                 <div class="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-white/95 to-transparent"></div>
                 <div class="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white/95 to-transparent"></div>
               </div>
             </div>
-
-          </div>
+            </div>
         </div>
       </section>
 

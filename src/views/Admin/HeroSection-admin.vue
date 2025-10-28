@@ -125,7 +125,7 @@ onMounted(async () => {
   loading.value = true;
   error.value = null;
   try {
-    const response = await axios.get('/api/admin/hero');
+    const response = await axios.get('/api/hero');
     const data = response.data;
 
     formData.value.titleLine1 = data.titleLine1 || '';
