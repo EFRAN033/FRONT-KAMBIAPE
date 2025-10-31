@@ -9,8 +9,7 @@
           to="/admin/dashboard" 
           class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white"
           active-class="bg-gray-900 text-white"
-        >
-          <span class="ml-2">Dashboard</span>
+        > <span class="ml-2">Dashboard</span>
         </RouterLink>
         
         <RouterLink 
@@ -78,7 +77,12 @@ const router = useRouter();
 const userStore = useUserStore();
 
 const handleLogout = () => {
-  userStore.logout();
+  // Asegúrate de que tu store en 'user.js' tenga una acción 'logout' o 'clearUser'
+  if (typeof userStore.logout === 'function') {
+    userStore.logout();
+  } else if (typeof userStore.clearUser === 'function') {
+    userStore.clearUser();
+  }
   router.push('/admin/login');
 };
 </script>
