@@ -1,13 +1,5 @@
 <template>
-  <!-- 
-    Este es el contenedor principal de ProductFeed.
-    Le quitamos el padding superior (py-12) porque ahora está debajo del HeroSection.
-  -->
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 pb-8 antialiased">
-    <!-- 
-      Modal para ver el detalle del producto.
-      Esta lógica se queda aquí porque pertenece al feed de productos.
-    -->
     <Transition name="fade-overlay">
       <div
         v-if="selectedProduct"
@@ -28,10 +20,6 @@
       </div>
     </Transition>
     
-    <!-- 
-      Este es el bloque de filtros.
-      Le quitamos el "mt-6" (margen superior) para que se pegue al HeroSection.
-    -->
     <div class="bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl shadow-md p-4 sticky top-3 z-40">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="w-full md:w-1/3 relative">
@@ -151,11 +139,6 @@
       </div>
     </div>
 
-    <!-- 
-      Este es el contenedor de la lista de productos.
-      Le añadimos un "py-10 md:py-12" que antes estaba en un div superior
-      y "mt-6" para separarlo de los filtros.
-    -->
     <div class="mt-6 py-10 md:py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-inner">
       <div v-if="loading" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-4 sm:px-6 lg:px-8">
         <div v-for="n in 12" :key="n" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 animate-pulse">
@@ -209,7 +192,7 @@
               </h3>
               
               <span
-                v-if="userStore.user && product.user_username === userStore.user.fullName"
+                v-if="userStore.user && product.user_username === userStore.user.full_name"
                 class="flex-shrink-0 rounded-full bg-white/70 dark:bg-gray-700/60 px-3 py-1 text-xs font-bold text-accentBlue dark:text-blue-300 ring-2 ring-inset ring-accentBlue/50 dark:ring-blue-400/60 backdrop-blur-sm"
               >
                 Tuyo
@@ -242,19 +225,24 @@
             </div>
             
             <div class="flex justify-between items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
-              <button
-                @click.stop="toggleLike(product)"
-                class="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                aria-label="Dar me gusta"
-              >
-                <img 
-                  :src="product.isLiked ? likeOnIcon : likeOffIcon" 
-                  alt="Me gusta" 
-                  class="h-4 w-4 sm:h-5 sm:w-5 object-contain transition-transform duration-150 ease-in-out"
-                  :class="{ 'scale-110': product.isLiked }"
-                />
-              </button>
               
+              <div class="flex items-center gap-1.5">
+                <button
+                  @click.stop="toggleLike(product)"
+                  class="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                  aria-label="Dar me gusta"
+                >
+                  <img 
+                    :src="product.isLiked ? likeOffIcon : likeOnIcon" 
+                    alt="Me gusta" 
+                    class="h-4 w-4 sm:h-5 sm:w-5 object-contain transition-transform duration-150 ease-in-out"
+                    :class="{ 'scale-110': product.isLiked }"
+                  />
+                </button>
+                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {{ product.likes_count }}
+                </span>
+              </div>
               <button
                 @click="openProductModal(product)"
                 class="bg-brand-primary text-white px-2 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium rounded-lg transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
@@ -271,10 +259,6 @@
       </div>
     </div>
 
-    <!-- 
-      Banner de redes sociales.
-      Lo dejamos aquí, al final del feed de productos.
-    -->
     <section class="relative w-full overflow-hidden mt-10 rounded-2xl ring-1 ring-white/20" aria-label="Redes sociales Kambix">
       <div class="absolute inset-0 bg-gradient-to-r from-brand-primary to-brand-dark">
         <div class="absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.4)_1px,transparent_1.5px)] bg-[length:18px_18px]"></div>
@@ -322,7 +306,7 @@ const products = ref([]);
 const loading = ref(true);
 const selectedProduct = ref(null);
 const selectedCategory = ref('');
-const sortBy = ref('date-desc');
+const sortBy = ref('likes-desc'); // <-- MODIFICACIÓN 1
 const searchQuery = ref('');
 let searchTimer = null;
 const isCategoryDropdownOpen = ref(false);
@@ -339,12 +323,17 @@ const sentinelRef = ref(null);
 let io = null;
 
 const categories = ref(['Electrónica', 'Mobiliario', 'Deportes', 'Libros', 'Ropa y Accesorios', 'Hogar', 'Juguetes', 'Herramientas', 'Música', 'Videojuegos', 'Coleccionables', 'Arte', 'Otros']);
+
+// --- MODIFICACIÓN 2 ---
 const sortOptions = ref([
+  { value: 'likes-desc', label: 'Más populares' },
   { value: 'date-desc', label: 'Más recientes' },
   { value: 'date-asc', label: 'Más antiguos' },
   { value: 'name-asc', label: 'Nombre (A-Z)' },
   { value: 'name-desc', label: 'Nombre (Z-A)' },
+  { value: 'likes-asc', label: 'Menos populares' },
 ]);
+// --- FIN MODIFICACIÓN 2 ---
 
 const openProductModal = (product) => {
   selectedProduct.value = product;
@@ -391,29 +380,103 @@ const onSearchInput = (e) => {
   }, 250);
 };
 
-const toggleLike = (productToToggle) => {
+// --- INICIO DE LA MODIFICACIÓN (toggleLike) ---
+const toggleLike = async (productToToggle) => {
+  // 1. Verificar si el usuario está logueado
+  if (!userStore.user || !userStore.token) {
+    alert('Debes iniciar sesión para dar me gusta a un producto.');
+    // Opcional: Redirigir al login
+    // import { useRouter } from 'vue-router';
+    // const router = useRouter();
+    // router.push('/login');
+    return;
+  }
+
+  // 2. Encontrar el producto en la lista
   const productInArray = products.value.find(p => p.id === productToToggle.id);
+  if (!productInArray) return;
+
+  // 3. Actualización optimista: Cambia el estado en la UI primero
+  const originalStatus = productInArray.isLiked;
+  const originalLikesCount = productInArray.likes_count; // <-- Guardamos el conteo original
+
+  productInArray.isLiked = !productInArray.isLiked;
   
-  if (productInArray) {
-    productInArray.isLiked = !productInArray.isLiked;
-    // Aquí iría la llamada a la API
+  // --- INICIO DE LA MODIFICACIÓN (Actualizar conteo local) ---
+  if (productInArray.isLiked) {
+    productInArray.likes_count += 1;
+  } else {
+    productInArray.likes_count -= 1;
+  }
+  // --- FIN DE LA MODIFICACIÓN ---
+
+  // 4. Preparar la llamada a la API
+  const method = productInArray.isLiked ? 'POST' : 'DELETE';
+  const url = `/api/products/${productToToggle.id}/like`;
+  
+  try {
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        // ¡Clave! Enviar el token para que el backend sepa quién eres
+        'Authorization': `Bearer ${userStore.token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // 5. Manejar error de la API
+    if (!res.ok) {
+      // Si la API falla, revertir el cambio en la UI
+      productInArray.isLiked = originalStatus;
+      productInArray.likes_count = originalLikesCount; // <-- Revertimos el conteo
+      
+      const errorText = await res.text();
+      console.error(`Error al ${method} like:`, res.status, errorText);
+
+      if (res.status === 401 || res.status === 403) {
+        alert('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
+        // Opcional: desloguear al usuario
+        // userStore.logout();
+      } else {
+        alert('Ocurrió un error al guardar tu "Me gusta". Inténtalo de nuevo.');
+      }
+    }
+    // 6. Si res.ok, no se hace nada. El cambio optimista se queda.
+    
+  } catch (err) {
+    // 7. Manejar error de red
+    console.error('Error de red al intentar dar like:', err);
+    // Revertir el cambio si hay un error de red
+    productInArray.isLiked = originalStatus;
+    productInArray.likes_count = originalLikesCount; // <-- Revertimos el conteo
+    alert('Error de red. No se pudo guardar tu "Me gusta".');
   }
 };
+// --- FIN DE LA MODIFICACIÓN (toggleLike) ---
 
 
+// --- INICIO DE LA MODIFICACIÓN (fetchAllProducts) ---
 const fetchAllProducts = async () => {
   try {
     loading.value = true;
-    const res = await fetch(`/api/products_feed`);
+    
+    // 1. Preparamos los headers. Si el usuario está logueado, enviamos el token.
+    const headers = {};
+    if (userStore.token) {
+      headers['Authorization'] = `Bearer ${userStore.token}`;
+    }
+
+    // 2. Hacemos la petición con los headers
+    const res = await fetch(`/api/products_feed`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     
-    const processedData = data.map(product => ({
-      ...product,
-      isLiked: false
+    // 3. ¡Eliminamos el mapeo! Usamos los datos tal cual vienen del API.
+    // El backend ya nos está enviando el campo 'isLiked' y 'likes_count'
+    products.value = data.map(p => ({
+      ...p,
+      user_username: p.user_username // Asegurándonos que este campo exista
     }));
-    
-    products.value = processedData;
 
   } catch (err) {
     console.error('Error fetching products:', err);
@@ -421,6 +484,7 @@ const fetchAllProducts = async () => {
     loading.value = false;
   }
 };
+// --- FIN DE LA MODIFICACIÓN (fetchAllProducts) ---
 
 const filteredProducts = computed(() => {
   let out = [...products.value];
@@ -434,17 +498,31 @@ const filteredProducts = computed(() => {
   if (selectedCategory.value) {
     out = out.filter(p => p.category_name === selectedCategory.value);
   }
+
+  // --- MODIFICACIÓN 3 ---
   out.sort((a, b) => {
     const da = new Date(a.created_at).getTime();
     const db = new Date(b.created_at).getTime();
+    
     switch (sortBy.value) {
-      case 'date-desc': return db - da;
-      case 'date-asc': return da - db;
-      case 'name-asc': return a.title.localeCompare(b.title);
-      case 'name-desc': return b.title.localeCompare(a.title);
-      default: return 0;
+      case 'likes-desc':
+        return b.likes_count - a.likes_count;
+      case 'likes-asc':
+        return a.likes_count - b.likes_count;
+      case 'date-desc': 
+        return db - da;
+      case 'date-asc': 
+        return da - db;
+      case 'name-asc': 
+        return a.title.localeCompare(b.title);
+      case 'name-desc': 
+        return b.title.localeCompare(a.title);
+      default: 
+        return 0;
     }
   });
+  // --- FIN MODIFICACIÓN 3 ---
+
   return out;
 });
 
@@ -466,12 +544,14 @@ const selectSortBy = (v) => {
   page.value = 1;
 };
 
+// --- MODIFICACIÓN 4 ---
 const resetFilters = () => {
   selectedCategory.value = '';
-  sortBy.value = 'date-desc';
+  sortBy.value = 'likes-desc';
   searchQuery.value = '';
   page.value = 1;
 };
+// --- FIN MODIFICACIÓN 4 ---
 
 onMounted(() => {
   fetchAllProducts();
@@ -479,16 +559,37 @@ onMounted(() => {
   io = new IntersectionObserver((entries) => {
     entries.forEach((e) => { if (e.isIntersecting) loadMore(); });
   }, { rootMargin: '300px' });
-  if (sentinelRef.value) io.observe(sentinelRef.value);
+  
+  // Pequeña corrección: Observar el elemento *después* de que se renderice
+  watch(sentinelRef, (newVal) => {
+    if (newVal) {
+      io.observe(newVal);
+    }
+  });
 });
 
 onBeforeUnmount(() => {
-  if (io && sentinelRef.value) io.unobserve(sentinelRef.value);
+  if (io && sentinelRef.value) {
+    io.unobserve(sentinelRef.value);
+  }
   io = null;
   document.body.style.overflow = '';
 });
 
 watch([selectedCategory, sortBy, searchQuery], () => { page.value = 1; });
+
+// Corrección para el v-if de "Tuyo"
+watch(
+  () => userStore.user,
+  (newUser) => {
+    if (newUser) {
+      // Forzar una actualización si es necesario, aunque la reactividad debería bastar
+      console.log('User store updated:', newUser.full_name);
+    }
+  },
+  { deep: true }
+);
+
 </script>
 
 <style scoped>
