@@ -256,12 +256,11 @@
       </Dialog>
     </TransitionRoot>
   </footer>
-</template>
-
-<script setup>
+</template> <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { useCommentsStore } from '@/stores/commentsStore'
 
 const socialLinks = [
   { name: 'Facebook',  href: 'https://www.facebook.com/share/1A62pnpV8K/', icon: 'facebook' },
@@ -270,6 +269,7 @@ const socialLinks = [
 ]
 
 const router = useRouter()
+const commentsStore = useCommentsStore()
 const navigateToRegister = () => router.push('/Register')
 const isCommentModalVisible = ref(false)
 const comment = ref({ type: '', message: '', name: '', email: '' })
@@ -277,6 +277,7 @@ const isSubmitting = ref(false)
 const feedbackMessage = ref('')
 const isSuccess = ref(false)
 const emailError = ref('')
+
 const openCommentModal = () => {
   isCommentModalVisible.value = true
   comment.value = { type: '', message: '', name: '', email: '' }
@@ -285,8 +286,10 @@ const openCommentModal = () => {
   emailError.value = ''
   isSubmitting.value = false
 }
+
 const closeCommentModal = () => (isCommentModalVisible.value = false)
 const validateEmail = (email) => !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase())
+
 const submitComment = async () => {
   emailError.value = ''
   if (!validateEmail(comment.value.email)) {
@@ -298,10 +301,15 @@ const submitComment = async () => {
     isSuccess.value = false
     return
   }
+
   isSubmitting.value = true
   feedbackMessage.value = ''
+
   try {
     await new Promise((r) => setTimeout(r, 900))
+
+    commentsStore.addComment(comment.value)
+
     isSuccess.value = true
     feedbackMessage.value = '¡Gracias! Recibimos tu comentario.'
     setTimeout(() => closeCommentModal(), 1500)
@@ -312,5 +320,6 @@ const submitComment = async () => {
     isSubmitting.value = false
   }
 }
+
 const year = computed(() => new Date().getFullYear())
 </script>

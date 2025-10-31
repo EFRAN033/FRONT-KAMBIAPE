@@ -28,6 +28,7 @@
         >
           <span class="ml-2">Editar Nosotros</span>
         </RouterLink>
+
         <RouterLink 
           to="/admin/users" 
           class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white"
@@ -35,8 +36,23 @@
         >
           <span class="ml-2">Usuarios</span>
         </RouterLink>
-        
-        </nav>
+
+        <RouterLink 
+          to="/admin/mapping" 
+          class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white"
+          active-class="bg-gray-900 text-white"
+        >
+          <span class="ml-2">Mapeo</span>
+        </RouterLink>
+
+        <RouterLink 
+          to="/admin/comments" 
+          class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white"
+          active-class="bg-gray-900 text-white"
+        >
+          <span class="ml-2">Comentarios</span>
+        </RouterLink>
+      </nav>
       
       <div class="absolute bottom-0 w-64 p-4">
         <button 
@@ -56,16 +72,13 @@
 
 <script setup>
 import { RouterLink, RouterView, useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/user'; // <-- Importa tu store de Pinia
+import { useUserStore } from '@/stores/user';
 
 const router = useRouter();
 const userStore = useUserStore();
 
 const handleLogout = () => {
-  // 1. Limpia el token y los datos del usuario de Pinia
-  userStore.logout(); // Necesitarás crear esta función en tu store
-  
-  // 2. Redirige al login de admin
+  userStore.logout();
   router.push('/admin/login');
 };
 </script>

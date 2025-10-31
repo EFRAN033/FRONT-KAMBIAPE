@@ -38,12 +38,16 @@ import ProductCard from '../views/ProductCard.vue';
 // --- ✨ NUEVAS IMPORTACIONES PARA EL PANEL DE ADMIN (CORREGIDAS) ✨ ---
 // (La ruta ahora apunta a 'views/Admin/' con 'A' mayúscula)
 import AdminLogin from '../views/Admin/Login-admin.vue';
-import AdminSidebar from '../views/Admin/Sidebar-admin.vue'; 
+import AdminSidebar from '../views/Admin/Sidebar-admin.vue';
 import AdminDashboard from '../views/Admin/Dashboard-admin.vue';
 import AdminHeroSection from '../views/Admin/HeroSection-admin.vue';
 import AdminUsers from '../views/Admin/Users-admin.vue';
 // --- ✨ NUEVA IMPORTACIÓN PARA EDITAR NOSOTROS ✨ ---
 import EditAboutAdmin from '../views/Admin/Editabout-admin.vue';
+// ===== NUEVA IMPORTACIÓN PARA MAPPING =====
+import AdminMapping from '../views/Admin/Mapping.vue';
+// ===== NUEVA IMPORTACIÓN PARA COMMENTS =====
+import AdminComments from '../views/Admin/Comments.vue';
 
 
 const routes = [
@@ -191,9 +195,9 @@ const routes = [
   },
   {
     path: '/admin',
-    component: AdminSidebar, 
+    component: AdminSidebar,
     meta: {
-      requiresAdminAuth: true 
+      requiresAdminAuth: true
     },
     children: [
       {
@@ -232,6 +236,24 @@ const routes = [
         meta: {
           title: 'Gestionar Usuarios | KambiaPe'
         }
+      },
+      // ===== NUEVA RUTA PARA MAPPING AÑADIDA AQUÍ =====
+      {
+        path: 'mapping',
+        name: 'admin-mapping',
+        component: AdminMapping,
+        meta: {
+          title: 'Contador | KambiaPe'
+        }
+      },
+      // ===== NUEVA RUTA PARA COMENTARIOS AÑADIDA AQUÍ =====
+      {
+        path: 'comments',
+        name: 'admin-comments',
+        component: AdminComments,
+        meta: {
+          title: 'Gestionar Comentarios | KambiaPe'
+        }
       }
     ]
   },
@@ -269,17 +291,17 @@ const router = createRouter({
 // --- ⬇️⬇️ GUARDIÁN DE RUTAS ACTUALIZADO ⬇️⬇️ ---
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
-  
+
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiresAdminAuth = to.matched.some(record => record.meta.requiresAdminAuth);
-  
+
   document.title = to.meta.title || 'KambiaPe';
 
   // 1. Si la ruta requiere ser ADMIN
   if (requiresAdminAuth) {
     // Asumimos que tu store tiene un getter o estado 'isAdmin'
     // (necesitarás añadir esto a tu 'src/stores/user.js')
-    if (userStore.isAdmin) { 
+    if (userStore.isAdmin) {
       next(); // Es admin, permitir acceso
     } else {
       // Si es un usuario logueado pero no admin, lo sacamos al home
@@ -287,14 +309,14 @@ router.beforeEach((to, from, next) => {
         next('/');
       } else {
       // Si no es admin y no está logueado, redirigir a login de admin
-        next('/admin/login'); 
+        next('/admin/login');
       }
     }
-  } 
+  }
   // 2. Si la ruta requiere ser USUARIO REGULAR (tu lógica original)
   else if (requiresAuth && !userStore.isLoggedIn) {
     next('/login'); // No está logueado, redirigir a login de usuario
-  } 
+  }
   // 3. Rutas públicas
   else {
     next(); // Permitir acceso

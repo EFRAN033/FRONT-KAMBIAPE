@@ -112,7 +112,7 @@
                   <button @click.stop="toggleActionMenu(c.exchange.id)" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-700">
                     <EllipsisVerticalIcon class="h-5 w-5" />
                   </button>
-                  <div v-if="activeMenuId === c.exchange.id" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
+                  <div v-if="activeMenuId === c.exchange.id" @click.away="activeMenuId = null" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
                     <div class="py-1">
                       <a @click.prevent="openBlockModal(c)" href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
                         <UserMinusIcon class="h-4 w-4 text-slate-500" />
@@ -362,21 +362,141 @@
     <Footer />
     
     <transition name="modal-fade">
+      <div v-if="isBlockedUsersModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="closeBlockedUsersModal">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg m-4 transform transition-all modal-container">
+          <div class="relative text-center bg-gradient-to-br from-[#d7037b] to-[#9e0154] px-6 py-6 rounded-t-lg">
+            <h3 class="text-xl font-bold text-white">Gestionar Usuarios Bloqueados</h3>
+            <p class="text-sm text-white/80 mt-1">Aquí puedes ver y desbloquear a los usuarios.</p>
+            <button @click="closeBlockedUsersModal" class="absolute top-3 right-3 p-1.5 text-white/60 hover:text-white hover:bg-white/20 rounded-full transition-colors">
+              <XMarkIcon class="h-5 w-5" />
+            </button>
+          </div>
+          <div class="p-4 sm:p-6 max-h-[55vh] overflow-y-auto custom-scrollbar-unique">
+            <div v-if="loadingBlockedUsers" class="flex items-center justify-center py-10">
+              <svg class="animate-spin h-8 w-8 text-[#d7037b]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            </div>
+            <ul v-else-if="blockedUsers.length > 0" class="space-y-3">
+              <li v-for="user in blockedUsers" :key="user.id" class="flex items-center justify-between gap-4 p-3 border border-slate-200 rounded-md">
+                <div class="flex items-center gap-3">
+                  <img :src="getAvatarUrl(user.avatar)" :alt="user.full_name" class="h-10 w-10 rounded-full object-cover border"/>
+                  <div>
+                    <p class="font-semibold text-slate-800 leading-tight">{{ formatUserName(user.full_name) }}</p>
+                    <p class="text-xs text-slate-500">{{ user.email }}</p>
+                  </div>
+                </div>
+                <button @click="confirmUnblock(user)" class="flex-shrink-0 px-3 py-1.5 text-xs font-bold text-white bg-[#9e0154] rounded-full shadow-sm hover:bg-[#d7037b] transition-transform hover:scale-105 active:scale-95">
+                  Desbloquear
+                </button>
+              </li>
+            </ul>
+            <div v-else class="text-center text-slate-500 py-10 px-4">
+              <div class="mx-auto flex items-center justify-center h-16 w-16 bg-slate-100 rounded-full border-2 border-slate-200">
+                <ShieldCheckIcon class="h-8 w-8 text-slate-400" />
+              </div>
+              <p class="font-semibold text-slate-700 mt-4">No tienes a nadie bloqueado</p>
+              <p class="text-sm mt-1">Tu lista de usuarios bloqueados está vacía.</p>
+            </div>
+          </div>
+          <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-200 text-right rounded-b-lg">
+            <button @click="closeBlockedUsersModal" class="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition name="modal-fade">
+      <div v-if="isBlockModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="closeBlockModal">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 transform transition-all modal-container">
+          <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+              <UserMinusIcon class="h-6 w-6 text-red-600" aria-hidden="true" />
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-slate-900">Bloquear Usuario</h3>
+            <div class="mt-2 px-4 text-sm text-slate-500">
+              <p v-if="conversationToActOn">¿Estás seguro de que quieres bloquear a <span class="font-bold">{{ formatUserName(conversationToActOn.user.full_name) }}</span>?</p>
+              <p class="mt-2">No podrá enviarte mensajes ni ver tus productos, y tú tampoco podrás ver los suyos.</p>
+            </div>
+          </div>
+          <div class="px-6 py-4 bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 rounded-b-lg">
+            <button @click="closeBlockModal" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50">
+              Cancelar
+            </button>
+            <button @click="confirmBlock" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700">
+              Confirmar Bloqueo
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition name="modal-fade">
+      <div v-if="isReportModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="closeReportModal">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 transform transition-all modal-container">
+          <div class="p-6">
+            <div class="flex items-start gap-4">
+              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0">
+                <ShieldExclamationIcon class="h-6 w-6 text-red-600" aria-hidden="true" />
+              </div>
+              <div class="text-left">
+                <h3 class="text-lg font-semibold text-slate-900">Reportar y Bloquear</h3>
+                <div class="mt-2 text-sm text-slate-500">
+                  <p v-if="conversationToActOn">Estás a punto de reportar a <span class="font-bold">{{ formatUserName(conversationToActOn.user.full_name) }}</span>. Por favor, danos una razón.</p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4">
+              <textarea v-model="reportReason" rows="3" class="w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm" placeholder="Ej: Spam, comportamiento abusivo, intento de estafa..."></textarea>
+            </div>
+          </div>
+          <div class="px-6 py-4 bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 rounded-b-lg">
+            <button @click="closeReportModal" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50">
+              Cancelar
+            </button>
+            <button @click="confirmBlockAndReport" :disabled="!reportReason.trim()" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              Reportar y Bloquear
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition name="modal-fade">
+      <div v-if="isDeleteModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="closeDeleteModal">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 transform transition-all modal-container">
+          <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+              <TrashIcon class="h-6 w-6 text-red-600" aria-hidden="true" />
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-slate-900">Eliminar Conversación</h3>
+            <div class="mt-2 px-4 text-sm text-slate-500">
+              <p>¿Estás seguro de que quieres eliminar este chat? Esta acción es irreversible.</p>
+            </div>
+          </div>
+          <div class="px-6 py-4 bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 rounded-b-lg">
+            <button @click="closeDeleteModal" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50">
+              Cancelar
+            </button>
+            <button @click="confirmDelete" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700">
+              Sí, Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+    
+    <transition name="modal-fade">
       <div v-if="showDetailsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="showDetailsModal = false">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl m-4 transform transition-all modal-container">
-          
           <div class="relative text-center bg-gradient-to-br from-[#d7037b] to-[#9e0154] px-6 py-6 rounded-t-lg">
-            
             <h3 class="text-xl font-bold text-white">Detalle del Intercambio</h3>
              <button @click="showDetailsModal = false" class="absolute top-3 right-3 p-1.5 text-white/60 hover:text-white hover:bg-white/20 rounded-full transition-colors">
               <XMarkIcon class="h-5 w-5" />
             </button>
           </div>
-
           <div v-if="selectedConversation && myProduct && theirProduct" class="p-6 sm:p-8">
-            
             <div class="grid grid-cols-2 gap-4 sm:gap-6 relative">
-                
                 <div class="flex flex-col items-center">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">TU OFERTA</span>
                     <div class="w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-sm p-3 transition-all hover:shadow-md">
@@ -392,7 +512,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="flex flex-col items-center">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">SU PRODUCTO</span>
                     <div class="w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-sm p-3 transition-all hover:shadow-md">
@@ -408,14 +527,12 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="absolute inset-0 flex items-center justify-center" aria-hidden="true">
                     <div class="p-2.5 bg-white rounded-full shadow-xl border-2 border-[#d7037b]">
                         <ArrowPathIcon class="h-6 w-6 text-[#9e0154]" />
                     </div>
                 </div>
             </div>
-
             <div class="mt-6 pt-5 border-t border-slate-200 text-center">
               <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado de la Propuesta</h4>
               <span class="mt-2 inline-flex items-center px-2.5 py-1 text-sm font-medium capitalize rounded-md" :class="statusBadgeClass(selectedConversation.exchange.status)">
@@ -423,20 +540,17 @@
               </span>
             </div>
           </div>
-          
           <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-200 text-center rounded-b-lg">
             <button @click="showDetailsModal = false" class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#d7037b] to-[#9e0154] hover:from-[#9e0154] hover:to-[#9e0154] rounded-md shadow-lg shadow-pink-500/20 transition-all duration-300 transform hover:scale-105 active:scale-95">
               Entendido
             </button>
           </div>
-
         </div>
       </div>
     </transition>
     <transition name="modal-fade">
       <div v-if="isLocationModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="isLocationModalVisible = false">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg m-4 transform transition-all modal-container">
-          
           <div class="relative text-center bg-gradient-to-br from-[#d7037b] to-[#9e0154] px-6 py-8 rounded-t-lg">
             <div class="mx-auto flex items-center justify-center h-16 w-16 bg-white/20 rounded-full">
               <MapPinIcon class="h-8 w-8 text-white" />
@@ -447,7 +561,6 @@
               <XMarkIcon class="h-5 w-5" />
             </button>
           </div>
-
           <div class="p-4 sm:p-6 max-h-[55vh] overflow-y-auto custom-scrollbar-unique">
             <ul v-if="suggestedPlaces.length > 0" class="space-y-3">
               <li 
@@ -486,16 +599,13 @@
     <transition name="modal-fade">
       <div v-if="isRatingModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="closeRatingModal">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 transform transition-all modal-container">
-          
           <div class="relative text-center bg-gradient-to-br from-[#d7037b] to-[#9e0154] px-6 py-8 rounded-t-lg">
-            
             <h3 class="text-xl font-bold text-white">Completar y Valorar</h3>
             <p v-if="selectedConversation" class="text-sm text-white/80 mt-1">Valora tu experiencia con {{ formatUserName(selectedConversation.user.full_name) }}.</p>
               <button @click="closeRatingModal" class="absolute top-3 right-3 p-1.5 text-white/60 hover:text-white hover:bg-white/20 rounded-full transition-colors">
               <XMarkIcon class="h-5 w-5" />
             </button>
           </div>
-
           <form @submit.prevent="submitRating" class="p-6">
             <div class="flex flex-col items-center">
               <p class="text-sm font-medium text-slate-700 mb-3">¿Cómo calificarías el intercambio?</p>
@@ -512,7 +622,6 @@
                 </button>
               </div>
             </div>
-            
             <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end gap-3">
               <button 
                 type="button" 
@@ -534,6 +643,7 @@
         </div>
       </div>
     </transition>
+
     </div>
 </template>
 
@@ -550,7 +660,7 @@ import {
   EyeIcon, PaperAirplaneIcon, CheckCircleIcon, NoSymbolIcon, EllipsisVerticalIcon, TrashIcon,
   UserMinusIcon, ShieldExclamationIcon, ShieldCheckIcon, StarIcon, ClockIcon, ExclamationCircleIcon,
   MapPinIcon, ArrowLeftIcon, 
-  ArrowPathIcon, ArrowsRightLeftIcon // <-- ICONOS AÑADIDOS
+  ArrowPathIcon, ArrowsRightLeftIcon
 } from '@heroicons/vue/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 import defaultAvatar from '@/assets/imagenes/defaul/7.svg';
@@ -592,14 +702,10 @@ const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:80
 const isLocationModalVisible = ref(false);
 let ws = null;
 
-// --- NUEVO ---
-// Variables para controlar el estado de "escribiendo..."
 const isOtherUserTyping = ref(false);
 let typingTimer = null;
 const typingSignalSent = ref(false);
-// --- FIN NUEVO ---
 
-// --- NUEVO: Computed properties para el modal de detalles ---
 const iAmProposer = computed(() => {
   if (!selectedConversation.value || !userStore.user) return false;
   return selectedConversation.value.exchange.proposer_user_id === userStore.user.id;
@@ -614,7 +720,6 @@ const theirProduct = computed(() => {
   if (!selectedConversation.value) return null;
   return iAmProposer.value ? selectedConversation.value.exchange.request : selectedConversation.value.exchange.offer;
 });
-// --- FIN NUEVO ---
 
 const suggestedPlaces = computed(() => {
   if (!userStore.user || !userStore.user.districtId) {
@@ -702,18 +807,9 @@ const openRatingModal = () => {
   isRatingModalVisible.value = true;
 };
 
-// ===========================================
-// ==== INICIO: FUNCIÓN CORREGIDA ====
-// ===========================================
 const closeRatingModal = () => {
   isRatingModalVisible.value = false;
-  // No llamamos a updateProposalStatus aquí.
-  // Si el usuario cierra el modal, es porque
-  // ha cancelado el proceso de valoración/completado.
 };
-// ===========================================
-// ==== FIN: FUNCIÓN CORREGIDA ====
-// ===========================================
 
 const submitRating = async () => {
   if (ratingScore.value === 0) {
@@ -733,9 +829,6 @@ const submitRating = async () => {
     await axios.post('/ratings', ratingData);
     toast.success("¡Gracias por tu valoración!");
     
-    // Ahora que la valoración se envió,
-    // llamamos a updateProposalStatus para
-    // marcar el intercambio como 'completado'.
     await updateProposalStatus('completed'); 
     
     if (userStore.user?.id) {
@@ -744,7 +837,6 @@ const submitRating = async () => {
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo enviar la valoración.");
   } finally {
-    // Cerramos el modal solo después de que todo termine
     isRatingModalVisible.value = false;
   }
 };
@@ -783,6 +875,7 @@ const confirmDelete = async () => {
     conversations.value = conversations.value.filter(c => c.exchange.id !== idToDelete);
     if (selectedConversation.value?.exchange.id === idToDelete) {
       selectedConversation.value = null;
+      isChatViewVisible.value = false;
     }
     toast.success("Conversación eliminada.");
   } catch (error) {
@@ -801,6 +894,7 @@ const confirmBlock = async () => {
     conversations.value = conversations.value.filter(c => c.user.id !== userToBlock.id);
     if (selectedConversation.value?.user.id === userToBlock.id) {
       selectedConversation.value = null;
+      isChatViewVisible.value = false;
     }
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo bloquear al usuario.");
@@ -810,7 +904,10 @@ const confirmBlock = async () => {
 };
 
 const confirmBlockAndReport = async () => {
-  if (!conversationToActOn.value || !reportReason.value.trim()) return;
+  if (!conversationToActOn.value || !reportReason.value.trim()) {
+    toast.error("Por favor, indica un motivo para el reporte.");
+    return;
+  }
   const userToReport = conversationToActOn.value.user;
   try {
     await axios.post(`/users/${userToReport.id}/report`, {
@@ -820,6 +917,7 @@ const confirmBlockAndReport = async () => {
     conversations.value = conversations.value.filter(c => c.user.id !== userToReport.id);
     if (selectedConversation.value?.user.id === userToReport.id) {
       selectedConversation.value = null;
+      isChatViewVisible.value = false;
     }
   } catch (error) {
     toast.error(error.response?.data?.detail || "No se pudo reportar al usuario.");
@@ -917,39 +1015,34 @@ watch(messages, () => {
   deep: true
 });
 
-// --- NUEVO ---
-// Función para enviar eventos de "typing" al WebSocket
 const sendTypingEvent = (type) => {
   if (ws && ws.readyState === WebSocket.OPEN && selectedConversation.value) {
     ws.send(JSON.stringify({
-      type: type, // 'typing_start' o 'typing_stop'
+      type: type,
       proposal_id: selectedConversation.value.exchange.id,
     }));
   }
 };
 
-// --- NUEVO ---
-// Manejador del input de texto para controlar el estado de "escribiendo..."
 const handleTypingInput = () => {
   if (!typingSignalSent.value) {
     sendTypingEvent('typing_start');
     typingSignalSent.value = true;
   }
-  // Reiniciar el temporizador cada vez que el usuario escribe
   clearTimeout(typingTimer);
   typingTimer = setTimeout(() => {
     sendTypingEvent('typing_stop');
     typingSignalSent.value = false;
-  }, 2000); // 2 segundos de inactividad para considerar que dejó de escribir
+  }, 2000);
 };
-// --- FIN NUEVO ---
 
 const connectWebSocket = () => {
   if (!userStore.user?.id || !userStore.token) return;
   if (ws && ws.readyState === WebSocket.OPEN) return;
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}/ws/${userStore.user.id}`;
+  const host = import.meta.env.VITE_WS_HOST || window.location.host;
+  const wsUrl = `${protocol}//${host}/ws/${userStore.user.id}`;
   
   ws = new WebSocket(wsUrl);
 
@@ -965,8 +1058,6 @@ const connectWebSocket = () => {
   ws.onmessage = (event) => {
     const response = JSON.parse(event.data);
     
-    // --- MODIFICADO ---
-    // Ahora el manejador de mensajes puede diferenciar entre tipos de eventos
     if (response.type === 'new_message') {
       const newMessage = response.data;
       
@@ -983,7 +1074,7 @@ const connectWebSocket = () => {
       }
       
       if (selectedConversation.value?.exchange.id === newMessage.proposal_id) {
-        isOtherUserTyping.value = false; // Si llega un mensaje, ya no está escribiendo
+        isOtherUserTyping.value = false;
         const existingMsgIndex = messages.value.findIndex(m => m.tempId && m.sender_id === newMessage.sender_id && m.text === newMessage.text);
 
         if (existingMsgIndex !== -1) {
@@ -995,12 +1086,10 @@ const connectWebSocket = () => {
         markMessagesAsRead([newMessage]);
       }
     } else if (response.type === 'user_typing') {
-        // Si el evento es 'user_typing' y corresponde a la conversación abierta, mostrar el indicador
         if (selectedConversation.value?.exchange.id === response.data.proposal_id) {
             isOtherUserTyping.value = true;
         }
     } else if (response.type === 'user_stopped_typing') {
-        // Si el evento es 'user_stopped_typing', ocultar el indicador
         if (selectedConversation.value?.exchange.id === response.data.proposal_id) {
             isOtherUserTyping.value = false;
         }
@@ -1008,44 +1097,34 @@ const connectWebSocket = () => {
   };
 };
 
-// ===========================================
-// ==== INICIO: FUNCIÓN MODIFICADA ====
-// ===========================================
 const sendMessage = async () => {
   if (!newMessageText.value.trim() || !isChatActive.value) return;
 
-  // --- NUEVO: Validación de enlaces ---
   const textToSend = newMessageText.value.trim();
-  // Regex para detectar patrones comunes de URL (http, www, domain.com, domain.pe, etc.)
   const urlRegex = /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|org|net|es|pe|io|dev|xyz|info))\b/i;
   
   if (urlRegex.test(textToSend)) {
     toast.error("No está permitido enviar enlaces o URLs en los mensajes.");
-    return; // Detiene la ejecución si se encuentra un enlace
+    return;
   }
-  // --- FIN NUEVO ---
 
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     toast.error('No se pudo conectar al chat. Intenta recargar la página.');
     return;
   }
   
-  // --- NUEVO ---
-  // Al enviar un mensaje, también enviamos una señal de 'typing_stop'
   clearTimeout(typingTimer);
   if (typingSignalSent.value) {
     sendTypingEvent('typing_stop');
     typingSignalSent.value = false;
   }
-  // --- FIN NUEVO ---
 
-  // const textToSend = newMessageText.value.trim(); // <-- Esta línea se movió arriba para la validación
   const tempId = `temp_${Date.now()}`; 
 
   messages.value.push({
     id: null,
     tempId: tempId,
-    text: textToSend, // Usamos la variable ya validada
+    text: textToSend,
     sender_id: userStore.user.id,
     timestamp: new Date().toISOString(),
     is_read: false,
@@ -1053,12 +1132,10 @@ const sendMessage = async () => {
     error: false,
   });
   
-  // --- MODIFICADO ---
-  // El payload ahora incluye el 'type' del evento
   const messagePayload = {
     type: 'new_message',
     proposal_id: selectedConversation.value.exchange.id,
-    text: textToSend, // Usamos la variable ya validada
+    text: textToSend,
   };
 
   ws.send(JSON.stringify(messagePayload));
@@ -1074,9 +1151,6 @@ const sendMessage = async () => {
     };
   }
 };
-// ===========================================
-// ==== FIN: FUNCIÓN MODIFICADA ====
-// ===========================================
 
 const fetchConversations = async () => {
   loadingConversations.value = true;
@@ -1097,10 +1171,7 @@ const returnToConversationList = () => {
 const selectConversation = async (conversation) => {
   isChatViewVisible.value = true; 
 
-  // --- NUEVO ---
-  // Reseteamos el estado de "escribiendo..." al cambiar de conversación
   isOtherUserTyping.value = false;
-  // --- FIN NUEVO ---
 
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
@@ -1155,12 +1226,6 @@ const updateProposalStatus = async (status) => {
   if (!selectedConversation.value) return;
   const statusTextMap = { accepted: 'aceptada', rejected: 'rechazada', cancelled: 'cancelada', completed: 'completada' };
   
-  // Esta lógica es la que FUERZA a que aparezca el modal de valoración.
-  // Si el status es 'completed' Y el modal NO está visible,
-  // llama a openRatingModal() y se detiene.
-  // El flujo continuará solo cuando el usuario envíe la valoración (submitRating),
-  // que llama a esta función de nuevo, pero esta vez isRatingModalVisible será true,
-  // saltando este 'if' y ejecutando la llamada API.
   if (status === 'completed' && !isRatingModalVisible.value) {
     openRatingModal();
     return;
@@ -1175,8 +1240,6 @@ const updateProposalStatus = async (status) => {
     if (status === 'cancelled') addSystemMessage('La propuesta ha sido cancelada.');
     if (status === 'completed') addSystemMessage('El intercambio ha sido completado.');
     
-    // Solo mostramos toast si NO es 'completed',
-    // porque 'completed' tiene su propio toast en submitRating.
     if (status !== 'completed') {
         toast.success(`Propuesta ${statusTextMap[status]}.`);
     }
@@ -1199,10 +1262,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  // --- NUEVO ---
-  // Limpiamos el temporizador al desmontar el componente para evitar memory leaks
   clearTimeout(typingTimer);
-  // --- FIN NUEVO ---
   if (ws) {
     ws.close();
   }
@@ -1264,7 +1324,6 @@ const statusText = (status) => ({
   border:1px solid #E2E8F0; color:#0f172a; background:#fff; border-radius:4px; box-shadow:0 1px 0 rgba(2,6,23,.05);
 }
 
-/* Nuevos estilos para los botones de acción compactos */
 .action-btn-accept {
   @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-green-600 rounded-full shadow-sm transition-transform hover:scale-105;
 }
@@ -1278,7 +1337,6 @@ const statusText = (status) => ({
   @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded-full shadow-sm transition-transform hover:scale-105;
 }
 
-/* Estilos para la transición del nuevo modal */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.3s ease;
