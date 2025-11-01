@@ -252,9 +252,20 @@ const openCommentModal = () => {
 
 const closeCommentModal = () => (isCommentModalVisible.value = false);
 
+// --- 🔽 AQUÍ ESTÁ EL CÓDIGO ACTUALIZADO 🔽 ---
+
 const submitComment = async () => {
+  // 1. VALIDACIÓN EN FRONTEND (para una respuesta rápida)
   if (!comment.value.message.trim()) {
     feedbackMessage.value = 'El mensaje no puede estar vacío.';
+    isSuccess.value = false;
+    return;
+  }
+  
+  // MEJORA 1: VALIDACIÓN DE LONGITUD EN FRONTEND
+  // Esto evita enviar una petición a la API que sabemos que fallará.
+  if (comment.value.message.trim().length < 10) {
+    feedbackMessage.value = 'El mensaje debe tener al menos 10 caracteres.';
     isSuccess.value = false;
     return;
   }
@@ -274,7 +285,29 @@ const submitComment = async () => {
 
   } catch (error) {
     isSuccess.value = false;
-    feedbackMessage.value = error.response?.data?.detail || 'Ocurrió un error al enviar tu comentario.';
+    
+    // MEJORA 2: MANEJO CORRECTO DEL ERROR DE VALIDACIÓN DE LA API
+    if (error.response && error.response.data) {
+      const data = error.response.data;
+      
+      // Caso 1: Error de validación de FastAPI (suele ser un array)
+      if (Array.isArray(data) && data[0] && data[0].msg) {
+        // Leemos el error "msg" que me mostraste
+        feedbackMessage.value = data[0].msg; 
+      } 
+      // Caso 2: Error genérico de FastAPI (como "detail": "...")
+      else if (data.detail) {
+        feedbackMessage.value = data.detail;
+      }
+      // Caso 3: Fallback
+      else {
+        feedbackMessage.value = 'Ocurrió un error al enviar tu comentario.';
+      }
+    } else {
+      // Error de red u otro
+      feedbackMessage.value = 'Error de red. Inténtalo de nuevo.';
+    }
+    
   } finally {
     isSubmitting.value = false;
   }
