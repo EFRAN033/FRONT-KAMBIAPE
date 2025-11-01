@@ -89,8 +89,14 @@
           <div 
             v-for="comment in filteredComments" 
             :key="comment.id"
-            class="p-5 bg-white border border-slate-200 rounded-xl shadow-sm transition-shadow duration-200 hover:shadow-md"
-          >
+            
+            :class="[
+              'p-5 border rounded-xl shadow-sm transition-all duration-300 hover:shadow-md',
+              isCommentNew(comment)
+                ? 'bg-pink-50 border-pink-300' 
+                : 'bg-white border-slate-200'  
+            ]"
+            >
             <div class="flex items-start justify-between gap-4">
               <div class="flex items-center gap-3">
                 <div v-if="comment.user" class="flex-shrink-0 h-11 w-11">
@@ -154,7 +160,7 @@
 </template>
     
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import axios from '@/axios';
 import { 
   LightBulbIcon, 
@@ -163,7 +169,7 @@ import {
   HeartIcon, 
   ChatBubbleLeftIcon,
   TrashIcon,
-  DocumentDuplicateIcon, // <-- NUEVO ÍCONO: Reemplaza a ClipboardIcon
+  DocumentDuplicateIcon,
   CheckIcon
 } from '@heroicons/vue/20/solid';
 import { useUserStore } from '@/stores/user'; 
@@ -176,8 +182,9 @@ const error = ref(null);
 
 const activeFilter = ref('all');
 const sortBy = ref('newest');
-
 const copiedNameId = ref(null);
+
+const lastVisitTimestamp = ref(null);
 
 const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:8000';
   
@@ -187,6 +194,11 @@ const commentTypeDetails = {
   question: { text: 'Pregunta', icon: QuestionMarkCircleIcon, classes: 'bg-yellow-100 text-yellow-800' },
   compliment: { text: 'Felicitación', icon: HeartIcon, classes: 'bg-green-100 text-green-800' },
   general: { text: 'General', icon: ChatBubbleLeftIcon, classes: 'bg-gray-100 text-gray-800' }
+};
+
+const isCommentNew = (comment) => {
+  if (!lastVisitTimestamp.value) return false;
+  return new Date(comment.created_at) > new Date(lastVisitTimestamp.value);
 };
 
 const filteredComments = computed(() => {
@@ -224,10 +236,17 @@ const fetchComments = async () => {
 };
   
 onMounted(() => {
+  lastVisitTimestamp.value = localStorage.getItem('lastCommentsVisit') || new Date(0).toISOString();
+  
   fetchComments();
+  
   if (!userStore.isLoggedIn) {
     userStore.initializeUser();
   }
+});
+
+onUnmounted(() => {
+  localStorage.setItem('lastCommentsVisit', new Date().toISOString());
 });
 
 const handleDelete = async (commentId) => {
@@ -258,7 +277,7 @@ const copyToClipboard = async (text, commentId) => {
       if (copiedNameId.value === commentId) {
         copiedNameId.value = null;
       }
-    }, 2000); // 2 segundos
+    }, 2000); 
     
   } catch (err) {
     console.error('Error al copiar:', err);
