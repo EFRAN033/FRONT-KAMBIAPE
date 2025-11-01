@@ -165,12 +165,12 @@
               <div class="relative overflow-hidden bg-cover bg-center" :style="{ backgroundImage: `url(${bannerSvg})` }">
                   <div class="absolute inset-0 bg-black/50"></div> 
                   
-                  <div class="relative grid grid-cols-1 items-center">
+                  <div class="relative grid grid-cols-1 lg:grid-cols-2 items-center">
                       
-                      <div class="relative py-12 lg:py-16 text-right pl-8 lg:pl-24 pr-8 lg:pr-16">
+                      <div></div> <div class="relative py-12 lg:py-16 text-center px-8 lg:pr-16">
                           <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-lg">{{ data.community.title }}</h2>
                           
-                          <p class="mt-4 text-base lg:text-lg text-pink-100 max-w-xl ml-auto mr-0">{{ data.community.paragraph }}</p>
+                          <p class="mt-4 text-base lg:text-lg text-pink-100 max-w-xl mx-auto">{{ data.community.paragraph }}</p>
                           <div class="mt-8">
                               <a :href="data.community.link" target="_blank" rel="noopener noreferrer" class="shine-button inline-flex items-center justify-center gap-2 sm:gap-3 bg-white text-[#9e0154] font-bold text-base px-6 py-3 sm:px-8 sm:py-4 shadow-xl transition-transform hover:scale-105">
                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.35 3.45 16.86L2.06 22L7.31 20.58C8.75 21.36 10.36 21.8 12.04 21.8C17.5 21.8 21.95 17.35 21.95 11.89C21.95 6.43 17.5 2 12.04 2ZM17.15 14.65C16.95 15.25 15.98 15.82 15.41 15.92C14.84 16.02 14.17 16.05 13.6 15.85C13.03 15.65 12.16 15.34 11.13 14.39C9.83 13.2 9.06 11.73 8.86 11.43C8.66 11.13 8.1 10.43 8.1 9.8C8.1 9.17 8.54 8.76 8.74 8.56C8.94 8.36 9.24 8.31 9.51 8.31C9.64 8.31 9.77 8.31 9.88 8.32C10.13 8.34 10.27 8.36 10.47 8.81C10.67 9.26 11.12 10.43 11.19 10.55C11.26 10.68 11.29 10.83 11.21 10.98C11.13 11.13 11.08 11.18 10.93 11.33C10.78 11.48 10.67 11.58 10.53 11.73C10.41 11.86 10.28 11.98 10.41 12.18C10.54 12.38 11.12 13.11 11.89 13.78C12.89 14.64 13.66 14.95 14 15.08C14.34 15.21 14.54 15.18 14.69 15.03C14.84 14.88 15.18 14.47 15.38 14.17C15.58 13.87 15.78 13.84 16.03 13.94C16.28 14.04 17.3 14.55 17.55 14.65Z" /></svg>
@@ -179,7 +179,7 @@
                           </div>
                       </div>
                   </div>
-              </div>
+                  </div>
           </div>
       </section>
 
