@@ -222,9 +222,8 @@ import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png'
 import api from '@/axios';
 
 // ===================================================================
-// --- ¡¡¡LOG DE PRUEBA DE DESPLIEGUE!!! ---
+// --- LOG DE PRUEBA DE DESPLIEGUE (Esto debe aparecer en consola) ---
 // ===================================================================
-// Si ves este mensaje en la consola de tu navegador, el deploy FUNCIONÓ.
 console.log('%c¡¡¡NUEVA VERSIÓN DESPLEGADA (con fix cardForm.createToken)!!!', 'color: #fff; background: #008000; font-size: 16px; font-weight: bold; padding: 5px;');
 // ===================================================================
 
@@ -281,19 +280,19 @@ async function startPurchase(plan) {
     paymentError.value = null;
     await nextTick();
     
-    // --- ¡CORRECCIÓN 2! ---
-    // Esperamos a que el formulario se inicialice ANTES
-    // de que el usuario pueda interactuar.
     try {
         await initializeCardForm();
     } catch (error) {
         console.error('Error en startPurchase al esperar initializeCardForm:', error);
-        paymentError.value = "Error crítico al cargar el formulario. Refresca la página."
+        // El error de la Public Key (si existe) se mostrará gracias a la validación
+        if (!paymentError.value) {
+            paymentError.value = error.message || "Error crítico al cargar el formulario. Refresca la página."
+        }
     }
 }
 
 // ===================================================================
-// --- ¡INICIO DEL SCRIPT CORREGIDO! ---
+// --- SCRIPT DE INICIALIZACIÓN (¡CON VALIDACIÓN DE PUBLIC KEY!) ---
 // ===================================================================
 async function initializeCardForm() {
     // 1. Desmontar campos anteriores si existen
@@ -305,7 +304,20 @@ async function initializeCardForm() {
         }
     }
 
+    // --- ¡¡INICIO DE LA VALIDACIÓN!! ---
+    // Esta es la validación que faltaba.
     const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+    if (!publicKey) {
+        console.error("¡ERROR GRAVE DE CONFIGURACIÓN!");
+        console.error("VITE_MERCADOPAGO_PUBLIC_KEY no está definida en tu .env.production");
+        console.error("El formulario de pago no puede cargarse.");
+        const errorMsg = "Error de configuración: La clave de pago no está disponible. Contacta al administrador.";
+        paymentError.value = errorMsg;
+        throw new Error(errorMsg); // Detenemos la ejecución
+    }
+    // --- ¡¡FIN DE LA VALIDACIÓN!! ---
+
+
     if (!window.MercadoPago) {
         paymentError.value = "El SDK de Mercado Pago no se ha cargado. Revisa tu conexión.";
         return;
@@ -351,6 +363,9 @@ async function initializeCardForm() {
     }
 }
 
+// ===================================================================
+// --- SCRIPT DE PAGO (¡CON LA CORRECCIÓN A 'cardForm'!) ---
+// ===================================================================
 async function processPayment() {
     isProcessing.value = true;
     paymentError.value = null;
@@ -369,6 +384,7 @@ async function processPayment() {
 
     try {
         // --- ¡¡¡ESTA ES LA LÍNEA CORRECTA!!! ---
+        // Aquí es donde estaba el error original.
         const cardTokenData = await cardForm.createToken();
 
         const token = cardTokenData.id;
@@ -428,7 +444,7 @@ async function processPayment() {
     }
 }
 // ===================================================================
-// --- ¡FIN DEL SCRIPT CORREGIDO! ---
+// --- ¡FIN DE LOS SCRIPTS CORREGIDOS! ---
 // ===================================================================
 
 
