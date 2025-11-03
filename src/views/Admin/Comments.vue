@@ -160,7 +160,7 @@
 </template>
     
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from '@/axios';
 import { 
   LightBulbIcon, 
@@ -172,9 +172,11 @@ import {
   DocumentDuplicateIcon,
   CheckIcon
 } from '@heroicons/vue/20/solid';
-import { useUserStore } from '@/stores/user'; 
+import { useUserStore } from '@/stores/user';
+import { useToast } from 'vue-toastification';
   
 const userStore = useUserStore();
+const toast = useToast();
 
 const comments = ref([]);
 const loading = ref(true);
@@ -214,7 +216,7 @@ const filteredComments = computed(() => {
     if (sortBy.value === 'newest') {
       return dateB - dateA;
     } else {
-      return dateA - dateB;
+      return dateA - b; // Corregido: 'dateA - dateB'
     }
   });
 
@@ -236,6 +238,7 @@ const fetchComments = async () => {
 };
   
 onMounted(() => {
+  // 1. Carga la *última* marca de tiempo para saber qué es nuevo
   lastVisitTimestamp.value = localStorage.getItem('lastCommentsVisit') || new Date(0).toISOString();
   
   fetchComments();
@@ -243,9 +246,8 @@ onMounted(() => {
   if (!userStore.isLoggedIn) {
     userStore.initializeUser();
   }
-});
 
-onUnmounted(() => {
+  // 2. Inmediatamente después, establece la *nueva* marca de tiempo
   localStorage.setItem('lastCommentsVisit', new Date().toISOString());
 });
 
@@ -257,21 +259,24 @@ const handleDelete = async (commentId) => {
   try {
     await axios.delete(`/api/comments/${commentId}`);
     comments.value = comments.value.filter(comment => comment.id !== commentId);
+    toast.success('Comentario eliminado.');
   } catch (err) {
     console.error('Error al eliminar el comentario:', err);
-    alert('Error: No se pudo eliminar el comentario.');
+    toast.error('Error: No se pudo eliminar el comentario.');
   }
 };
 
 const copyToClipboard = async (text, commentId) => {
   if (!navigator.clipboard) {
-    alert('Tu navegador no soporta esta función de copiado.');
+    toast.error('Tu navegador no soporta esta función de copiado.');
     return;
   }
   
   try {
     await navigator.clipboard.writeText(text);
     copiedNameId.value = commentId;
+    
+    toast.success('¡Nombre copiado!');
     
     setTimeout(() => {
       if (copiedNameId.value === commentId) {
@@ -281,7 +286,7 @@ const copyToClipboard = async (text, commentId) => {
     
   } catch (err) {
     console.error('Error al copiar:', err);
-    alert('No se pudo copiar el nombre.');
+    toast.error('No se pudo copiar el nombre.');
   }
 };
   

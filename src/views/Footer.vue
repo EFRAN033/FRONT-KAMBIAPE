@@ -162,50 +162,110 @@
               enter-from="opacity-0 translate-y-3 scale-95"
               enter-to="opacity-100 translate-y-0 scale-100"
               leave="transition ease-in duration-150"
-              leave-from="opacity-100 translate-y-0 scale-100"
+              leave-from="opacity-1100 translate-y-0 scale-100"
               leave-to="opacity-0 translate-y-3 scale-95"
             >
-              <DialogPanel class="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0b0b12]/90 p-6 sm:p-7 shadow-[0_10px_40px_-10px_rgba(215,3,123,0.35)] backdrop-blur-xl">
-                <DialogTitle class="text-center text-lg font-bold text-pink-300">Envíanos tus Comentarios</DialogTitle>
+            <DialogPanel class="relative w-full max-w-lg overflow-hidden rounded-2xl ring-1 ring-inset ring-white/10 bg-[#0b0b12]/90 p-6 sm:p-8 shadow-[0_10px_40px_-10px_rgba(215,3,123,0.35)] backdrop-blur-xl">
+  
+              <button
+                type="button"
+                @click="closeCommentModal"
+                class="absolute top-5 right-5 rounded-full p-1.5 text-gray-400 transition-all duration-200 ease-in-out hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                aria-label="Cerrar panel"
+              >
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div class="text-center">
+                <DialogTitle class="text-xl font-semibold text-white tracking-tight">
+                  Envíanos tus Comentarios
+                </DialogTitle>
+                <p class="mt-1 text-sm text-gray-400">
+                  Tu opinión nos ayuda a mejorar la plataforma.
+                </p>
+              </div>
+
+              <div class="my-6 h-px bg-white/10" />
+
+              <form v-if="userStore.isLoggedIn" class="space-y-5" @submit.prevent="submitComment">
                 
-                <form v-if="userStore.isLoggedIn" class="mt-4 space-y-4" @submit.prevent="submitComment">
-                  <div>
-                    <label for="commentType" class="mb-1 block text-[13px] text-gray-300">Tipo de comentario</label>
-                    <select id="commentType" v-model="comment.type" class="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <div>
+                  <label for="commentType" class="mb-1.5 block text-sm font-medium text-gray-300">
+                    Tipo de comentario
+                  </label>
+                  <div class="relative">
+                    <select 
+                      id="commentType" 
+                      v-model="comment.type" 
+                      class="w-full appearance-none rounded-md border border-white/10 bg-white/5 py-2.5 pl-3 pr-10 text-white transition-all duration-200 ease-in-out placeholder:text-gray-500 focus:border-pink-500 focus:outline-none focus:shadow-[0_0_15px_0_rgba(215,3,123,0.5)]"
+                    >
                       <option value="suggestion">Sugerencia</option>
                       <option value="problem">Reportar un problema</option>
                       <option value="question">Pregunta</option>
                       <option value="compliment">Felicitación</option>
                     </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
+                      <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </div>
                   </div>
-
-                  <div>
-                    <label for="commentMessage" class="mb-1 block text-[13px] text-gray-300">
-                      Mensaje <span class="text-rose-400">*</span>
-                    </label>
-                    <textarea id="commentMessage" v-model="comment.message" rows="4" required class="w-full resize-y rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="Escribe tu comentario..."></textarea>
-                  </div>
-
-                  <div class="flex justify-end gap-2 pt-1">
-                    <button type="button" @click="closeCommentModal" class="rounded-md border border-gray-600 px-4 py-2 text-[13px] text-gray-300 hover:bg-gray-800">Cancelar</button>
-                    <button type="submit" :disabled="isSubmitting" class="inline-flex items-center rounded-md bg-gradient-to-r from-pink-600 to-rose-600 px-4 py-2 text-[13px] font-medium text-white shadow hover:brightness-110 disabled:opacity-50">
-                      <span v-if="!isSubmitting">Enviar</span>
-                      <svg v-else class="ml-1 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0A12 12 0 000 12h4z"/></svg>
-                    </button>
-                  </div>
-                </form>
-
-                <div v-else class="mt-6 text-center">
-                   <p class="text-gray-300">Debes iniciar sesión para poder dejar un comentario.</p>
-                   <button @click="navigateToLogin" class="mt-4 rounded-md bg-gradient-to-r from-pink-600 to-rose-600 px-6 py-2.5 font-semibold text-white shadow hover:brightness-110">
-                     Iniciar Sesión
-                   </button>
                 </div>
 
-                <p v-if="feedbackMessage" class="mt-3 text-center text-[13px]" :class="isSuccess ? 'text-gray-300' : 'text-rose-400'">
-                  {{ feedbackMessage }}
-                </p>
-              </DialogPanel>
+                <div>
+                  <label for="commentMessage" class="mb-1.5 block text-sm font-medium text-gray-300">
+                    Mensaje <span class="text-rose-400">*</span>
+                  </label>
+                  <textarea 
+                    id="commentMessage" 
+                    v-model="comment.message" 
+                    rows="4" 
+                    required 
+                    class="w-full resize-none rounded-md border border-white/10 bg-white/5 px-3 py-2.5 text-white transition-all duration-200 ease-in-out placeholder:text-gray-500 focus:border-pink-500 focus:outline-none focus:shadow-[0_0_15px_0_rgba(215,3,123,0.5)]" 
+                    placeholder="Describe tu sugerencia o problema..."
+                  ></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                  <button 
+                    type="button" 
+                    @click="closeCommentModal" 
+                    class="rounded-md bg-transparent px-4 py-2 text-sm font-medium text-gray-400 transition-all duration-200 ease-in-out hover:bg-white/5 hover:text-white"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit" 
+                    :disabled="isSubmitting" 
+                    class="inline-flex min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-pink-600 to-rose-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-pink-600/20 transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-xl hover:shadow-pink-600/40 active:scale-[0.98] disabled:from-gray-600 disabled:to-gray-700 disabled:shadow-none disabled:hover:scale-100"
+                  >
+                    <span v-if="!isSubmitting">Enviar</span>
+                    <svg v-else class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0A12 12 0 000 12h4z"/>
+                    </svg>
+                  </button>
+                </div>
+              </form>
+
+              <div v-else class="mt-8 flex flex-col items-center text-center">
+                <svg class="h-12 w-12 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 00-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                <p class="mt-4 text-gray-300">Debes iniciar sesión para poder dejar un comentario.</p>
+                <button 
+                  @click="navigateToLogin" 
+                  class="mt-6 w-full max-w-xs rounded-md bg-gradient-to-r from-pink-600 to-rose-600 px-6 py-2.5 font-semibold text-white shadow-lg shadow-pink-600/20 transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-xl hover:shadow-pink-600/40 active:scale-[0.98]"
+                >
+                  Iniciar Sesión
+                </button>
+              </div>
+
+              <p v-if="feedbackMessage" class="mt-4 text-center text-sm font-medium" :class="isSuccess ? 'text-white' : 'text-rose-400'">
+                {{ feedbackMessage }}
+              </p>
+            </DialogPanel>
             </TransitionChild>
           </div>
         </div>
