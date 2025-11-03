@@ -147,6 +147,7 @@
                             <span class="font-semibold text-[#d7037b]">{{ planToPurchase.price }}</span>.
                         </p>
                     </div>
+                    
                     <form id="paymentForm" class="space-y-4">
                         <div>
                             <label for="form-checkout__cardholderName" class="form-label">Nombre del Titular</label>
@@ -198,7 +199,7 @@
                             {{ isProcessing ? 'Procesando...' : `Pagar S/ ${planToPurchase.priceValue.toFixed(2)}` }}
                         </button>
                     </form>
-                </div>
+                    </div>
             </div>
 
         </main>
@@ -220,6 +221,13 @@ import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.
 import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
 import api from '@/axios';
 
+// ===================================================================
+// --- ¡¡¡LOG DE PRUEBA DE DESPLIEGUE!!! ---
+// ===================================================================
+// Si ves este mensaje en la consola de tu navegador, el deploy FUNCIONÓ.
+console.log('%c¡¡¡NUEVA VERSIÓN DESPLEGADA (con fix cardForm.createToken)!!!', 'color: #fff; background: #008000; font-size: 16px; font-weight: bold; padding: 5px;');
+// ===================================================================
+
 // --- Lógica de la tienda y estado del usuario (sin cambios) ---
 const userStore = useUserStore();
 const userCredits = computed(() => userStore.userCredits || 0);
@@ -228,7 +236,7 @@ const plans = [
     { name: 'Popular', amount: 5, price: 'S/ 2.00', priceValue: 2.00, avatar: avatarPopular, tagline: 'La elección inteligente.', headline: 'Conviértete en el Favorito.', subHeadline: 'Atrae más miradas y genera más confianza. Consigue los mejores intercambios.', fillLevel: '66%', liquidColor: 'hsl(250, 80%, 70%)' },
     { name: 'Pro', amount: 10, price: 'S/ 5.00', priceValue: 5.00, avatar: avatarPro, tagline: 'Juega en otro nivel.', headline: 'Sé el Número Uno.', subHeadline: 'Llega a la cima y conviértete en un referente. Es para los que quieren ganar en grande.', fillLevel: '100%', liquidColor: 'hsl(320, 80%, 65%)' }
 ];
-const selectedPlan = ref(plans[1]); // Sigue seleccionando "Popular" por defecto
+const selectedPlan = ref(plans[1]);
 const playAnimation = ref(false);
 
 function selectPlan(plan) {
@@ -250,7 +258,8 @@ const isProcessing = ref(false);
 const paymentError = ref(null);
 const planToPurchase = ref(null);
 let mp;
-let cardForm;
+let cardForm; // Variable para la instancia del formulario
+
 
 onMounted(() => {
     loadMercadoPagoSDK();
@@ -271,78 +280,121 @@ async function startPurchase(plan) {
     showPaymentModal.value = true;
     paymentError.value = null;
     await nextTick();
-    initializeCardForm();
+    
+    // --- ¡CORRECCIÓN 2! ---
+    // Esperamos a que el formulario se inicialice ANTES
+    // de que el usuario pueda interactuar.
+    try {
+        await initializeCardForm();
+    } catch (error) {
+        console.error('Error en startPurchase al esperar initializeCardForm:', error);
+        paymentError.value = "Error crítico al cargar el formulario. Refresca la página."
+    }
 }
 
+// ===================================================================
+// --- ¡INICIO DEL SCRIPT CORREGIDO! ---
+// ===================================================================
 async function initializeCardForm() {
-    if (cardForm) cardForm.unmount();
-    
-    const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY; 
+    // 1. Desmontar campos anteriores si existen
+    if (cardForm) {
+        try {
+            cardForm.unmount();
+        } catch (e) {
+            console.warn("Error (ignorable) al desmontar cardForm:", e);
+        }
+    }
+
+    const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
     if (!window.MercadoPago) {
         paymentError.value = "El SDK de Mercado Pago no se ha cargado. Revisa tu conexión.";
         return;
     }
+    
     mp = new window.MercadoPago(publicKey);
 
-    cardForm = await mp.cardForm({
-        amount: String(planToPurchase.value.priceValue),
-        iframe: true,
-        form: {
-            id: 'paymentForm',
-            cardNumber: { id: 'form-checkout__cardNumber' },
-            cardholderName: { id: 'form-checkout__cardholderName' },
-            cardExpirationDate: { id: 'form-checkout__cardExpirationDate' },
-            securityCode: { id: 'form-checkout__securityCode' },
-            installments: { id: 'form-checkout__installments' },
-            identificationType: { id: 'form-checkout__identificationType' },
-            identificationNumber: { id: 'form-checkout__identificationNumber' },
-            issuer: { id: 'form-checkout__issuer' },
-        },
-        callbacks: {
-            onFormMounted: error => { if (error) console.warn('Form Mounted error:', error) },
-            onSubmit: event => {
-                event.preventDefault();
-                processPayment();
+    // 2. Usamos mp.cardForm()
+    try {
+        cardForm = await mp.cardForm({
+            amount: String(planToPurchase.value.priceValue),
+            iframe: true,
+            form: {
+                id: 'paymentForm',
+                cardholderName: { id: 'form-checkout__cardholderName' },
+                identificationType: { id: 'form-checkout__identificationType' },
+                identificationNumber: { id: 'form-checkout__identificationNumber' },
+                installments: { id: 'form-checkout__installments' },
+                issuer: { id: 'form-checkout__issuer' },
+
+                cardNumber: { id: 'form-checkout__cardNumber', placeholder: "0000 0000 0000 0000" },
+                cardExpirationDate: { id: 'form-checkout__cardExpirationDate', placeholder: "MM/YY" },
+                securityCode: { id: 'form-checkout__securityCode', placeholder: "123" },
             },
-            onError: (errors) => {
-                const errorMessages = errors.map(e => e.message).join('. ');
-                paymentError.value = errorMessages;
+            callbacks: {
+                onFormMounted: error => { if (error) console.warn('Form Mounted error:', error) },
+                // El SDK se encarga del 'submit'
+                onSubmit: event => {
+                    event.preventDefault();
+                    processPayment(); // Llamamos a nuestra función
+                },
+                onError: (errors) => {
+                    const errorMessages = errors.map(e => e.message).join('. ');
+                    paymentError.value = errorMessages;
+                }
             }
-        }
-    });
+        });
+
+    } catch (error) {
+        console.error("Error al montar 'mp.cardForm()':", error);
+        paymentError.value = "No se pudieron cargar los campos de pago. Refresca la página.";
+        throw error; // Lanzamos el error para que startPurchase lo lo sepa
+    }
 }
 
 async function processPayment() {
     isProcessing.value = true;
     paymentError.value = null;
 
+    // Log de depuración final para verificar los objetos
+    console.log("LOG 3: Verificando objetos ANTES de crear token...");
+    console.log("Obj 'mp':", mp);
+    console.log("Obj 'cardForm':", cardForm);
+    
+    if (!mp || !cardForm) { // <-- Verificación añadida
+        paymentError.value = "Error de inicialización (mp o cardForm nulo). Refresca la página.";
+        isProcessing.value = false;
+        console.error("Error: 'mp' o 'cardForm' es nulo.", { mp, cardForm });
+        return;
+    }
+
     try {
-        const cardTokenData = await cardForm.getCardToken();
-        if (!cardTokenData.token) {
-            throw new Error("No se pudo generar el token. Revisa los datos de la tarjeta.");
+        // --- ¡¡¡ESTA ES LA LÍNEA CORRECTA!!! ---
+        const cardTokenData = await cardForm.createToken();
+
+        const token = cardTokenData.id;
+        if (!token) {
+            throw new Error("No se pudo generar el token (ID nulo). Revisa los datos de la tarjeta.");
         }
 
+        // 2. Construir el payload
         const paymentPayload = {
-            token: cardTokenData.token,
-            issuer_id: cardTokenData.issuer,
-            payment_method_id: cardTokenData.paymentMethodId,
+            token: token,
+            issuer_id: cardTokenData.issuer_id, 
+            payment_method_id: cardTokenData.payment_method_id,
             transaction_amount: planToPurchase.value.priceValue,
             installments: Number(cardTokenData.installments),
             description: `Compra de ${planToPurchase.value.amount} Kambitos`,
-            
-            // --- ¡AQUÍ ESTÁ LA LÍNEA MODIFICADA! ---
-            quantity: planToPurchase.value.amount,
-            // --- FIN DE LA MODIFICACIÓN ---
-
+            quantity: planToPurchase.value.amount, 
             payer: {
                 email: userStore.user.email,
                 identification: {
-                    type: document.getElementById('form-checkout__identificationType').value,
-                    number: document.getElementById('form-checkout__identificationNumber').value
+                    type: cardTokenData.cardholder.identification.type,
+                    number: cardTokenData.cardholder.identification.number
                 }
             }
         };
 
+        // 3. Envía el payload al backend
         const { data: responseData } = await api.post('/payment/process_payment', paymentPayload);
 
         if (responseData.status === 'approved') {
@@ -356,12 +408,28 @@ async function processPayment() {
         }
 
     } catch (error) {
-        console.error('Error al procesar el pago:', error);
-        paymentError.value = error.response?.data?.detail || error.message || 'Ocurrió un error inesperado al procesar el pago.';
+        console.error('Error en el try/catch de processPayment:', error);
+        
+        let errorMessage = 'Ocurrió un error inesperado al procesar el pago.';
+        
+        if (Array.isArray(error) && error.length > 0) {
+            errorMessage = error.map(e => e.message).join('. ');
+        } 
+        else if (error.response?.data?.detail) {
+            errorMessage = error.response.data.detail;
+        } 
+        else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        paymentError.value = errorMessage;
     } finally {
         isProcessing.value = false;
     }
 }
+// ===================================================================
+// --- ¡FIN DEL SCRIPT CORREGIDO! ---
+// ===================================================================
 
 
 // --- Animación de mouse (sin cambios) ---
@@ -399,11 +467,18 @@ function handleMouseMove(event) {
 .form-input {
     @apply mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-white;
 }
+/* Este estilo es para los <div>s de los campos seguros */
 .form-input-mp {
     @apply mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 shadow-sm focus-within:border-pink-500 focus-within:ring-1 focus-within:ring-pink-500 transition;
     min-height: 42px; /* Altura mínima para el contenedor */
+    background-color: white; /* Asegura fondo blanco para los iframes */
+}
+.dark .form-input-mp {
+    background-color: #334155; /* Color de fondo oscuro (slate-700) */
 }
 
+
+/* --- (El resto de tus estilos <style scoped> se mantienen igual) --- */
 /* --- ESTILOS GENERALES Y DE ESCRITORIO --- */
 
 /* Fondos decorativos (sin cambios) */
@@ -547,7 +622,7 @@ function handleMouseMove(event) {
 /* --- ANIMACIONES Y TRANSICIONES (sin cambios) --- */
 @keyframes gleam { 0% { transform: translate(-150%, -150%) rotate(-45deg); } 100% { transform: translate(150%, 150%) rotate(-45deg); } }
 .gleam-animation { animation: gleam 5s infinite linear; animation-delay: 2s; }
-@keyframes select-wobble { 0% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.1) rotate(-5deg); } 50% { transform: scale(1.15) rotate(5deg); } 75% { transform: scale(1.1) rotate(-2deg); } 100% { transform: scale(1) rotate(0deg); } }
+@keyframes select-wobble { 0% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.1) rotate(-5deg); } 50% { transform: scale(1.15) rotate(5deg); } 75% { transform: scale(1.1) rotate(-2deg); } 100% { scale: 1; rotate: 0deg; } }
 .plan-selected-animation .coin-overlay { animation: select-wobble 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .plan-selected-animation .liquid { --pulse-color: var(--liquid-shadow-color); animation: pulse-color 0.7s ease-in-out; }
 @keyframes pulse-color { 0%, 100% { box-shadow: 0 0 30px var(--pulse-color); } 50% { box-shadow: 0 0 50px var(--pulse-color); } }
