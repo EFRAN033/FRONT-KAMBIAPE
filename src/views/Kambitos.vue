@@ -329,6 +329,11 @@ async function processPayment() {
             transaction_amount: planToPurchase.value.priceValue,
             installments: Number(cardTokenData.installments),
             description: `Compra de ${planToPurchase.value.amount} Kambitos`,
+            
+            // --- ¡AQUÍ ESTÁ LA LÍNEA MODIFICADA! ---
+            quantity: planToPurchase.value.amount,
+            // --- FIN DE LA MODIFICACIÓN ---
+
             payer: {
                 email: userStore.user.email,
                 identification: {
