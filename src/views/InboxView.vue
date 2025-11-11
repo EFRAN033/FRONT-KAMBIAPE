@@ -139,11 +139,17 @@
           </aside>
 
           <section 
-            class="absolute inset-0 w-full h-full bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-in-out lg:static lg:flex-1 lg:translate-x-0"
-            :class="{ 'translate-x-0': isChatViewVisible, 'translate-x-full': !isChatViewVisible }"
+            class="w-full h-full bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-in-out lg:static lg:flex-1 lg:translate-x-0"
+            :class="{ 
+              'translate-x-0': isChatViewVisible, 
+              'translate-x-full': !isChatViewVisible,
+              
+              'fixed inset-0 z-50': isChatViewVisible,
+              'absolute inset-0': !isChatViewVisible,
+            }"
           >
             <template v-if="selectedConversation">
-              <div class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between transition-colors sticky top-0 z-20">
+              <div class="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between transition-colors sticky top-0 z-20 pt-[calc(0.75rem+env(safe-area-inset-top))]">
                 <div class="flex items-center gap-3 min-w-0">
                   <button @click="returnToConversationList" class="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full lg:hidden">
                     <ArrowLeftIcon class="h-5 w-5" />
@@ -238,7 +244,7 @@
                 </div>
               </div>
 
-              <div class="p-4 border-t border-slate-200 bg-slate-50">
+              <div class="p-4 border-t border-slate-200 bg-slate-50 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 <form @submit.prevent="sendMessage" class="flex items-center gap-3">
                   <input 
                     type="text" 
@@ -1375,6 +1381,7 @@ const statusText = (status) => ({
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 .modal-fade-enter-from .modal-container,
+/* Esta es la línea que tenía la 'a' extra. Ya está corregida. */
 .modal-fade-leave-to .modal-container {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
