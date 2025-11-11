@@ -489,6 +489,29 @@
     </transition>
     
     <transition name="modal-fade">
+      <div v-if="isCancelModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="closeCancelModal">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 transform transition-all modal-container">
+          <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+              <NoSymbolIcon class="h-6 w-6 text-red-600" aria-hidden="true" />
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-slate-900">Cancelar Propuesta</h3>
+            <div class="mt-2 px-4 text-sm text-slate-500">
+              <p>¿Estás seguro de que quieres cancelar esta propuesta de intercambio? Esta acción es irreversible.</p>
+            </div>
+          </div>
+          <div class="px-6 py-4 bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 rounded-b-lg">
+            <button @click="closeCancelModal" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50">
+              Volver
+            </button>
+            <button @click="confirmCancel" type="button" class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700">
+              Sí, Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+    <transition name="modal-fade">
       <div v-if="showDetailsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="showDetailsModal = false">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl m-4 transform transition-all modal-container">
           <div class="relative text-center bg-gradient-to-br from-[#d7037b] to-[#9e0154] px-6 py-6 rounded-t-lg">

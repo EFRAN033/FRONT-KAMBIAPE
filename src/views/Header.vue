@@ -64,36 +64,6 @@
           </nav>
 
         <div class="hidden lg:flex items-center space-x-4">
-          <div class="relative">
-            <button
-              @click="toggleSearch"
-              class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-              aria-label="Buscar"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-            <div
-              v-show="searchOpen"
-              class="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl overflow-hidden"
-              @click.stop
-            >
-              <div class="relative">
-                <input
-                  type="text"
-                  placeholder="Buscar en KambiaPe..."
-                  class="w-full pl-10 pr-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
-                  v-model="searchQuery"
-                  @keyup.enter="performSearch"
-                >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          
           <template v-if="userStore.isLoggedIn">
             <div class="flex items-center space-x-4">
               <router-link to="/kambitos">
@@ -178,15 +148,6 @@
 
         <div class="lg:hidden flex items-center space-x-4">
           <button
-            @click="toggleSearch"
-            class="text-white p-2 focus:outline-none"
-            aria-label="Buscar"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-          <button
             @click="toggleMenu"
             class="text-white p-2 focus:outline-none transition-transform duration-200 active:scale-90"
             :aria-expanded="menuOpen"
@@ -201,21 +162,7 @@
         </div>
       </div>
 
-      <div v-show="searchOpen" class="lg:hidden mt-3">
-        <div class="relative">
-          <input
-            type="text"
-            placeholder="Buscar en KambiaPe..."
-            class="w-full pl-10 pr-4 py-3 text-sm rounded-full bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-200"
-            v-model="searchQuery"
-            @keyup.enter="performSearch"
-          >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white/60 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
       </div>
-    </div>
 
     <transition
       enter-active-class="transition duration-200 ease-out"
@@ -248,6 +195,19 @@
 
           <div class="mt-4 pt-4 border-t border-gray-200">
             <template v-if="userStore.isLoggedIn">
+              
+              <router-link
+                to="/kambitos"
+                class="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center"
+                @click="menuOpen = false"
+              >
+                <BanknotesIcon class="h-5 w-5 mr-3 text-[#d7037b]" />
+                Mis Kambitos
+                <span class="ml-auto px-2 py-0.5 text-sm font-medium rounded-full bg-gray-200 text-[#d7037b] font-mono">
+                  {{ userStore.userCredits }}
+                </span>
+              </router-link>
+
               <router-link
                 to="/profile"
                 class="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center"
@@ -296,7 +256,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'; // <-- Esta es la línea que corregí
 import { useUserStore } from '@/stores/user';
 import { useInboxStore } from '@/stores/inbox';
 
@@ -307,7 +267,8 @@ import {
   InboxIcon,
   UserIcon,
   PowerIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  BanknotesIcon 
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
@@ -315,9 +276,7 @@ const userStore = useUserStore();
 const inboxStore = useInboxStore();
 
 const menuOpen = ref(false);
-const searchOpen = ref(false);
 const userMenuOpen = ref(false);
-const searchQuery = ref('');
 
 const navLinks = [
   { path: '/', label: 'Inicio', icon: HomeIcon },
@@ -330,22 +289,13 @@ const userInitials = computed(() => userStore.userInitials);
 const userFirstName = computed(() => userStore.userFirstName);
 
 const toggleMenu = () => { menuOpen.value = !menuOpen.value; };
-const toggleSearch = () => { searchOpen.value = !searchOpen.value; };
 const toggleUserMenu = () => { userMenuOpen.value = !userMenuOpen.value; };
-
-const performSearch = () => {
-  if (searchQuery.value.trim()) {
-    console.log('Buscando:', searchQuery.value);
-    searchOpen.value = false;
-    searchQuery.value = '';
-  }
-};
 
 const logout = () => {
   userStore.clearUser();
   inboxStore.clearUnreadCount();
   menuOpen.value = false;
-  userMenuOpen.value = false;
+  userMenuOpen.false;
   router.push('/login');
 };
 
@@ -353,7 +303,6 @@ const handleClickOutside = (event) => {
   const headerElement = document.querySelector('header');
   if (headerElement && !headerElement.contains(event.target)) {
     menuOpen.value = false;
-    searchOpen.value = false;
     userMenuOpen.value = false;
   }
 };
