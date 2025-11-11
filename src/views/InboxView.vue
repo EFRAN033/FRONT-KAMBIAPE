@@ -195,9 +195,11 @@
                 </div>
 
                 <div v-if="canComplete" class="flex items-center justify-center gap-3">
-                   <span class="hidden sm:inline text-sm font-semibold text-green-800">¡Acordado!</span>
+                   <span class="text-sm font-medium text-green-800">
+                     ¿Intercambio finalizado?
+                   </span>
                   <button @click="openRatingModal" class="action-btn-complete">
-                    <StarIcon class="h-4 w-4" /> Completar
+                    <StarIcon class="h-4 w-4" /> Completar y Valorar
                   </button>
                 </div>
               </div>
