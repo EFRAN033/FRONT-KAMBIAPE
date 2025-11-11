@@ -221,7 +221,7 @@ import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import MonedaSVG from '@/assets/imagenes/Moneda.svg';
-import avatarBasico from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
+import avatarBasico from '@/assets/imagenes/gif/1sol.png';
 import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
 import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
 import api from '@/axios'; // <--- Tu helper 'api' de Axios
@@ -409,7 +409,7 @@ select.form-input {
     @apply text-sm font-medium text-slate-600 dark:text-slate-300;
 }
 .payment-logo-shadow {
-    @apply shadow-lg;
+    /* @apply shadow-lg; */ /* <-- Sombra quitada si la hubiera */
 }
 
 
@@ -442,7 +442,7 @@ select.form-input {
 /* --- Branding y Avatar --- */
 .avatar-image {
     @apply h-auto object-contain relative z-10;
-    filter: drop-shadow(0 25px 30px rgba(0,0,0,0.2));
+    /* filter: drop-shadow(0 25px 30px rgba(0,0,0,0.2)); */ /* <--- SOMBRA QUITADA --- */
 }
 
 .branding-text { @apply lg:mt-0; }
@@ -468,12 +468,12 @@ select.form-input {
 /* --- Estilos para "Plan Cards" --- */
 .plan-card {
     @apply relative w-full flex flex-col items-center text-center p-5 rounded-xl border-2;
-    @apply transition-all duration-300 shadow-sm;
+    @apply transition-all duration-300; /* <-- SOMBRA QUITADA (shadow-sm) */
     @apply cursor-pointer;
     @apply bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700;
 }
 .plan-card:hover {
-    @apply shadow-lg border-slate-300 dark:border-slate-600;
+    @apply border-slate-300 dark:border-slate-600; /* <-- SOMBRA QUITADA (shadow-lg) */
     transform: translateY(-2px);
 }
 /* ... (sin cambios) ... */
@@ -490,7 +490,7 @@ select.form-input {
 }
 .plan-badge {
     @apply absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2;
-    @apply bg-pink-600 text-white text-xs font-bold px-3 py-0.5 rounded-full shadow-lg;
+    @apply bg-pink-600 text-white text-xs font-bold px-3 py-0.5 rounded-full; /* <-- SOMBRA QUITADA (shadow-lg) */
 }
 .plan-pro .plan-badge {
     @apply bg-violet-600;
