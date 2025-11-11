@@ -46,7 +46,7 @@
                         </div>
                         
                         <div class="flex flex-col gap-4">
-                            <h3 class="step-headline">1. Planes Disponibles</h3>
+                            <h3 class="step-headline">1. Selecciona tu plan</h3>
                             
                             <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <button v-for="plan in plans" 
@@ -73,79 +73,149 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="hidden lg:flex lg:col-span-2 justify-center pt-12 order-2">
                         <transition name="avatar-swap" mode="out-in">
                             <img :src="currentAvatar" :key="currentAvatar" alt="Kambito Avatar" 
                                  class="avatar-image w-52 h-auto"/>
                         </transition>
                     </div>
-
                     <div class="lg:col-span-5 flex flex-col gap-5 order-3 z-10">
-                        <h3 class="step-headline">2. Realiza el pago</h3>
+                        <h3 class="step-headline">2. Confirma tu compra</h3>
                         
                         <div class="payment-qr-section w-full space-y-5">
                             <p class="text-sm text-slate-600 dark:text-slate-400 text-center">
-                                Por favor escribe los nombres y número del celular donde se realiza el yapeo.
+                                Ingresa el nombre del titular de la cuenta Yape/Plin desde la que pagarás.
                             </p>
                             
-                            <form @submit.prevent="confirmQR_Payment" class="space-y-5">
-                                
-                                <div class="text-center">
-                                    <p class="text-base font-semibold text-slate-800 dark:text-white">
-                                        Paga <span class="font-bold text-[#d7037b]">{{ selectedPlan.price }}</span> con Yape/Plin
-                                    </p>
-                                </div>
-                                
-                                <div class="qr-placeholder">
-                                    <img :src="qrCodeImage" alt="Código QR de pago" class="qr-image" />
+                            <form @submit.prevent="handlePurchase" class="w-full space-y-4">
+                                <div class="p-6 bg-slate-100 dark:bg-slate-700/50 rounded-xl border dark:border-slate-700">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Resumen de tu Compra</h2>
+                                        <div class="px-3 py-1 rounded-full text-xs font-bold"
+                                            :class="selectedPlan.name === 'Pro' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300' : 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300'">
+                                            Plan {{ selectedPlan.name }}
+                                        </div>
+                                    </div>
                                     
-                                    <span class="payment-methods flex items-center justify-center gap-1.5">
-                                        Escanea con 
-                                        <img :src="yapeLogo" alt="Yape" class="h-5 w-auto payment-logo-shadow" /> o 
-                                        <img :src="plinLogo" alt="Plin" class="h-5 w-auto payment-logo-shadow" />
-                                    </span>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-700">
+                                            <span class="text-slate-600 dark:text-slate-400">Paquete</span>
+                                            <span class="font-bold text-slate-800 dark:text-slate-100">{{ selectedPlan.amount }} Kambitos</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-xl font-bold">
+                                            <span class="text-slate-800 dark:text-slate-200">Total a Pagar</span>
+                                            <span :class="selectedPlan.name === 'Pro' ? 'text-violet-600' : 'text-pink-600'">
+                                                {{ selectedPlan.price }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div class="grid grid-cols-2 gap-3 items-end">
-                                    <div>
-                                        <label for="paymentName" class="form-label !mb-0">Nombres completo</label>
-                                        <input type="text" id="paymentName" v-model="paymentName" class="form-input" placeholder="Tu nombre" required />
-                                    </div>
-                                    <div>
-                                        <label for="paymentPhone" class="form-label !mb-0">Teléfono</label>
-                                        <input type="tel" id="paymentPhone" v-model="paymentPhone" class="form-input" placeholder="987654321" required />
-                                    </div>
+                                
+                                <div>
+                                    <label for="paymentName" class="form-label">Nombre del titular de Yape/Plin</label>
+                                    <input type="text" id="paymentName" v-model="paymentName" class="form-input" placeholder="Ej: Efran Quispe Castilla" required />
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 pl-1">Debe coincidir *exactamente* con el nombre en Yape.</p>
                                 </div>
                                 
                                 <div v-if="paymentConfirmationError" class="payment-error-box !py-2 !px-3">
                                     <p>{{ paymentConfirmationError }}</p>
                                 </div>
 
-                                <button type="submit" :disabled="isProcessing" class="confirm-button w-full text-base">
+                                <button 
+                                    type="submit" 
+                                    :disabled="isProcessing" 
+                                    class="confirm-button w-full text-base"
+                                >
                                      <svg v-if="isProcessing" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    {{ isProcessing ? 'Confirmando...' : 'Confirmar Pago' }}
+                                    {{ isProcessing ? 'Creando orden...' : `Confirmar y Pagar ${selectedPlan.price}` }}
                                 </button>
                             </form>
+                            
+                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center">
+                                Serás guiado al siguiente paso para realizar el pago con Yape.
+                                El sistema lo detectará automáticamente.
+                            </p>
                         </div>
                     </div>
-
-                </div>
+                    </div>
             </div>
-
         </main>
         
         <div class="relative z-10">
             <Footer />
         </div>
-    </div>
+
+        <transition name="details-fade">
+            <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+                <div class="relative w-full max-w-md p-6 lg:p-8 bg-white rounded-2xl shadow-2xl dark:bg-slate-800 border dark:border-slate-700">
+                    
+                    <button @click="closeModal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div class="flex flex-col items-center text-center">
+                        <div class="flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 mb-4 border-4 border-white dark:border-slate-800 shadow-inner">
+                            <img :src="yapeLogo" alt="Yape" class="h-8 w-auto" />
+                        </div>
+                        
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">¡Orden Creada!</h3>
+                        
+                        <p class="text-slate-600 dark:text-slate-400 mb-6">
+                            Por favor, realiza tu pago por Yape para completar la compra.
+                        </p>
+
+                        <div class="qr-placeholder mb-6">
+                            <img :src="qrCodeImage" alt="Código QR de pago" class="qr-image" />
+                        </div>
+
+                        <div class="w-full p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border dark:border-slate-700 mb-6">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Pagarás (Monto Exacto):</span>
+                                <span class="text-lg font-bold text-slate-900 dark:text-white">S/ {{ parseFloat(paymentDetails?.amount_to_pay).toFixed(2) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="w-full p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg mb-6">
+                            <p class="text-xs text-blue-800 dark:text-blue-200">
+                                <strong>Importante:</strong> El pago debe ser hecho desde la cuenta Yape a nombre de
+                                (<strong>{{ paymentDetails?.user_name_to_match }}</strong>)
+                                para que el pago sea detectado.
+                            </p>
+                        </div>
+
+                        <div class="w-full flex flex-col items-center">
+                             <div class="flex items-center space-x-2 text-green-600 dark:text-green-400 mb-4">
+                                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span class="font-medium">Esperando confirmación de pago...</span>
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                                El sistema detectará tu pago automáticamente.
+                                Esta ventana se puede cerrar.
+                            </p>
+                            <button 
+                                type="button" 
+                                @click="closeModal" 
+                                class="confirm-button w-full text-base !bg-slate-600 hover:!bg-slate-700"
+                            >
+                                Entendido, cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        </div>
 </template>
 
 <script setup>
-// ... (EL SCRIPT PERMANECE EXACTAMENTE IGUAL) ...
 import { ref, computed } from 'vue';
 import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
@@ -154,17 +224,23 @@ import MonedaSVG from '@/assets/imagenes/Moneda.svg';
 import avatarBasico from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
 import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
 import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
-import api from '@/axios';
+import api from '@/axios'; // <--- Tu helper 'api' de Axios
 
 import yapeLogo from '@/assets/imagenes/yape.png';
 import plinLogo from '@/assets/imagenes/plin.png';
 import qrCodeImage from '@/assets/imagenes/QR.png'; 
 
+// --- Importar 'useToast' de vue-toastification ---
+import { useToast } from 'vue-toastification';
+
+// --- Inicializar el hook ---
+const toast = useToast();
+
 // ===================================================================
-console.log('%c¡¡¡NUEVA VERSIÓN DESPLEGADA (Compacta sin scroll - CORREGIDA)!!!', 'color: #fff; background: #008000; font-size: 16px; font-weight: bold; padding: 5px;');
+console.log('%c¡Kambitos.vue cargado con flujo de pago Yape v2!', 'color: #fff; background: #5a27c9; font-size: 16px; font-weight: bold; padding: 5px;');
 // ===================================================================
 
-// --- Lógica de la tienda y estado del usuario ---
+// --- Lógica de la tienda y estado del usuario (Tu código original) ---
 const userStore = useUserStore();
 const userCredits = computed(() => userStore.userCredits || 0);
 
@@ -174,7 +250,6 @@ const plans = [
     { name: 'Pro', amount: 10, price: 'S/ 5.00', priceValue: 5.00, avatar: avatarPro, tagline: 'Juega en otro nivel.', headline: 'Sé el Número Uno.', subHeadline: 'Llega a la cima y conviértete en un referente. Es para los que quieren ganar en grande.' }
 ];
 
-// --- ESTADO UNIFICADO ---
 const chosenPlanName = ref(plans[1].name); 
 
 const selectedPlan = computed(() => {
@@ -183,72 +258,98 @@ const selectedPlan = computed(() => {
 
 const currentAvatar = computed(() => selectedPlan.value.avatar);
 
-
 function selectPlan(planName) {
     chosenPlanName.value = planName;
 }
 // --- FIN DEL ESTADO UNIFICADO ---
 
 
-// --- ESTADO PARA PAGO QR ---
-const isProcessing = ref(false);
-const paymentName = ref('');
-const paymentPhone = ref('');
+// --- ¡NUEVO ESTADO PARA PAGO AUTOMÁTICO! ---
+const isProcessing = ref(false); 
 const paymentConfirmationError = ref(null);
+const showPaymentModal = ref(false);
+const paymentDetails = ref(null); // Almacenará la respuesta del backend
+
+// --- ¡CAMPO DE NOMBRE AÑADIDO! ---
+const paymentName = ref(''); // (Re-introducido de tu código original)
 
 
 // ===================================================================
-// --- FUNCIÓN PARA CONFIRMAR PAGO QR ---
+// --- ¡FUNCIÓN DE PAGO ACTUALIZADA! ---
 // ===================================================================
-async function confirmQR_Payment() {
-    if (isProcessing.value) {
-        return; 
+async function handlePurchase() {
+    if (isProcessing.value) return;
+
+    // Validación del formulario
+    if (!paymentName.value.trim()) {
+        toast.error("Por favor, ingresa el nombre del titular de Yape.");
+        return;
     }
+    
     isProcessing.value = true;
     paymentConfirmationError.value = null;
 
-    if (!paymentName.value || !paymentPhone.value) {
-        paymentConfirmationError.value = "Completa tu nombre y teléfono.";
-        isProcessing.value = false;
-        return;
-    }
-
     try {
+        // 1. Preparar el payload para el backend.
         const payload = {
-            planName: selectedPlan.value.name,
             amount: selectedPlan.value.priceValue,
-            customerName: paymentName.value,
-            customerPhone: paymentPhone.value, 
-            paymentMethod: 'QR_TRANSFER'
+            credits_to_buy: selectedPlan.value.amount,
+            yape_name: paymentName.value, // <-- ¡NUEVO! Enviamos el nombre
+            yape_phone: "000000000" // (Opcional, si no lo necesitas, pero lo mantengo por si acaso)
         };
-
-        console.log("Enviando confirmación QR al backend:", payload);
-        const response = await api.post('/payment/confirm_qr', payload);
         
-        console.log('Respuesta del backend:', response.data);
-        alert("¡Gracias! Tu pago está siendo verificado. Verás tus Kambitos acreditados pronto.");
-
-        paymentName.value = '';
-        paymentPhone.value = '';
-        chosenPlanName.value = plans[1].name;
+        // 2. Llamar al NUEVO endpoint '/api/v1/create-yape-order'
+        console.log("Creando orden de pago:", payload);
+        const response = await api.post('/api/v1/create-yape-order', payload);
         
-    } catch (err) {
-        console.error("Error confirmando el pago QR:", err);
-        if (err.response && err.response.data && err.response.data.message) {
-            paymentConfirmationError.value = err.response.data.message;
+        if (response.data) {
+            // 3. ¡Éxito! Guardar los detalles y mostrar el modal
+            paymentDetails.value = response.data; 
+            showPaymentModal.value = true;
+            console.log("Orden creada:", response.data);
+            
+            // Reemplazamos el nombre del usuario por el que se acaba de ingresar
+            // para que el modal muestre el nombre correcto a Yapear.
+            paymentDetails.value.user_name_to_match = paymentName.value;
+
         } else {
-            paymentConfirmationError.value = "No se pudo registrar la confirmación.";
+            throw new Error("El backend no devolvió datos.");
         }
+
+    } catch (err) {
+        console.error("Error al crear la orden:", err);
+        let errorMsg = "No se pudo crear la orden. Inténtalo de nuevo.";
+        if (err.response && err.response.data && err.response.data.detail) {
+            errorMsg = err.response.data.detail;
+        } else if (err.message) {
+            errorMsg = err.message;
+        }
+        paymentConfirmationError.value = errorMsg;
+
+        // --- Usa vue-toastification ---
+        toast.error(errorMsg); 
+
     } finally {
         isProcessing.value = false;
     }
 }
-// ===================================================================
-// --- ¡FIN DE LA LÓGICA DE PAGO QR! ---
-// ===================================================================
 
+// --- Función para cerrar el modal ---
+function closeModal() {
+    showPaymentModal.value = false;
+    paymentDetails.value = null;
+    
+    // Actualizar los créditos del usuario por si ya se procesó el pago
+    // userStore.fetchUser(); // <-- LÍNEA COMENTADA PARA EVITAR EL ERROR
 
-// --- Animación de mouse ---
+    // Si sabes cuál es tu función para actualizar el usuario, puedes ponerla aquí.
+    // Por ejemplo, si se llama 'fetchProfile':
+    // if (typeof userStore.fetchProfile === 'function') {
+    //     userStore.fetchProfile();
+    // }
+}
+
+// --- Animación de mouse (Tu código original) ---
 const shape1 = ref(null);
 const shape2 = ref(null);
 const shape3 = ref(null);
