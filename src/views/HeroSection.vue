@@ -1,7 +1,40 @@
 <template>
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 antialiased">
-    <section class="relative bg-gradient-to-br from-gray-50 via-white to-pink-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-pink-950/10 rounded-3xl ring-1 ring-gray-200/50 dark:ring-gray-700/50 overflow-hidden shadow-xl">
+    
+    <section v-if="isLoading" 
+             class="relative bg-gradient-to-br from-gray-50 via-white to-pink-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-pink-950/10 rounded-3xl ring-1 ring-gray-200/50 dark:ring-gray-700/50 overflow-hidden shadow-xl animate-pulse">
+      
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0">
+        <div class="absolute inset-0 opacity-[0.08] dark:opacity-[0.15]"
+             style="background-image: radial-gradient(circle at 1px 1px, #a6045d 1px, transparent 1px);
+                    background-size: 28px 28px;"></div>
+      </div>
+      
+      <div class="relative mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-12 md:gap-8 lg:gap-14 md:items-center">
+          
+          <aside class="md:col-span-5 lg:col-span-5 h-80 md:h-auto min-h-[500px] flex items-center justify-center p-6">
+            <div class_name="relative w-full h-[23rem] scale-[0.7] md:scale-90 lg:scale-100 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+          </aside>
+          
+          <header class="md:col-span-7 lg:col-span-7 flex flex-col items-center md:items-start px-6 pb-12 md:py-12 md:pl-6 md:pr-0 lg:pl-8 z-10 -mt-24 md:mt-0">
+            <div class="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+            <div class="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-md mt-4"></div>
+            <div class="h-10 w-3/4 bg-gray-300 dark:bg-gray-600 rounded-md mt-2"></div>
+            <div class="h-5 w-full bg-gray-200 dark:bg-gray-700 rounded-md mt-5"></div>
+            <div class="h-5 w-5/6 bg-gray-200 dark:bg-gray-700 rounded-md mt-2"></div>
+            <div class="flex flex-wrap gap-3 mt-6">
+              <div class="h-14 w-40 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+              <div class="h-14 w-32 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+            </div>
+          </header>
 
+        </div>
+      </div>
+    </section>
+
+    <section v-else class="relative bg-gradient-to-br from-gray-50 via-white to-pink-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-pink-950/10 rounded-3xl ring-1 ring-gray-200/50 dark:ring-gray-700/50 overflow-hidden shadow-xl">
+      
       <div aria-hidden="true" class="pointer-events-none absolute inset-0">
         <div class="absolute left-1/2 -top-28 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-primary/10 to-brand-dark/10 blur-3xl animate-pulse-slow"></div>
         <div class="absolute right-0 bottom-0 h-[400px] w-[400px] rounded-full bg-purple-400/10 blur-3xl"></div>
@@ -125,12 +158,16 @@
         </div>
       </div>
     </section>
+
   </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import axios from '@/axios';
+
+// --- ¡CAMBIO 3: Añadir estado de carga! ---
+const isLoading = ref(true); // Empieza en 'true'
 
 // --- Datos Dinámicos ---
 // Estructura completa que esperamos de la API
@@ -160,7 +197,7 @@ let shuffleTimer = null;
 const orderedCards = computed(() => {
   // Si no hay tarjetas cargadas, devuelve un array vacío o con placeholders
   if (!heroData.value.cards || heroData.value.cards.length === 0) {
-      // Puedes devolver placeholders si quieres que se vea algo mientras carga
+      // Devuelve 3 placeholders para que el esqueleto de tarjetas funcione
       return [
           { id: 1, alt: 'Cargando...', badge: '...', imageUrl: defaultCardImage },
           { id: 2, alt: 'Cargando...', badge: '...', imageUrl: defaultCardImage },
@@ -231,12 +268,15 @@ onMounted(async () => {
     // Validar si vienen las tarjetas esperadas
     if (!heroData.value.cards || !Array.isArray(heroData.value.cards) || heroData.value.cards.length < 3) {
         console.warn("API no devolvió un array de 3 tarjetas. Se usarán placeholders.");
-        // Podrías llenar heroData.value.cards con placeholders si quieres
+        // (La lógica en 'orderedCards' ya maneja esto)
     }
 
   } catch (error) {
     console.error("Error al cargar datos del hero:", error);
     // El template usará los fallbacks
+  } finally {
+    // --- ¡CAMBIO 4: Actualizar estado de carga! ---
+    isLoading.value = false; // Oculta el esqueleto y muestra el contenido
   }
   // Iniciar timer
   startShuffleTimer();

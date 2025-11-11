@@ -212,9 +212,45 @@
 
     </template>
     
-    <div v-else class="min-h-[90vh] flex items-center justify-center">
-      <p class="text-xl font-medium text-gray-700">Cargando contenido...</p>
-    </div>
+    <template v-else>
+      <div class="relative min-h-[92vh] overflow-hidden bg-white">
+        <div class="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-12 py-12 sm:py-16">
+          <div class="grid grid-cols-12 gap-x-6 md:gap-x-10 gap-y-12 items-start animate-pulse">
+            
+            <header class="col-span-12 lg:col-span-5">
+              <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+              <div class="h-16 bg-gray-200 rounded w-full mt-3"></div>
+              <div class="h-6 bg-gray-200 rounded w-4/5 mt-5"></div>
+              <div class="h-6 bg-gray-200 rounded w-3/4 mt-3"></div>
+              <div class="h-12 bg-gray-200 rounded w-1/2 mt-7"></div>
+            </header>
+            
+            <aside class="col-span-12 lg:col-span-7">
+              <div class="grid grid-cols-2 gap-4 sm:gap-5">
+                <div class="relative col-span-1 h-[20rem] sm:h-[28rem] md:h-[32rem] bg-gray-200 rounded-md"></div>
+                <div class="col-span-1 grid grid-rows-2 gap-4 sm:gap-5">
+                  <div class="relative h-[9rem] sm:h-[13rem] md:h-[15rem] bg-gray-200 rounded-md"></div>
+                  <div class="relative h-[9rem] sm:h-[13rem] md:h-[15rem] bg-gray-200 rounded-md"></div>
+                </div>
+              </div>
+            </aside>
+
+            <div class="col-span-12">
+              <div class="relative overflow-hidden border-t border-b border-slate-200">
+                <div class="flex gap-4 p-3">
+                  <div class="h-28 w-48 bg-gray-200 rounded-md shrink-0"></div>
+                  <div class="h-28 w-48 bg-gray-200 rounded-md shrink-0"></div>
+                  <div class="h-28 w-48 bg-gray-200 rounded-md shrink-0"></div>
+                  <div class="h-28 w-48 bg-gray-200 rounded-md shrink-0"></div>
+                  <div class="h-28 w-48 bg-gray-200 rounded-md shrink-0"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </template>
 
     <Footer />
   </div>
@@ -230,6 +266,7 @@ import bannerSvg from '@/assets/imagenes/banner.svg';
 // --- Lógica del Componente ---
 
 // 1. Referencia para almacenar todos los datos de la página
+// Inicia en 'null', lo que hace que se muestre el esqueleto de carga
 const data = ref(null);
 
 // 2. Lógica existente para la animación de scroll
@@ -267,6 +304,8 @@ onMounted(async () => {
   } catch (err) {
     console.error("Error al cargar datos de 'Nosotros':", err);
   }
+  // No necesitas un 'finally' porque el v-if/v-else maneja
+  // el estado de carga automáticamente basado en si 'data' es 'null' o no.
 });
 
 </script>
