@@ -187,7 +187,7 @@
           <div class="flex flex-col flex-grow p-3 sm:p-5">
             
             <div class="flex items-center justify-between gap-2 mb-1">
-              <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate min-w-0">
+              <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 truncate min-w-0">
                 {{ formatTitle(product.title) }}
               </h3>
               
@@ -198,7 +198,7 @@
                 Tuyo
               </span>
             </div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+            <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2">
               Publicado por <span class="font-semibold text-gray-700 dark:text-gray-200">{{ formatOwnerName(product.user_username) || 'Usuario' }}</span>
             </div>
             
@@ -239,15 +239,17 @@
                     :class="{ 'scale-110': product.isLiked }"
                   />
                 </button>
-                <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <span class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
                   {{ product.likes_count }}
                 </span>
               </div>
+
               <button
                 @click="openProductModal(product)"
-                class="bg-brand-primary text-white px-2 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium rounded-lg transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+                class="bg-brand-primary text-white px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium rounded-lg transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
               >
-                Intercambiar
+                <span class="sm:hidden">Ofertar</span>
+                <span class="hidden sm:inline">Intercambiar</span>
               </button>
             </div>
             </div>
