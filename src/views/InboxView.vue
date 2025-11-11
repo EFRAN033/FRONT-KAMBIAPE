@@ -15,12 +15,12 @@
               <div class="inline-flex overflow-hidden border border-slate-300">
                 <button
                   @click="filter='all'"
-                  :class="['px-3 py-1.5 text-sm font-semibold', filter==='all' ? 'bg-white text-[#9e0154]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']">
+                  :class="['px-2 sm:px-3 py-1.5 text-sm font-semibold', filter==='all' ? 'bg-white text-[#9e0154]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']">
                   Todas
                 </button>
                 <button
                   @click="filter='unread'"
-                  :class="['px-3 py-1.5 text-sm font-semibold border-l border-slate-300', filter==='unread' ? 'bg-white text-[#9e0154]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']">
+                  :class="['px-2 sm:px-3 py-1.5 text-sm font-semibold border-l border-slate-300', filter==='unread' ? 'bg-white text-[#9e0154]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']">
                   No leídas
                 </button>
               </div>
@@ -243,7 +243,7 @@
                     v-model="newMessageText" 
                     @input="handleTypingInput"
                     placeholder="Escribe tu mensaje…" 
-                    class="flex-1 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" 
+                    class="flex-1 min-w-0 p-3 border border-slate-300 focus:ring-2 focus:ring-[#d7037b] focus:border-transparent outline-none" 
                     :disabled="!isChatActive" 
                   />
                   
@@ -251,14 +251,14 @@
                     type="button"
                     @click="isLocationModalVisible = true"
                     :disabled="!isChatActive"
-                    class="p-3 text-sm font-semibold text-white transition-transform"
+                    class="flex-shrink-0 p-3 text-sm font-semibold text-white transition-transform"
                     :class="!isChatActive ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#9e0154] hover:bg-[#d7037b] hover:scale-105 active:scale-95'"
                     title="Sugerir lugar de encuentro"
                   >
                     <MapPinIcon class="h-5 w-5" />
                   </button>
                   
-                  <button type="submit" :disabled="!newMessageText.trim() || !isChatActive" class="px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() || !isChatActive) ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
+                  <button type="submit" :disabled="!newMessageText.trim() || !isChatActive" class="flex-shrink-0 px-4 py-3 text-sm font-semibold text-white transition-transform" :class="(!newMessageText.trim() || !isChatActive) ? 'bg-[#d7037b] opacity-50 cursor-not-allowed' : 'bg-[#d7037b] hover:scale-105 active:scale-95'" title="Enviar mensaje">
                     <PaperAirplaneIcon class="h-5 w-5" />
                   </button>
                 </form>
@@ -377,11 +377,11 @@
             </div>
             <ul v-else-if="blockedUsers.length > 0" class="space-y-3">
               <li v-for="user in blockedUsers" :key="user.id" class="flex items-center justify-between gap-4 p-3 border border-slate-200 rounded-md">
-                <div class="flex items-center gap-3">
-                  <img :src="getAvatarUrl(user.avatar)" :alt="user.full_name" class="h-10 w-10 rounded-full object-cover border"/>
-                  <div>
-                    <p class="font-semibold text-slate-800 leading-tight">{{ formatUserName(user.full_name) }}</p>
-                    <p class="text-xs text-slate-500">{{ user.email }}</p>
+                <div class="flex items-center gap-3 min-w-0">
+                  <img :src="getAvatarUrl(user.avatar)" :alt="user.full_name" class="h-10 w-10 rounded-full object-cover border flex-shrink-0"/>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-slate-800 leading-tight truncate">{{ formatUserName(user.full_name) }}</p>
+                    <p class="text-xs text-slate-500 truncate">{{ user.email }}</p>
                   </div>
                 </div>
                 <button @click="confirmUnblock(user)" class="flex-shrink-0 px-3 py-1.5 text-xs font-bold text-white bg-[#9e0154] rounded-full shadow-sm hover:bg-[#d7037b] transition-transform hover:scale-105 active:scale-95">
