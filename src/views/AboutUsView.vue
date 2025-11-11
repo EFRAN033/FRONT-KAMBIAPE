@@ -163,8 +163,6 @@
       <section class="bg-white py-16 sm:py-20 lg:py-24">
           <div v-animate-on-scroll class="mx-auto max-w-7xl px-6 sm:px-10 lg:px-12 animated-component anim-scale-in">
               <div class="relative overflow-hidden bg-cover bg-center" :style="{ backgroundImage: `url(${bannerSvg})` }">
-                  <div class="absolute inset-0 bg-black/50"></div> 
-                  
                   <div class="relative grid grid-cols-1 lg:grid-cols-2 items-center">
                       
                       <div></div> <div class="relative py-12 lg:py-16 text-center px-8 lg:pr-16">
