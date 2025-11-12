@@ -1347,7 +1347,7 @@ const statusText = (status) => ({
 
 .custom-scrollbar-unique::-webkit-scrollbar{width:8px;height:8px}
 .custom-scrollbar-unique::-webkit-scrollbar-track{background:rgba(226,232,240,.4)}
-.custom-scrollbar-unique::-webkit-scrollbar-thumb{background:rgba(215,3,123,.4);border-radius:10px;border:1px solid rgba(215,3,1J.vue3,.25)}
+.custom-scrollbar-unique::-webkit-scrollbar-thumb{background:rgba(215,3,123,.4);border-radius:10px;border:1px solid rgba(215,3,1,.25)}
 .custom-scrollbar-unique::-webkit-scrollbar-thumb:hover{background:rgba(215,3,123,.65)}
 .badge-sq{
   display:inline-flex; align-items:center; gap:.35rem;
