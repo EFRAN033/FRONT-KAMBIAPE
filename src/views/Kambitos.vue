@@ -216,7 +216,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue'; // Importar los ganchos de ciclo de vida
 import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
@@ -240,7 +240,7 @@ const toast = useToast();
 console.log('%c¡Kambitos.vue cargado con flujo de pago Yape v2!', 'color: #fff; background: #5a27c9; font-size: 16px; font-weight: bold; padding: 5px;');
 // ===================================================================
 
-// --- Lógica de la tienda y estado del usuario (Tu código original) ---
+// --- Lógica de la tienda y estado del usuario ---
 const userStore = useUserStore();
 const userCredits = computed(() => userStore.userCredits || 0);
 
@@ -261,26 +261,23 @@ const currentAvatar = computed(() => selectedPlan.value.avatar);
 function selectPlan(planName) {
     chosenPlanName.value = planName;
 }
-// --- FIN DEL ESTADO UNIFICADO ---
 
 
-// --- ¡NUEVO ESTADO PARA PAGO AUTOMÁTICO! ---
+// --- ESTADO PARA PAGO AUTOMÁTICO ---
 const isProcessing = ref(false); 
 const paymentConfirmationError = ref(null);
 const showPaymentModal = ref(false);
-const paymentDetails = ref(null); // Almacenará la respuesta del backend
+const paymentDetails = ref(null); 
 
-// --- ¡CAMPO DE NOMBRE AÑADIDO! ---
-const paymentName = ref(''); // (Re-introducido de tu código original)
-
+// --- CAMPO DE NOMBRE AÑADIDO ---
+const paymentName = ref(''); 
 
 // ===================================================================
-// --- ¡FUNCIÓN DE PAGO ACTUALIZADA! ---
+// --- FUNCIÓN DE PAGO ACTUALIZADA ---
 // ===================================================================
 async function handlePurchase() {
     if (isProcessing.value) return;
 
-    // Validación del formulario
     if (!paymentName.value.trim()) {
         toast.error("Por favor, ingresa el nombre del titular de Yape.");
         return;
@@ -290,26 +287,22 @@ async function handlePurchase() {
     paymentConfirmationError.value = null;
 
     try {
-        // 1. Preparar el payload para el backend.
         const payload = {
             amount: selectedPlan.value.priceValue,
             credits_to_buy: selectedPlan.value.amount,
-            yape_name: paymentName.value, // <-- ¡NUEVO! Enviamos el nombre
-            yape_phone: "000000000" // (Opcional, si no lo necesitas, pero lo mantengo por si acaso)
+            yape_name: paymentName.value, 
+            yape_phone: "000000000"
         };
         
-        // 2. Llamar al NUEVO endpoint '/api/v1/create-yape-order'
         console.log("Creando orden de pago:", payload);
         const response = await api.post('/api/v1/create-yape-order', payload);
         
         if (response.data) {
-            // 3. ¡Éxito! Guardar los detalles y mostrar el modal
             paymentDetails.value = response.data; 
             showPaymentModal.value = true;
             console.log("Orden creada:", response.data);
             
-            // Reemplazamos el nombre del usuario por el que se acaba de ingresar
-            // para que el modal muestre el nombre correcto a Yapear.
+            // Usamos el nombre ingresado para mostrar la coincidencia esperada
             paymentDetails.value.user_name_to_match = paymentName.value;
 
         } else {
@@ -326,7 +319,6 @@ async function handlePurchase() {
         }
         paymentConfirmationError.value = errorMsg;
 
-        // --- Usa vue-toastification ---
         toast.error(errorMsg); 
 
     } finally {
@@ -334,22 +326,111 @@ async function handlePurchase() {
     }
 }
 
-// --- Función para cerrar el modal ---
+// ===================================================================
+// --- LÓGICA DE WEB SOCKET (SOLUCIÓN AL PROBLEMA DE SINCRONIZACIÓN) ---
+// ===================================================================
+
+let ws = null;
+
+function handleWebSocketMessage(event) {
+    try {
+        const message = JSON.parse(event.data);
+        console.log('WS Message Received:', message);
+
+        if (message.type === 'credits_updated') {
+            const newCredits = message.data.new_credits;
+            const creditsAdded = message.data.credits_added;
+            
+            // 1. **CRUCIAL**: Actualiza el estado de Pinia, lo que dispara la reactividad
+            userStore.updateCredits(newCredits);
+
+            // 2. Notificación al usuario
+            toast.success(`¡Pago Aprobado! Se han añadido ${creditsAdded} Kambitos a tu cuenta.`, {
+                timeout: 7000,
+                position: 'top-right'
+            });
+
+            // 3. Opcional: Cerrar el modal automáticamente si está abierto
+            if (showPaymentModal.value) {
+                // Usamos un pequeño delay para que el usuario vea la notificación
+                setTimeout(() => {
+                    closeModal(); 
+                }, 1000);
+            }
+        }
+        
+    } catch (e) {
+        console.error("Error parsing WS message:", e);
+    }
+}
+
+function connectWebSocket() {
+    if (!userStore.isLoggedIn || !userStore.user.id) return;
+    
+    // 1. Determinar el protocolo (wss para HTTPS, ws para HTTP)
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    
+    // 2. Determinar el host (dominio:puerto).
+    let backendHost = window.location.host;
+
+    // 3. Ajuste para desarrollo (Vite:5173 -> FastAPI:8000)
+    // ESTE ES EL CAMBIO CLAVE PARA EVITAR EL ERROR DE URL RELATIVA
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Asumimos que FastAPI está en el puerto 8000 en desarrollo
+        backendHost = `${window.location.hostname}:8000`; 
+    } 
+
+    // 4. Construir la URL completa
+    const wsUrl = `${wsProtocol}://${backendHost}/ws/${userStore.user.id}`;
+    
+    console.log(`Attempting to connect to: ${wsUrl}`);
+    
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        console.log(`WebSocket Connected for user ${userStore.user.id}`);
+    };
+
+    ws.onmessage = handleWebSocketMessage;
+
+    ws.onclose = () => {
+        console.log("WebSocket Disconnected. Reconnecting in 5s...");
+        setTimeout(connectWebSocket, 5000); 
+    };
+
+    ws.onerror = (error) => {
+        console.error("WebSocket Error:", error);
+        ws.close();
+    };
+}
+
+onMounted(() => {
+    // Si el usuario ya está cargado, nos conectamos.
+    if(userStore.isLoggedIn) {
+        connectWebSocket();
+    }
+});
+
+onUnmounted(() => {
+    if (ws) {
+        ws.onclose = null; // Evitar reconexión al salir
+        ws.close();
+    }
+});
+// ===================================================================
+// --- FIN DE LA LÓGICA DE WEB SOCKET ---
+// ===================================================================
+
+
+// --- Función para cerrar el modal (Corregida) ---
 function closeModal() {
     showPaymentModal.value = false;
     paymentDetails.value = null;
     
-    // Actualizar los créditos del usuario por si ya se procesó el pago
-    // userStore.fetchUser(); // <-- LÍNEA COMENTADA PARA EVITAR EL ERROR
-
-    // Si sabes cuál es tu función para actualizar el usuario, puedes ponerla aquí.
-    // Por ejemplo, si se llama 'fetchProfile':
-    // if (typeof userStore.fetchProfile === 'function') {
-    //     userStore.fetchProfile();
-    // }
+    // Ya no es necesario llamar a fetchUser() porque el WS ya actualizó el estado.
 }
 
-// --- Animación de mouse (Tu código original) ---
+// --- Animación de mouse ---
 const shape1 = ref(null);
 const shape2 = ref(null);
 const shape3 = ref(null);
@@ -368,7 +449,6 @@ function handleMouseMove(event) {
 
 <style scoped>
 /* --- Clases de utilidad para los inputs del formulario --- */
-/* ... (sin cambios) ... */
 .form-label {
     @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1;
 }
@@ -409,12 +489,11 @@ select.form-input {
     @apply text-sm font-medium text-slate-600 dark:text-slate-300;
 }
 .payment-logo-shadow {
-    /* @apply shadow-lg; */ /* <-- Sombra quitada si la hubiera */
+    /* @apply shadow-lg; */
 }
 
 
 /* --- Botón de Confirmar --- */
-/* ... (sin cambios) ... */
 .confirm-button {
      @apply w-full bg-[#d7037b] text-white font-bold py-3.5 px-6 rounded-lg text-base transition-all duration-300 hover:bg-pink-700;
      @apply disabled:bg-slate-400 dark:disabled:bg-slate-600 disabled:cursor-not-allowed;
@@ -429,7 +508,6 @@ select.form-input {
 
 
 /* --- ESTILOS GENERALES Y DE ESCRITORIO --- */
-/* ... (Fondos sin cambios) ... */
 .background-grid { position: absolute; inset: 0; width: 100%; height: 100%; background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px); background-size: 40px 40px; opacity: 0.5; }
 .dark .background-grid { background-image: linear-gradient(to right, #374151 1px, transparent 1px), linear-gradient(to bottom, #374151 1px, transparent 1px); }
 .background-arc { position: absolute; top: -25vh; left: -20vw; width: 140vw; height: 150vh; background: radial-gradient(circle at top left, #fce7f3, #fbcfe8, #f9a8d4); border-radius: 50%; z-index: 0; opacity: 0.5; transform: rotate(-15deg) scale(1.2); transition: transform 0.2s linear; }
@@ -442,7 +520,7 @@ select.form-input {
 /* --- Branding y Avatar --- */
 .avatar-image {
     @apply h-auto object-contain relative z-10;
-    /* filter: drop-shadow(0 25px 30px rgba(0,0,0,0.2)); */ /* <--- SOMBRA QUITADA --- */
+    /* filter: drop-shadow(0 25px 30px rgba(0,0,0,0.2)); */ 
 }
 
 .branding-text { @apply lg:mt-0; }
@@ -468,15 +546,14 @@ select.form-input {
 /* --- Estilos para "Plan Cards" --- */
 .plan-card {
     @apply relative w-full flex flex-col items-center text-center p-5 rounded-xl border-2;
-    @apply transition-all duration-300; /* <-- SOMBRA QUITADA (shadow-sm) */
+    @apply transition-all duration-300;
     @apply cursor-pointer;
     @apply bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700;
 }
 .plan-card:hover {
-    @apply border-slate-300 dark:border-slate-600; /* <-- SOMBRA QUITADA (shadow-lg) */
+    @apply border-slate-300 dark:border-slate-600;
     transform: translateY(-2px);
 }
-/* ... (sin cambios) ... */
 .plan-card.plan-pro {
     @apply border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/20;
 }
@@ -490,14 +567,13 @@ select.form-input {
 }
 .plan-badge {
     @apply absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2;
-    @apply bg-pink-600 text-white text-xs font-bold px-3 py-0.5 rounded-full; /* <-- SOMBRA QUITADA (shadow-lg) */
+    @apply bg-pink-600 text-white text-xs font-bold px-3 py-0.5 rounded-full;
 }
 .plan-pro .plan-badge {
     @apply bg-violet-600;
 }
 
 /* --- Estilos internos de la tarjeta --- */
-/* ... (sin cambios) ... */
 .plan-card-avatar {
     @apply w-10 h-10 rounded-lg object-cover mb-2;
 }

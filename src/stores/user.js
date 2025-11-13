@@ -85,10 +85,8 @@ export const useUserStore = defineStore('user', {
       document.documentElement.classList.toggle('dark', this.isDarkMode);
     },
 
-    // --- ¡AQUÍ ESTÁN LAS FUNCIONES QUE AÑADIMOS ANTES! ---
     /**
      * Acción para setear manualmente el token de autenticación.
-     * Usado por el Login de Admin.
      */
     setToken(newToken) {
       this.token = newToken;
@@ -105,7 +103,6 @@ export const useUserStore = defineStore('user', {
 
     /**
      * Acción para setear manualmente los datos del usuario.
-     * Usado por el Login de Admin.
      */
     setUser(newUserData) {
       if (newUserData) {
@@ -118,7 +115,17 @@ export const useUserStore = defineStore('user', {
         this.clearUser(); // Reutiliza tu función de logout
       }
     },
-    // --- FIN DE LAS NUEVAS FUNCIONES ---
+
+    /**
+     * Acción **CRUCIAL** para actualizar los créditos desde el WebSocket.
+     */
+    updateCredits(newCredits) {
+        if (this.user) {
+            this.user.credits = newCredits;
+            localStorage.setItem('user', JSON.stringify(this.user));
+            // Opcional: mostrar un toast de notificación aquí
+        }
+    },
 
     _processUserData(data) {
       const processedData = {
@@ -129,6 +136,7 @@ export const useUserStore = defineStore('user', {
         phone: data.phone || null,
         ubicacion: data.ubicacion || null,
         districtId: data.district_id || data.districtId || null,
+        // Tu lógica de Date: new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES')
         dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth + 'T00:00:00').toLocaleDateString('es-ES') : null,
         gender: data.gender || null,
         occupation: data.occupation || null,
@@ -155,8 +163,6 @@ export const useUserStore = defineStore('user', {
         
         // --- ✨ REUTILIZAMOS LA NUEVA ACCIÓN ---
         this.setToken(accessToken); 
-        // this.token = accessToken; // (Línea antigua)
-        // localStorage.setItem('access_token', accessToken); // (Línea antigua)
 
         const base64Url = accessToken.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -305,8 +311,6 @@ export const useUserStore = defineStore('user', {
       localStorage.removeItem('user');
       // --- ✨ MODIFICACIÓN: Llama a la nueva acción ---
       this.setToken(null); // Esto limpia el token del state, localStorage y axios
-      // localStorage.removeItem('access_token'); // (Línea antigua)
-      // this.token = null; // (Línea antigua)
     },
 
     async initializeUser() {
@@ -314,7 +318,6 @@ export const useUserStore = defineStore('user', {
       if (storedToken) {
         // --- ✨ MODIFICACIÓN: Llama a la nueva acción ---
         this.setToken(storedToken); // Esto setea el token en el state y en axios
-        // this.token = storedToken; // (Línea antigua)
         try {
             const base64Url = storedToken.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
