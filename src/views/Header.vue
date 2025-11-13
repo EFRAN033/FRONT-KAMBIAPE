@@ -162,9 +162,7 @@
         </div>
       </div>
 
-      </div>
-
-    <transition
+    </div> <transition
       enter-active-class="transition duration-200 ease-out"
       leave-active-class="transition duration-150 ease-in"
       enter-from-class="transform -translate-y-4 opacity-0"

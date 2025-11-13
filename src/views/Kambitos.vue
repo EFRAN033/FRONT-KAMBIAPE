@@ -13,7 +13,7 @@
             <Header />
         </div>
 
-        <main class="relative z-10 flex-grow flex justify-center py-8 lg:py-20">
+        <main class="flex-grow flex justify-center py-8 lg:py-20">
             <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
                 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -113,7 +113,7 @@
                                 
                                 <div>
                                     <label for="paymentName" class="form-label">Nombre del titular de Yape/Plin</label>
-                                    <input type="text" id="paymentName" v-model="paymentName" class="form-input" placeholder="Ej: Efran Quispe Castilla" required />
+                                    <input type="text" id="paymentName" v-model="paymentName" class="form-input" placeholder="Ej: Juan perez" required />
                                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 pl-1">Debe coincidir *exactamente* con el nombre en Yape.</p>
                                 </div>
                                 

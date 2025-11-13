@@ -10,279 +10,217 @@
               <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
           </button>
-          <h2 class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base font-bold text-white whitespace-nowrap">
-            Configuración
+          <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-bold text-white font-lobster">
+            Kambia<span class="font-extrabold">Pe</span>
+            <span class="font-sans font-semibold text-sm block text-center -mt-1 opacity-90">Configuración</span>
           </h2>
-          <div class="w-9 h-9"></div>
         </div>
       </div>
     </header>
 
-    <div class="container mx-auto px-4 sm:px-6 py-8">
-      <div class="max-w-4xl mx-auto">
-        <main>
-          <section class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up shadow-sm">
-            <header class="p-5 border-b border-gray-200 dark:border-slate-700">
-              <h3 class="text-xl font-bold">Preferencias Generales</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">Administra las notificaciones y el tema de tu cuenta.</p>
-            </header>
-            <div class="p-6 space-y-5">
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Recibir notificaciones por correo</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Activa para recibir actualizaciones importantes.</p>
-                </div>
-                <label class="switch self-start sm:self-center">
-                  <input type="checkbox" v-model="settings.notificationsEnabled" @change="saveSetting('notificationsEnabled')">
+    <main class="container mx-auto max-w-2xl px-4 sm:px-6 py-8">
+      <div class="flex flex-col space-y-8">
+        
+        <section v-for="section in sections" :key="section.name" class="setting-section">
+          <h3 class="section-title">{{ section.name }}</h3>
+          <div class="section-items">
+            <a v-for="item in section.items" :key="item.id" :href="item.href" class="item-link" @click="handleItemClick(item)">
+              <div class="item-icon" :class="item.color">
+                <component :is="item.icon" class="h-5 w-5" />
+              </div>
+              <span class="item-label">{{ item.label }}</span>
+              
+              <div v-if="item.isToggle" class="ml-auto" @click.prevent.stop="toggleTheme">
+                <div class="switch">
+                  <input type="checkbox" :checked="isDarkMode" class="sr-only" />
                   <span class="slider round"></span>
-                </label>
-              </div>
-
-              <hr class="border-gray-200 dark:border-slate-700" />
-
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Habilitar modo oscuro</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Ideal para condiciones de poca luz.</p>
                 </div>
-                <label class="switch self-start sm:self-center">
-                  <input type="checkbox" v-model="settings.darkModeEnabled" @change="saveSetting('darkModeEnabled')">
-                  <span class="slider round"></span>
-                </label>
               </div>
-            </div>
-          </section>
+              <ChevronRightIcon v-else class="item-chevron" />
+            </a>
+          </div>
+        </section>
 
-          <section class="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up shadow-sm">
-            <header class="p-5 border-b border-gray-200 dark:border-slate-700">
-              <h3 class="text-xl font-bold">Facturación y Suscripción</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">Gestiona tus métodos de pago, facturas y plan actual.</p>
-            </header>
-            <div class="p-6 space-y-5">
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Gestionar método de pago</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Actualiza tu tarjeta de crédito o débito.</p>
-                </div>
-                <button @click="managePaymentMethod" class="btn-primary w-full sm:w-auto">Actualizar</button>
-              </div>
-
-              <hr class="border-gray-200 dark:border-slate-700" />
-
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Historial de facturas</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Revisa y descarga tus facturas anteriores.</p>
-                </div>
-                <button @click="viewInvoiceHistory" class="btn-primary w-full sm:w-auto">Ver historial</button>
-              </div>
-
-              <hr class="border-gray-200 dark:border-slate-700" />
-
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Administrar suscripción</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Cambia de plan o cancela tu suscripción.</p>
-                </div>
-                <button @click="manageSubscription" class="btn-primary w-full sm:w-auto">Gestionar Plan</button>
-              </div>
-            </div>
-          </section>
-
-          <section class="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl animate-in-up shadow-sm">
-            <header class="p-5 border-b border-gray-200 dark:border-slate-700">
-              <h3 class="text-xl font-bold">Seguridad y Privacidad</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">Gestiona el acceso y la seguridad de tu cuenta.</p>
-            </header>
-            <div class="p-6 space-y-5">
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Autenticación de dos factores</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Añade una capa extra de seguridad a tu cuenta.</p>
-                </div>
-                <button @click="manageTwoFactor" class="btn-primary w-full sm:w-auto">Gestionar</button>
-              </div>
-
-              <hr class="border-gray-200 dark:border-slate-700" />
-
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-gray-900 dark:text-white">Historial de sesiones</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Revisa los dispositivos con sesión iniciada.</p>
-                </div>
-                <button @click="viewSessionHistory" class="btn-primary w-full sm:w-auto">Ver historial</button>
-              </div>
-
-              <hr class="border-gray-200 dark:border-slate-700" />
-
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h4 class="font-semibold text-red-600 dark:text-red-500">Eliminar mi cuenta</h4>
-                  <p class="text-sm text-gray-500 dark:text-slate-400">Esta acción es permanente y no se puede deshacer.</p>
-                </div>
-                <button @click="deleteAccount" class="btn-danger w-full sm:w-auto">Eliminar Cuenta</button>
-              </div>
-            </div>
-          </section>
-        </main>
       </div>
-    </div>
 
-    <transition name="toast-slide">
-       <div v-if="showToast" :class="[
-        'fixed right-4 bottom-4 z-50 flex items-center gap-3 px-5 py-3 rounded-xl border-l-4 shadow-lg bg-white dark:bg-slate-800',
-        toastType === 'success' ? 'border-green-500 text-green-700 dark:text-green-300' : '',
-        toastType === 'error' ? 'border-red-500 text-red-700 dark:text-red-400' : '',
-        toastType === 'info' ? 'border-blue-500 text-blue-700 dark:text-blue-300' : ''
-      ]" role="status" aria-live="polite">
-        <svg v-if="toastType === 'success'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-        <svg v-else-if="toastType === 'error'" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
-        <svg v-else class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
-        <span class="text-sm font-semibold">{{ toastMessage }}</span>
+      <div class="mt-12 pt-8 border-t border-gray-200 dark:border-slate-700">
+        <h3 class="section-title text-red-600 dark:text-red-500">Zona de Peligro</h3>
+        <div class="section-items mt-4">
+          <button @click="confirmDeleteAccount" class="item-link w-full !text-red-600 dark:!text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/20">
+            <div class="item-icon text-red-500">
+              <TrashIcon class="h-5 w-5" />
+            </div>
+            <span class="item-label">Eliminar mi cuenta</span>
+            <ChevronRightIcon class="item-chevron" />
+          </button>
+        </div>
+        <p class="mt-3 text-xs text-gray-500 dark:text-slate-400 px-2">
+          Esta acción es permanente y eliminará todos tus datos, publicaciones e intercambios.
+        </p>
       </div>
-    </transition>
+
+    </main>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { 
+  UserCircleIcon, ShieldCheckIcon, LockClosedIcon, 
+  CreditCardIcon, BellIcon, SunIcon, MoonIcon, 
+  QuestionMarkCircleIcon, TrashIcon, StarIcon, DocumentTextIcon,
+  ChevronRightIcon
+} from '@heroicons/vue/24/outline';
 
-export default {
-  name: 'ConfigurationView',
-  setup() {
-    const router = useRouter();
-    const settings = ref({ notificationsEnabled: true, darkModeEnabled: false });
-    const showToast = ref(false);
-    const toastMessage = ref('');
-    const toastType = ref('info');
+const router = useRouter();
 
-    const showNotification = (message, type = 'info', duration = 3000) => {
-      toastMessage.value = message;
-      toastType.value = type;
-      showToast.value = true;
-      setTimeout(() => { showToast.value = false; }, duration);
-    };
+// --- Estado del Tema (Modo Oscuro) ---
+// (Simulado, idealmente esto vendría de un store o localStorage)
+const isDarkMode = ref(document.documentElement.classList.contains('dark'));
 
-    const goBack = () => router.back();
-
-    onMounted(() => {
-      const savedDarkMode = localStorage.getItem('theme') === 'dark';
-      settings.value.darkModeEnabled = savedDarkMode;
-      if (savedDarkMode) document.documentElement.classList.add('dark');
-    });
-
-    const saveSetting = (settingName) => {
-      const value = settings.value[settingName];
-      if (settingName === 'darkModeEnabled') {
-        localStorage.setItem('theme', value ? 'dark' : 'light');
-        document.documentElement.classList.toggle('dark', value);
-      }
-      showNotification(`Ajuste actualizado.`, 'success');
-    };
-
-    const manageTwoFactor = () => showNotification('Esta función aún no está implementada.', 'info');
-    const viewSessionHistory = () => showNotification('Esta función aún no está implementada.', 'info');
-    const deleteAccount = () => {
-      if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible.')) {
-        showNotification('Procesando eliminación de cuenta...', 'error');
-      }
-    };
-
-    const managePaymentMethod = () => showNotification('Redirigiendo a la gestión de pagos...', 'info');
-    const viewInvoiceHistory = () => showNotification('Cargando historial de facturas...', 'info');
-    const manageSubscription = () => showNotification('Abriendo portal de suscripción...', 'info');
-
-    return {
-      settings,
-      goBack,
-      saveSetting,
-      manageTwoFactor,
-      viewSessionHistory,
-      deleteAccount,
-      showToast,
-      toastMessage,
-      toastType,
-      managePaymentMethod,
-      viewInvoiceHistory,
-      manageSubscription
-    };
-  },
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value;
+  if (isDarkMode.value) {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }
 };
+
+// --- Definición de Secciones ---
+const sections = ref([
+  {
+    name: 'Cuenta',
+    items: [
+      { id: 'profile', label: 'Editar perfil', icon: UserCircleIcon, color: 'text-sky-500', href: '/profile' },
+      { id: 'security', label: 'Seguridad y Contraseña', icon: ShieldCheckIcon, color: 'text-red-500', href: '#' },
+      { id: 'privacy', label: 'Privacidad', icon: LockClosedIcon, color: 'text-gray-500', href: '#' },
+    ]
+  },
+  // { <-- SECCIÓN DE FACTURACIÓN ELIMINADA -->
+  //   name: 'Facturación',
+  //   items: [
+  //     { id: 'payment', label: 'Método de pago', icon: CreditCardIcon, color: 'text-indigo-500', href: '#' },
+  //   ]
+  // },
+  {
+    name: 'Aplicación',
+    items: [
+      { id: 'notifications', label: 'Notificaciones', icon: BellIcon, color: 'text-pink-500', href: '#' },
+      { id: 'theme', label: 'Tema (Modo Oscuro)', icon: isDarkMode.value ? MoonIcon : SunIcon, color: 'text-blue-500', href: '#', isToggle: true },
+      { id: 'help', label: 'Ayuda y Soporte', icon: QuestionMarkCircleIcon, color: 'text-gray-500', href: '#' },
+    ]
+  }
+]);
+
+// --- Navegación ---
+const goBack = () => {
+  router.back();
+};
+
+const handleItemClick = (item) => {
+  if (item.isToggle) {
+    toggleTheme();
+    // Actualizar el ícono (opcional pero bueno para UX)
+    const themeItem = sections.value.find(s => s.name === 'Aplicación').items.find(i => i.id === 'theme');
+    if (themeItem) {
+      themeItem.icon = isDarkMode.value ? MoonIcon : SunIcon;
+    }
+    return;
+  }
+  
+  if (item.href && item.href !== '#') {
+    router.push(item.href);
+  } else if (item.href === '#') {
+    // Lógica para items no implementados
+    console.warn(`Navegación para "${item.label}" no implementada.`);
+  }
+};
+
+// --- Acciones Peligrosas ---
+const confirmDeleteAccount = () => {
+  // Lógica de confirmación (ej. abrir un modal)
+  alert('Acción de eliminar cuenta no implementada. (Se necesita un modal de confirmación)');
+};
+
 </script>
 
 <style scoped>
-/* Clases de botón reutilizables para consistencia y transiciones */
-.btn-primary, .btn-danger {
-  border-radius: .5rem; /* 8px */
-  padding: .625rem 1rem; /* 10px 16px */
-  font-size: 0.875rem; /* 14px */
-  font-weight: 600; /* semibold */
-  color: white;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  transition: all 0.2s ease-in-out;
-  flex-shrink: 0; /* Evita que el botón se encoja */
-}
-
-.btn-primary:hover, .btn-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 0.1);
-}
-
-.btn-primary {
-  background-color: #d7037b; /* Color de marca */
-}
-.btn-primary:hover {
-  background-color: #b90267; /* Un tono más oscuro para el hover */
-}
-.btn-primary:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.3);
-}
-
-.btn-danger {
-  background-color: #dc2626; /* Rojo de error */
-}
-.btn-danger:hover {
-  background-color: #b91c1c; /* Rojo más oscuro */
-}
-.btn-danger:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
-}
-
-
-/* ========= ESTILOS ANTERIORES ========= */
-
-.brand-header {
-  background: linear-gradient(90deg, #d7037b 0%, #9e0154 100%);
-}
-
+/* Aurora Background */
 .aurora {
-  position: fixed; inset: 0; filter: blur(60px);
-  background:
-    radial-gradient(circle at 10% 20%, rgba(215, 3, 123, 0.10), transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.10), transparent 40%);
-  animation: aurora-float 14s ease-in-out infinite;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100vh;
+  background-image: radial-gradient(at 20% 20%, hsla(330, 70%, 50%, 0.2) 0px, transparent 50%),
+                    radial-gradient(at 80% 10%, hsla(290, 60%, 50%, 0.2) 0px, transparent 50%),
+                    radial-gradient(at 80% 80%, hsla(190, 70%, 50%, 0.1) 0px, transparent 50%);
 }
-@keyframes aurora-float { 50% { transform: translateY(-18px); } }
+.dark .aurora {
+  background-image: radial-gradient(at 20% 20%, hsla(330, 70%, 50%, 0.25) 0px, transparent 50%),
+                    radial-gradient(at 80% 10%, hsla(290, 60%, 50%, 0.25) 0px, transparent 50%),
+                    radial-gradient(at 80% 80%, hsla(190, 70%, 50%, 0.2) 0px, transparent 50%);
+}
 
+/* Header */
+.brand-header {
+  background-color: hsla(326, 97%, 43%, 0.8); /* fallback */
+  background-image: linear-gradient(to right, hsla(326, 97%, 43%, 0.8), hsla(328, 98%, 30%, 0.8));
+}
+.dark .brand-header {
+  background-color: hsla(326, 97%, 43%, 0.8);
+  background-image: linear-gradient(to right, hsla(326, 97%, 43%, 0.8), hsla(328, 98%, 30%, 0.8));
+}
 .icon-btn {
-  width: 36px; height: 36px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.2);
-  display: grid; place-items: center;
-  transition: .25s ease;
+  @apply p-1.5 rounded-full text-white transition-colors duration-200;
+  @apply hover:bg-white/10 active:bg-white/20;
+  @apply focus:outline-none focus:ring-2 focus:ring-white/50;
 }
-.icon-btn:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
 
+/* Estilos de Sección */
+.setting-section {
+  @apply w-full;
+}
+.section-title {
+  @apply px-2 text-sm font-semibold text-gray-500 dark:text-slate-400 mb-2;
+}
+.section-items {
+  @apply bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200/50 dark:border-slate-700/50 overflow-hidden;
+}
 
-/* Input y Select con foco de marca */
+/* Estilos de Item */
+.item-link {
+  @apply flex items-center w-full px-4 py-3.5;
+  @apply text-sm font-medium text-gray-800 dark:text-slate-200;
+  @apply transition-colors duration-150;
+  @apply border-b border-gray-100 dark:border-slate-700/50;
+}
+.item-link:last-child {
+  @apply border-b-0;
+}
+.item-link:hover {
+  @apply bg-gray-50/50 dark:bg-slate-700/50;
+}
+.item-icon {
+  @apply flex items-center justify-center w-7 h-7 rounded-lg mr-4;
+  /* El color de fondo y texto se aplica con clases de Tailwind (item.color) */
+  @apply bg-opacity-10 dark:bg-opacity-20;
+}
+.item-label {
+  @apply flex-1;
+}
+.item-chevron {
+  @apply h-4 w-4 text-gray-400 dark:text-slate-500 ml-auto;
+}
+
+/* Input (genérico) */
 .input {
-  width: 100%; border-radius: .5rem; border: 1px solid #e5e7eb; /* 8px */
-  background: transparent; color: inherit; padding: .625rem 1rem; /* 10px 16px */
-  transition: border-color .2s ease, box-shadow .2s ease;
+  @apply block w-full px-3 py-2 rounded-md border border-gray-300;
+  @apply bg-white/50 dark:bg-slate-800;
+  @apply shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50;
+  @apply transition-all duration-150 ease-in-out;
 }
 .dark .input { border-color: #334155; }
 .input:focus {
@@ -312,15 +250,12 @@ input:checked + .slider {
   background-color: #d7037b; /* Color de brand.primary */
 }
 input:focus-visible + .slider {
-  box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.25);
+  box-shadow: 0 0 0 3px rgba(215, 3, 123, 0.3);
 }
-input:checked + .slider:before { transform: translateX(20px); }
-.slider.round { border-radius: 24px; }
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+.slider.round { border-radius: 34px; }
 .slider.round:before { border-radius: 50%; }
 
-/* Toast y animaciones */
-.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-.toast-slide-enter-from, .toast-slide-leave-to { transform: translateX(120%); opacity: 0; }
-.animate-in-up { animation: animate-in-up .5s ease-out both; }
-@keyframes animate-in-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
