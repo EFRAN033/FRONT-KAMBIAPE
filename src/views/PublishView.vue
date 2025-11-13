@@ -1,37 +1,16 @@
 <template>
-  <div class="min-h-screen bg-[radial-gradient(1200px_600px_at_10%_-10%,#fde4e9,transparent_60%),radial-gradient(900px_500px_at_110%_10%,#e0f2fe,transparent_55%),linear-gradient(180deg,#fff,65%,#fafafa)] text-slate-800 selection:bg-rose-200/60">
+  <div class="min-h-screen bg-white text-slate-800 selection:bg-rose-200/60">
     <Header />
-
-    <div class="sticky top-0 z-30 w-full h-1.5 bg-slate-200/70 overflow-hidden">
-      <div class="h-full bg-gradient-to-r from-rose-600 via-rose-500 to-rose-400 transition-[width] duration-500" :style="{ width: currentStep===1 ? '50%' : '100%' }"></div>
-    </div>
 
     <div class="flex">
       <Sidebar />
 
       <div class="relative flex-1 lg:ml-64">
-        <transition name="gif-fade">
-          <div v-if="showAnimation" class="absolute top-4 right-4 w-64 h-64 z-20 pointer-events-none">
-            <img 
-              v-for="(image, index) in animationImages" 
-              :key="index" 
-              :src="image" 
-              alt="Animación de publicación"
-              v-show="currentImageIndex === index" 
-              class="absolute top-0 left-0 w-full h-full object-contain"
-            >
-          </div>
-        </transition>
         
-        <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
-          <div class="absolute -top-24 -left-10 h-72 w-72 rounded-full bg-rose-300/20 blur-3xl"></div>
-          <div class="absolute -bottom-24 -right-10 h-72 w-72 rounded-full bg-sky-300/20 blur-3xl"></div>
-        </div>
-
-        <main class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <main class="relative w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
           <section class="mb-8 sm:mb-10">
-            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Publica tu Producto</h1>
-            <p class="mt-2 max-w-2xl text-[15px] sm:text-base text-slate-600">Completa los detalles y ponlo en circulación para un trueque.</p>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Publica tu Producto</h1>
+            <p class="mt-2 max-w-2xl text-sm sm:text-[15px] text-slate-600">Completa los detalles y ponlo en circulación para un trueque.</p>
           </section>
 
           <div v-if="!isProfileComplete" class="my-10 text-center">
@@ -40,7 +19,7 @@
                   <svg class="h-6 w-6 flex-shrink-0 text-rose-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                   </svg>
-                  <p>
+                  <p class="text-sm sm:text-base">
                       Para publicar, necesitas
                       <router-link to="/profile" class="font-bold text-rose-600 underline decoration-dotted underline-offset-4 hover:text-rose-700">
                           completar tu perfil
@@ -49,201 +28,183 @@
               </div>
               <div class="h-px bg-gradient-to-r from-transparent via-sky-200 to-transparent"></div>
           </div>
+
           <div class="grid lg:grid-cols-[minmax(0,1fr),380px] gap-12 items-start">
             <section class="space-y-10">
-              <nav class="flex items-center gap-4 text-sm select-none" aria-label="Progreso">
-                <button type="button" @click="currentStep=1" class="group flex items-center gap-2">
-                  <span class="grid h-7 w-7 place-items-center rounded-full bg-slate-100 text-slate-700 font-semibold ring-1 ring-slate-200/80" :class="currentStep===1 ? 'outline outline-2 outline-rose-300/70' : ''">1</span>
-                  <span :class="currentStep===1 ? 'text-slate-900 font-medium' : 'text-slate-600'">Detalles</span>
-                </button>
-                <span class="h-px flex-1 bg-slate-300/60"></span>
-                <button type="button" @click="goToStepIfValid(2)" class="group flex items-center gap-2">
-                  <span class="grid h-7 w-7 place-items-center rounded-full bg-slate-100 text-slate-700 font-semibold ring-1 ring-slate-200/80" :class="currentStep===2 ? 'outline outline-2 outline-rose-300/70' : ''">2</span>
-                  <span :class="currentStep===2 ? 'text-slate-900 font-medium' : 'text-slate-600'">Fotos</span>
-                </button>
-              </nav>
+              
+              <div class="space-y-8">
+                <header class="flex items-center gap-3">
+                  <span class="grid h-8 w-8 place-items-center rounded-md bg-slate-100 text-slate-700"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 012-2h8a2 2 0 012 2v1H4V5zm0 3h12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg></span>
+                  <h2 class="text-lg font-semibold text-slate-900">1. Detalles del producto</h2>
+                </header>
 
-              <transition name="slide-fade" mode="out-in">
-                <div v-if="currentStep===1" key="s1" class="space-y-8">
-                  <header class="flex items-center gap-3">
-                    <span class="grid h-8 w-8 place-items-center rounded-md bg-slate-100 text-slate-700"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 012-2h8a2 2 0 012 2v1H4V5zm0 3h12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg></span>
-                    <h2 class="text-lg font-semibold text-slate-900">Detalles del producto</h2>
-                  </header>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                    <div class="relative">
-                      <label for="name" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Nombre del Producto <span class="text-rose-600">*</span></label>
-                      <input id="name" v-model="product.name" type="text" placeholder="Ej. Bicicleta…" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2" :class="{'!border-rose-400': step1Errors.name}"/>
-                      <p v-if="step1Errors.name" class="text-rose-600 text-xs mt-1">{{ step1Errors.name }}</p>
-                    </div>
-
-                    <div class="relative">
-                      <label for="category" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Categoría <span class="text-rose-600">*</span></label>
-                      <select id="category" v-model="product.category" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2 appearance-none pr-8" :class="{'!border-rose-400': step1Errors.category}">
-                        <option value="" disabled>Selecciona una categoría</option>
-                        <option>Electrónica</option><option>Mobiliario</option><option>Deportes</option><option>Libros</option><option>Ropa y Accesorios</option><option>Hogar</option><option>Juguetes</option><option>Herramientas</option><option>Música</option><option>Videojuegos</option><option>Coleccionables</option><option>Arte</option><option>Otros</option>
-                      </select>
-                      <div class="pointer-events-none absolute right-0 top-4 text-slate-500"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4H6z"/></svg></div>
-                      <p v-if="step1Errors.category" class="text-rose-600 text-xs mt-1">{{ step1Errors.category }}</p>
-                    </div>
-
-                    <div class="relative">
-                      <label for="condition" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Estado <span class="text-rose-600">*</span></label>
-                      <select id="condition" v-model="product.condition" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2 appearance-none pr-8" :class="{'!border-rose-400': step1Errors.condition}">
-                        <option value="" disabled>Selecciona el estado</option>
-                        <option>Nuevo</option><option>Como Nuevo</option><option>Usado - Buen Estado</option><option>Usado - Aceptable</option><option>Para Piezas/Reparar</option>
-                      </select>
-                      <div class="pointer-events-none absolute right-0 top-4 text-slate-500"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4H6z"/></svg></div>
-                      <p v-if="step1Errors.condition" class="text-rose-600 text-xs mt-1">{{ step1Errors.condition }}</p>
-                    </div>
-
-                    <div class="md:col-span-2">
-                      <label for="description" class="block text-sm font-medium text-slate-700">Descripción <span class="text-rose-600">*</span></label>
-                      <textarea id="description" v-model="product.description" rows="4" maxlength="500" placeholder="Incluye estado, características y detalles clave."
-                        class="mt-1 w-full bg-transparent border border-slate-300/80 focus:border-rose-500 focus:ring-0 rounded-xl px-3.5 py-3 resize-y" :class="{'!border-rose-400': step1Errors.description}"></textarea>
-                      <div class="mt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between">
-                        <p v-if="step1Errors.description" class="text-rose-600 text-xs">{{ step1Errors.description }}</p>
-                        <p class="text-[11px] text-slate-500 sm:ml-auto">{{ product.description.length }} / 500</p>
-                      </div>
-                      <div class="mt-2 h-1.5 w-full rounded-full bg-slate-200/60 overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-[width] duration-500" :style="{ width: Math.min(100, Math.round((product.description.length/500)*100)) + '%' }"></div>
-                      </div>
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-slate-700">¿Qué buscas a cambio? (Intereses)</label>
-                        <div class="mt-3 p-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg bg-transparent">
-                            <p v-if="exchangeInterests.size === 0" class="text-sm text-slate-500 dark:text-slate-400">
-                                Selecciona las categorías que te interesan.
-                            </p>
-                            <div v-else class="flex flex-wrap gap-1.5">
-                                <span v-for="interestName in exchangeInterests" :key="`selected-${interestName}`" class="badge-sq badge-sq--active">
-                                    {{ interestName }}
-                                    <button @click="toggleInterest(interestName)" type="button" class="badge-remove" :aria-label="`Quitar ${interestName}`">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                            <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Añadir Intereses:</p>
-                            <div v-if="availableCategories.length > 0" class="tile-list">
-                                <button v-for="category in availableCategories" :key="category.id" type="button" class="tile" :class="exchangeInterests.has(category.name) && 'is-selected'" :aria-pressed="exchangeInterests.has(category.name)" @click="toggleInterest(category.name)">
-                                    <span class="tile-check" aria-hidden="true">
-                                        <svg v-if="exchangeInterests.has(category.name)" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 0 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                        </svg>
-                                    </span>
-                                    <span class="tile-text">{{ category.name }}</span>
-                                </button>
-                            </div>
-                            <p v-else-if="allCategories.length > 0" class="text-sm text-slate-500 dark:text-slate-400">
-                                ¡Has seleccionado todos los intereses!
-                            </p>
-                            <p v-else class="text-sm text-slate-500 dark:text-slate-400">
-                                Cargando...
-                            </p>
-                        </div>
-                    </div>
-
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 md:gap-y-8">
+                  <div class="relative">
+                    <label for="name" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Nombre del Producto <span class="text-rose-600">*</span></label>
+                    <input id="name" v-model="product.name" type="text" placeholder="Ej. Bicicleta…" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2" :class="{'!border-rose-400': step1Errors.name}"/>
+                    <p v-if="step1Errors.name" class="text-rose-600 text-xs mt-1">{{ step1Errors.name }}</p>
                   </div>
 
-                  <div class="pt-4 flex justify-end border-t border-dashed border-slate-300/70">
-                    <button type="button" @click="goToNextStep" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-rose-600 px-6 py-2.5 text-white font-semibold hover:bg-rose-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 transition-transform hover:-translate-y-0.5">Siguiente Paso</button>
-                  </div>
-                </div>
-              </transition>
-
-              <transition name="slide-fade" mode="out-in">
-                <div v-if="currentStep===2" key="s2" class="space-y-8">
-                  <header class="flex items-center gap-3">
-                    <span class="grid h-8 w-8 place-items-center rounded-md bg-slate-100 text-slate-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 3l3 4 2-3 4 6H7l3-7z"/></svg></span>
-                    <h2 class="text-lg font-semibold text-slate-900">Fotos del producto</h2>
-                  </header>
-
-                  <div class="group relative rounded-3xl border-2 border-dashed border-slate-300 px-6 py-10 text-center cursor-pointer hover:border-rose-400/80 hover:shadow-sm transition will-change-transform hover:scale-[1.01]"
-                       :class="{'border-rose-500': step2Errors.photos}"
-                       @click="triggerFileInput" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
-                    <input type="file" ref="fileInput" @change="handleFileChange" multiple accept="image/*" class="hidden" />
-                    <svg class="mx-auto h-10 w-10 text-slate-400 group-hover:scale-105 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3-3a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <p class="mt-2 text-sm text-slate-600">Arrastra y suelta o haz clic para seleccionar</p>
-                    <p class="text-xs text-slate-500">(Máx. 4 imágenes, JPG/PNG)</p>
+                  <div class="relative">
+                    <label for="category" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Categoría <span class="text-rose-600">*</span></label>
+                    <select id="category" v-model="product.category" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2 appearance-none pr-8" :class="{'!border-rose-400': step1Errors.category}">
+                      <option value="" disabled>Selecciona una categoría</option>
+                      <option>Electrónica</option><option>Mobiliario</option><option>Deportes</option><option>Libros</option><option>Ropa y Accesorios</option><option>Hogar</option><option>Juguetes</option><option>Herramientas</option><option>Música</option><option>Videojuegos</option><option>Coleccionables</option><option>Arte</option><option>Otros</option>
+                    </select>
+                    <div class="pointer-events-none absolute right-0 top-4 text-slate-500"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4H6z"/></svg></div>
+                    <p v-if="step1Errors.category" class="text-rose-600 text-xs mt-1">{{ step1Errors.category }}</p>
                   </div>
 
-                  <p v-if="step2Errors.photos" class="text-rose-600 text-xs -mt-4">{{ step2Errors.photos }}</p>
+                  <div class="relative">
+                    <label for="condition" class="absolute -top-3 left-0 text-xs px-1 rounded bg-white/70 backdrop-blur text-slate-700">Estado <span class="text-rose-600">*</span></label>
+                    <select id="condition" v-model="product.condition" class="mt-3 w-full bg-transparent border-0 border-b border-slate-300/80 focus:border-rose-500 focus:ring-0 px-0 py-2 appearance-none pr-8" :class="{'!border-rose-400': step1Errors.condition}">
+                      <option value="" disabled>Selecciona el estado</option>
+                      <option>Nuevo</option><option>Como Nuevo</option><option>Usado - Buen Estado</option><option>Usado - Aceptable</option><option>Para Piezas/Reparar</option>
+                    </select>
+                    <div class="pointer-events-none absolute right-0 top-4 text-slate-500"><svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6 8l4 4 4-4H6z"/></svg></div>
+                    <p v-if="step1Errors.condition" class="text-rose-600 text-xs mt-1">{{ step1Errors.condition }}</p>
+                  </div>
 
-                  <div v-if="imagePreviews.length > 0">
-                    <p class="text-sm text-slate-600 mb-2">Arrastra para reordenar. La primera es la portada.</p>
-                    <transition-group tag="div" name="list" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      <div v-for="(image, i) in imagePreviews" :key="image" class="relative overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-white cursor-move group/item"
-                        draggable="true" @dragstart="onDragStart(i)" @dragover.prevent="onDragOver($event, i)" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop(i)"
-                        :class="{ 'opacity-50': dragging && draggedIndex === i }">
-                        
-                        <div class="absolute inset-0 z-10 transition-colors" :class="{ 'bg-rose-100/50': dragOverIndex === i }"></div>
-                        
-                        <img :src="image" :alt="`Preview ${i+1}`" class="w-full h-36 object-cover"/>
-                        
-                        <button @click="removeImage(i)" class="absolute top-1.5 right-1.5 z-20 rounded-full bg-rose-600 text-white p-1.5 opacity-90 hover:opacity-100 transition" aria-label="Eliminar imagen">
-                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                          </svg>
-                        </button>
-                        <div v-if="i === 0" class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                          Portada
-                        </div>
-                      </div>
-                    </transition-group>
+                  <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-slate-700">Descripción <span class="text-rose-600">*</span></label>
+                    <textarea id="description" v-model="product.description" rows="4" maxlength="500" placeholder="Incluye estado, características y detalles clave."
+                      class="mt-1 w-full bg-transparent border border-slate-300/80 focus:border-rose-500 focus:ring-0 rounded-xl px-3.5 py-3 resize-y" :class="{'!border-rose-400': step1Errors.description}"></textarea>
+                    <div class="mt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                      <p v-if="step1Errors.description" class="text-rose-600 text-xs">{{ step1Errors.description }}</p>
+                      <p class="text-[11px] text-slate-500 sm:ml-auto">{{ product.description.length }} / 500</p>
+                    </div>
+                    <div class="mt-2 h-1.5 w-full rounded-full bg-slate-200/60 overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-[width] duration-500" :style="{ width: Math.min(100, Math.round((product.description.length/500)*100)) + '%' }"></div>
+                    </div>
                   </div>
                   
-                  <div class="pt-6 border-t border-dashed border-slate-300/70 space-y-6">
-                    <div>
-                      <h3 class="text-base font-semibold text-slate-800 mb-3">Resumen de Publicación</h3>
-                      <dl class="space-y-2 text-sm">
-                          <div class="flex justify-between items-center">
-                              <dt class="text-slate-600">Tus créditos actuales:</dt>
-                              <dd class="font-semibold text-lg" :class="userStore.user.credits > 0 ? 'text-slate-800' : 'text-rose-600'">{{ userStore.user.credits }}</dd>
-                          </div>
-                          <div class="flex justify-between items-center text-slate-600">
-                              <dt>Costo de esta publicación:</dt>
-                              <dd class="font-medium">- 1 crédito</dd>
-                          </div>
-                      </dl>
-                      
-                      <div v-if="userStore.user.credits <= 0" class="text-center mt-4">
-                          <p class="font-semibold text-rose-600 flex items-center justify-center gap-2">
-                              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                              <span>¡No tienes suficientes créditos!</span>
+                  <div class="md:col-span-2">
+                      <label class="block text-sm font-medium text-slate-700">¿Qué buscas a cambio? (Intereses)</label>
+                      <div class="mt-3 p-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg bg-transparent">
+                          <p v-if="exchangeInterests.size === 0" class="text-sm text-slate-500 dark:text-slate-400">
+                              Selecciona las categorías que te interesan.
                           </p>
-                          <router-link to="/my-profile" class="text-sm text-slate-600 hover:text-rose-600 transition underline underline-offset-2 decoration-dotted">
-                              Consigue más haciendo clic aquí.
-                          </router-link>
+                          <div v-else class="flex flex-wrap gap-1.5">
+                              <span v-for="interestName in exchangeInterests" :key="`selected-${interestName}`" class="badge-sq badge-sq--active">
+                                  {{ interestName }}
+                                  <button @click="toggleInterest(interestName)" type="button" class="badge-remove" :aria-label="`Quitar ${interestName}`">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                  </button>
+                              </span>
+                          </div>
+                      </div>
+
+                      <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                          <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Añadir Intereses:</p>
+                          <div v-if="availableCategories.length > 0" class="tile-list">
+                              <button v-for="category in availableCategories" :key="category.id" type="button" class="tile" :class="exchangeInterests.has(category.name) && 'is-selected'" :aria-pressed="exchangeInterests.has(category.name)" @click="toggleInterest(category.name)">
+                                  <span class="tile-check" aria-hidden="true">
+                                      <svg v-if="exchangeInterests.has(category.name)" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.707 14.707a1 1 0 01-1.414 0L3.293 10.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                      </svg>
+                                  </span>
+                                  <span class="tile-text">{{ category.name }}</span>
+                              </button>
+                          </div>
+                          <p v-else-if="allCategories.length > 0" class="text-sm text-slate-500 dark:text-slate-400">
+                              ¡Has seleccionado todos los intereses!
+                          </p>
+                          <p v-else class="text-sm text-slate-500 dark:text-slate-400">
+                              Cargando...
+                          </p>
+                      </div>
+                  </div>
+                </div>
+
+                </div>
+
+              <div class="pt-10 mt-10 border-t border-dashed border-slate-300/70"></div>
+
+              <div class="space-y-8">
+                <header class="flex items-center gap-3">
+                  <span class="grid h-8 w-8 place-items-center rounded-md bg-slate-100 text-slate-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 3l3 4 2-3 4 6H7l3-7z"/></svg></span>
+                  <h2 class="text-lg font-semibold text-slate-900">2. Fotos del producto <span class="text-rose-600">*</span></h2>
+                </header>
+
+                <div class="group relative rounded-3xl border-2 border-dashed border-slate-300 px-4 sm:px-6 py-10 text-center cursor-pointer hover:border-rose-400/80 hover:shadow-sm transition will-change-transform hover:scale-[1.01]"
+                     :class="{'border-rose-500': step2Errors.photos}"
+                     @click="triggerFileInput" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
+                  <input type="file" ref="fileInput" @change="handleFileChange" multiple accept="image/*" class="hidden" />
+                  <svg class="mx-auto h-10 w-10 text-slate-400 group-hover:scale-105 transition" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3-3a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 005.656 0L40 32M28 8a4 4 0 100 8 4 4 0 000-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <p class="mt-2 text-sm text-slate-600">Arrastra y suelta o haz clic para seleccionar</p>
+                  <p class="text-xs text-slate-500">(Máx. 4 imágenes, JPG/PNG)</p>
+                </div>
+
+                <p v-if="step2Errors.photos" class="text-rose-600 text-xs -mt-4">{{ step2Errors.photos }}</p>
+
+                <div v-if="imagePreviews.length > 0">
+                  <p class="text-sm text-slate-600 mb-2">Arrastra para reordenar. La primera es la portada.</p>
+                  <transition-group tag="div" name="list" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div v-for="(image, i) in imagePreviews" :key="image" class="relative overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-white cursor-move group/item"
+                      draggable="true" @dragstart="onDragStart(i)" @dragover.prevent="onDragOver($event, i)" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop(i)"
+                      :class="{ 'opacity-50': dragging && draggedIndex === i }">
+                      
+                      <div class="absolute inset-0 z-10 transition-colors" :class="{ 'bg-rose-100/50': dragOverIndex === i }"></div>
+                      
+                      <img :src="image" :alt="`Preview ${i+1}`" class="w-full h-36 object-cover"/>
+                      
+                      <button @click="removeImage(i)" class="absolute top-1.5 right-1.5 z-20 rounded-full bg-rose-600 text-white p-1.5 opacity-90 hover:opacity-100 transition" aria-label="Eliminar imagen">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                      <div v-if="i === 0" class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        Portada
                       </div>
                     </div>
+                  </transition-group>
+                </div>
+                
+                <div class="pt-6 border-t border-dashed border-slate-300/70 space-y-6">
+                  <div>
+                    <h3 class="text-base font-semibold text-slate-800 mb-3">Resumen de Publicación</h3>
+                    <dl class="space-y-2 text-sm">
+                        <div class="flex justify-between items-center">
+                            <dt class="text-slate-600">Tus créditos actuales:</dt>
+                            <dd class="font-semibold text-lg" :class="userStore.user.credits > 0 ? 'text-slate-800' : 'text-rose-600'">{{ userStore.user.credits }}</dd>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-600">
+                            <dt>Costo de esta publicación:</dt>
+                            <dd class="font-medium">- 1 crédito</dd>
+                        </div>
+                    </dl>
                     
-                    <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
-                        <button type="button" @click="goToPreviousStep" class="w-full sm:w-auto px-5 py-2.5 rounded-full font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300/70 transition">Paso Anterior</button>
-                        <button 
-                          type="button" 
-                          @click="handleSubmit" 
-                          :disabled="isSubmitting || !isProfileComplete" 
-                          class="w-full sm:w-auto px-7 py-2.5 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                        >
-                          <span v-if="isSubmitting">Publicando...</span>
-                          <span v-else-if="!isProfileComplete">Perfil Incompleto</span>
-                          <span v-else>Publicar Producto</span>
-                        </button>
+                    <div v-if="userStore.user.credits <= 0" class="text-center mt-4">
+                        <p class="font-semibold text-rose-600 flex items-center justify-center gap-2">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            <span>¡No tienes suficientes créditos!</span>
+                        </p>
+                        <router-link to="/my-profile" class="text-sm text-slate-600 hover:text-rose-600 transition underline underline-offset-2 decoration-dotted">
+                            Consigue más haciendo clic aquí.
+                        </router-link>
                     </div>
                   </div>
-                  <transition name="fade">
-                    <div v-if="errorMessage" class="mt-4 px-4 py-3 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-center animate-shake" role="alert">{{ errorMessage }}</div>
-                  </transition>
+                  
+                  <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                      <button 
+                        type="button" 
+                        @click="handleSubmit" 
+                        :disabled="isSubmitting || !isProfileComplete" 
+                        class="w-full sm:w-auto px-7 py-3 rounded-full font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-rose-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      >
+                        <span v-if="isSubmitting">Publicando...</span>
+                        <span v-else-if="!isProfileComplete">Perfil Incompleto</span>
+                        <span v-else>Publicar Producto</span>
+                      </button>
+                  </div>
                 </div>
-              </transition>
+                <transition name="fade">
+                  <div v-if="errorMessage" class="mt-4 px-4 py-3 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-center animate-shake" role="alert">{{ errorMessage }}</div>
+                </transition>
+              </div>
             </section>
-
             <aside class="sticky top-24 hidden lg:block">
               <p class="mb-2 text-sm font-semibold text-slate-600">Previsualización en vivo</p>
               <article class="relative isolate flex flex-col bg-white rounded-xl shadow-lg group border border-gray-100">
@@ -324,9 +285,9 @@
           </div>
         </main>
 
-        <div class="lg:hidden fixed bottom-6 right-6 z-40">
-            <button @click="showMobilePreview = true" type="button" class="h-14 w-14 rounded-full bg-rose-600 text-white shadow-lg flex items-center justify-center hover:bg-rose-700 transition-transform hover:scale-105" aria-label="Mostrar previsualización">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="lg:hidden fixed bottom-20 right-4 z-40">
+            <button @click="showMobilePreview = true" type="button" class="h-12 w-12 rounded-full bg-rose-600 text-white shadow-lg flex items-center justify-center hover:bg-rose-700 transition-transform hover:scale-105" aria-label="Mostrar previsualización">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
@@ -430,35 +391,10 @@ import axios from '@/axios'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification';
-// ¡NUEVA IMPORTACIÓN! (Recuerda hacer npm install browser-image-compression)
 import imageCompression from 'browser-image-compression';
 
-import image1 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-01.png';
-import image2 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
-import image3 from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
-
-const showAnimation = ref(false);
-const animationImages = [image1, image2, image3];
-const currentImageIndex = ref(0);
-let animationInterval = null;
-
-const startAnimation = () => {
-  showAnimation.value = true;
-  animationInterval = setInterval(() => {
-    currentImageIndex.value = (currentImageIndex.value + 1) % animationImages.length;
-  }, 500); 
-};
-
-const stopAnimation = () => {
-  showAnimation.value = false;
-  if (animationInterval) {
-    clearInterval(animationInterval);
-    animationInterval = null;
-  }
-  currentImageIndex.value = 0;
-};
-
-const currentStep = ref(1)
+// --- ESTADO DE PASOS ELIMINADO ---
+// const currentStep = ref(1) 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 const product = reactive({ name: '', category: '', condition: '', description: '', photos: [], is_for_sale: false })
@@ -471,7 +407,6 @@ const router = useRouter()
 const toast = useToast(); 
 
 const showMobilePreview = ref(false);
-
 const allCategories = ref([]);
 const exchangeInterests = ref(new Set());
 
@@ -507,26 +442,10 @@ const toggleInterest = (interestName) => {
 };
 
 const currentPreviewIndex = ref(0)
-
-const nextPreview = () => {
-  if (imagePreviews.value.length > 1) {
-    currentPreviewIndex.value = (currentPreviewIndex.value + 1) % imagePreviews.value.length
-  }
-}
-
-const prevPreview = () => {
-  if (imagePreviews.value.length > 1) {
-    currentPreviewIndex.value = (currentPreviewIndex.value - 1 + imagePreviews.value.length) % imagePreviews.value.length
-  }
-}
-
-const goToPreview = (index) => {
-  currentPreviewIndex.value = index;
-};
-
-watch(imagePreviews, () => {
-  currentPreviewIndex.value = 0;
-});
+const nextPreview = () => { if (imagePreviews.value.length > 1) { currentPreviewIndex.value = (currentPreviewIndex.value + 1) % imagePreviews.value.length } }
+const prevPreview = () => { if (imagePreviews.value.length > 1) { currentPreviewIndex.value = (currentPreviewIndex.value - 1 + imagePreviews.value.length) % imagePreviews.value.length } }
+const goToPreview = (index) => { currentPreviewIndex.value = index; };
+watch(imagePreviews, () => { currentPreviewIndex.value = 0; });
 
 const previewProduct = computed(() => ({
   title: product.name.trim() || 'Nombre del producto',
@@ -537,6 +456,7 @@ const previewProduct = computed(() => ({
   interests: Array.from(exchangeInterests.value)
 }))
 
+// --- FUNCIONES DE VALIDACIÓN (SE MANTIENEN SEPARADAS PARA ORDEN) ---
 const validateStep1 = () => {
   let ok = true
   Object.keys(step1Errors).forEach(k => (step1Errors[k] = ''))
@@ -547,82 +467,68 @@ const validateStep1 = () => {
   return ok
 }
 
-const validateStep2 = () => { if (product.photos.length === 0) { step2Errors.photos = 'Sube al menos una foto.'; return false } step2Errors.photos=''; return true }
-
-const goToStepIfValid = (to) => { if (to===2 && validateStep1()) currentStep.value = 2 }
-const goToNextStep = () => { if (validateStep1()) currentStep.value = 2 }
-const goToPreviousStep = () => { currentStep.value = 1 }
-const triggerFileInput = () => { fileInput.value?.click() }
-
-// --- FUNCIÓN MODIFICADA (1) ---
-const handleFileChange = async (e) => { 
-  await processFiles(e.target.files) 
+const validateStep2 = () => { 
+  if (product.photos.length === 0) { 
+    step2Errors.photos = 'Sube al menos una foto.'; 
+    return false 
+  } 
+  step2Errors.photos=''; 
+  return true 
 }
+
+// --- NUEVA FUNCIÓN DE VALIDACIÓN ÚNICA ---
+const validateForm = () => {
+  const isStep1Valid = validateStep1();
+  const isStep2Valid = validateStep2();
+  return isStep1Valid && isStep2Valid;
+}
+
+
+// --- FUNCIONES DE PASOS ELIMINADAS ---
+// const goToStepIfValid = (to) => { ... }
+// const goToNextStep = () => { ... }
+// const goToPreviousStep = () => { ... }
+
+const triggerFileInput = () => { fileInput.value?.click() }
+const handleFileChange = async (e) => { await processFiles(e.target.files) }
 const handleDragOver = (e) => { e.currentTarget.classList.add('border-rose-500','bg-rose-50') }
 const handleDragLeave = (e) => { e.currentTarget.classList.remove('border-rose-500','bg-rose-50') }
-
-// --- FUNCIÓN MODIFICADA (2) ---
 const handleDrop = async (e) => { 
   e.currentTarget.classList.remove('border-rose-500','bg-rose-50'); 
   await processFiles(e.dataTransfer.files) 
 }
 
-// --- FUNCIÓN MODIFICADA (3) ---
-const processFiles = async (files) => { // <-- Se convirtió en async
+const processFiles = async (files) => {
   errorMessage.value = ''
   if (product.photos.length + files.length > 4) { 
     errorMessage.value = 'Máximo 4 imágenes.'; 
     return 
   }
-
-  // Opciones de compresión
   const options = {
-    maxSizeMB: 1,           // Comprimir a un máximo de 1MB
-    maxWidthOrHeight: 1920, // Reducir la resolución si es muy grande
-    useWebWorker: true,     // Usar un worker para no bloquear el hilo principal
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
   }
-
   for (const file of files) {
     if (file.type.startsWith('image/') && product.photos.length < 4) {
-      
       try {
-        // --- ¡AQUÍ OCURRE LA MAGIA! ---
         const compressedFile = await imageCompression(file, options);
-        // --- FIN DE LA MAGIA ---
-
-        // Guardar el archivo comprimido (File object)
         product.photos.push(compressedFile);
-        
-        // Generar la previsualización desde el archivo comprimido
         const reader = new FileReader();
         reader.onload = (ev) => imagePreviews.value.push(ev.target.result);
         reader.readAsDataURL(compressedFile);
-
       } catch (error) {
         console.error('Error al comprimir la imagen:', error);
         errorMessage.value = `Hubo un problema al procesar '${file.name}'.`;
-        // Opcional: si falla, podríamos subir el original, pero es mejor avisar.
       }
     }
   }
 }
 
-
 const removeImage = (i) => { product.photos.splice(i,1); imagePreviews.value.splice(i,1) }
-
-const onDragStart = (index) => {
-  draggedIndex.value = index;
-  dragging.value = true;
-};
-
-const onDragOver = (event, index) => {
-  dragOverIndex.value = index;
-};
-
-const onDragLeave = () => {
-  dragOverIndex.value = null;
-};
-
+const onDragStart = (index) => { draggedIndex.value = index; dragging.value = true; };
+const onDragOver = (event, index) => { dragOverIndex.value = index; };
+const onDragLeave = () => { dragOverIndex.value = null; };
 const onDrop = (toIndex) => {
   if (draggedIndex.value === null || draggedIndex.value === toIndex) { } else {
     const fromIndex = draggedIndex.value;
@@ -651,8 +557,18 @@ const submitNow = async () => {
     return;
   }
 
-  if (!validateStep2()) { errorMessage.value = 'Por favor, sube al menos una imagen.'; return }
-  if (!userStore.isLoggedIn) { errorMessage.value = 'Debes iniciar sesión para publicar.'; router.push('/login'); return }
+  // --- VALIDACIÓN MODIFICADA ---
+  if (!validateForm()) { 
+    errorMessage.value = 'Por favor, completa todos los campos obligatorios.';
+    toast.warning('Por favor, revisa los campos en rojo.', { timeout: 3000 });
+    return 
+  }
+
+  if (!userStore.isLoggedIn) { 
+    errorMessage.value = 'Debes iniciar sesión para publicar.'; 
+    router.push('/login'); 
+    return 
+  }
   
   isSubmitting.value = true
   try {
@@ -680,13 +596,7 @@ const submitNow = async () => {
     if (response.status === 201) {
       toast.success('¡Producto publicado con éxito!');
       await userStore.fetchUserProfile(userStore.user.id);
-      
-      startAnimation(); 
-      setTimeout(() => {
-        stopAnimation();
-        router.push('/my-products');
-      }, 3000); 
-
+      router.push('/my-products');
     } else { 
       errorMessage.value = response.data.detail || 'Error al publicar.' 
     }
@@ -701,7 +611,12 @@ const submitNow = async () => {
 
 const handleSubmit = submitNow
 
-const keydown = (e) => { if ((e.ctrlKey||e.metaKey) && e.key==='Enter' && currentStep.value===2) submitNow(); if (e.key==='Escape' && currentStep.value===2) goToPreviousStep() }
+// --- ATAJO DE TECLADO MODIFICADO ---
+const keydown = (e) => { 
+  if ((e.ctrlKey||e.metaKey) && e.key==='Enter') {
+    submitNow();
+  }
+}
 
 onMounted(()=> {
   if (!isProfileComplete.value) {
@@ -715,24 +630,15 @@ onMounted(()=> {
 
 onBeforeUnmount(()=> {
   window.removeEventListener('keydown',keydown);
-  if (animationInterval) {
-    clearInterval(animationInterval);
-  }
 })
 </script>
 
 <style scoped>
-.slide-fade-enter-active, .slide-fade-leave-active { transition: all 0.3s ease-out }
-.slide-fade-enter-from, .slide-fade-leave-to { transform: translateX(20px); opacity: 0 }
+/* Transiciones de slide-fade eliminadas porque ya no hay pasos.
+  Se mantiene 'fade' para el modal y mensajes de error.
+*/
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease }
 .fade-enter-from, .fade-leave-to { opacity: 0 }
-
-.gif-fade-enter-active, .gif-fade-leave-active {
-  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.gif-fade-enter-from, .gif-fade-leave-to {
-  opacity: 0;
-}
 
 .list-move {
   transition: transform 0.3s ease;
@@ -766,7 +672,8 @@ select {
 .badge-remove{ display:inline-grid; place-items:center; width:18px; height:18px; border-radius:3px; background:rgba(255,255,255,.14); border:1px solid rgba(148,163,184,.35); }
 .dark .badge-remove{ background:rgba(15,23,42,.4); border-color:#475569; }
 
-.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:.55rem; }
+/* MEJORA 8: minmax de 180px a 140px para permitir 2 columnas en 360px */
+.tile-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:.55rem; }
 .tile{
   display:flex; align-items:center; gap:.6rem; padding:.65rem .7rem; border:1px solid #E2E8F0; background:#fff; color:#0f172a;
   border-radius:6px; text-align:left; transition: border-color .18s ease, box-shadow .18s ease, transform .06s ease;
@@ -790,7 +697,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .slider.round:before { border-radius: 50%; }
 
 @media (prefers-reduced-motion: reduce) {
-  .slide-fade-enter-active, .slide-fade-leave-active, .fade-enter-active, .fade-leave-active { transition: none }
+  .fade-enter-active, .fade-leave-active { transition: none }
   .animate-shake { animation: none }
 }
 </style>

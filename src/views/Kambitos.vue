@@ -221,10 +221,10 @@ import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import MonedaSVG from '@/assets/imagenes/Moneda.svg';
-import avatarBasico from '@/assets/imagenes/gif/1sol.png';
-import avatarPopular from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-02.png';
-import avatarPro from '@/assets/imagenes/gif/Animacion_Mesa de trabajo 1-03.png';
-import api from '@/axios'; // <--- Tu helper 'api' de Axios
+import avatarBasico from '@/assets/imagenes/gif/1sol.svg';
+import avatarPopular from '@/assets/imagenes/gif/2sol.svg';
+import avatarPro from '@/assets/imagenes/gif/5sol.svg';
+import api from '@/axios';
 
 import yapeLogo from '@/assets/imagenes/yape.png';
 import plinLogo from '@/assets/imagenes/plin.png';

@@ -165,7 +165,7 @@
               leave-from="opacity-1100 translate-y-0 scale-100"
               leave-to="opacity-0 translate-y-3 scale-95"
             >
-            <DialogPanel class="relative w-full max-w-lg overflow-hidden rounded-2xl ring-1 ring-inset ring-white/10 bg-[#0b0b12]/90 p-6 sm:p-8 shadow-[0_10px_40px_-10px_rgba(215,3,123,0.35)] backdrop-blur-xl">
+              <DialogPanel class="relative w-full max-w-lg overflow-hidden rounded-2xl ring-1 ring-inset ring-white/10 bg-[#0b0b12]/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl">
   
               <button
                 type="button"
@@ -198,7 +198,7 @@
                     <select 
                       id="commentType" 
                       v-model="comment.type" 
-                      class="w-full appearance-none rounded-md border border-white/10 bg-white/5 py-2.5 pl-3 pr-10 text-white transition-all duration-200 ease-in-out placeholder:text-gray-500 focus:border-pink-500 focus:outline-none focus:shadow-[0_0_15px_0_rgba(215,3,123,0.5)]"
+                      class="w-full appearance-none rounded-md border border-white/10 bg-white/5 py-2.5 pl-3 pr-10 text-white transition-all duration-200 ease-in-out placeholder:text-gray-500 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
                     >
                       <option value="suggestion">Sugerencia</option>
                       <option value="problem">Reportar un problema</option>
@@ -222,7 +222,7 @@
                     v-model="comment.message" 
                     rows="4" 
                     required 
-                    class="w-full resize-none rounded-md border border-white/10 bg-white/5 px-3 py-2.5 text-white transition-all duration-200 ease-in-out placeholder:text-gray-500 focus:border-pink-500 focus:outline-none focus:shadow-[0_0_15px_0_rgba(215,3,123,0.5)]" 
+                    class="w-full resize-none rounded-md border border-white/10 bg-white/5 px-3 py-2.5 text-white transition-all duration-200 ease-in-out placeholder:text-gray-500 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/20" 
                     placeholder="Describe tu sugerencia o problema..."
                   ></textarea>
                 </div>
@@ -312,18 +312,13 @@ const openCommentModal = () => {
 
 const closeCommentModal = () => (isCommentModalVisible.value = false);
 
-// --- 🔽 AQUÍ ESTÁ EL CÓDIGO ACTUALIZADO 🔽 ---
-
 const submitComment = async () => {
-  // 1. VALIDACIÓN EN FRONTEND (para una respuesta rápida)
   if (!comment.value.message.trim()) {
     feedbackMessage.value = 'El mensaje no puede estar vacío.';
     isSuccess.value = false;
     return;
   }
   
-  // MEJORA 1: VALIDACIÓN DE LONGITUD EN FRONTEND
-  // Esto evita enviar una petición a la API que sabemos que fallará.
   if (comment.value.message.trim().length < 10) {
     feedbackMessage.value = 'El mensaje debe tener al menos 10 caracteres.';
     isSuccess.value = false;
@@ -346,25 +341,19 @@ const submitComment = async () => {
   } catch (error) {
     isSuccess.value = false;
     
-    // MEJORA 2: MANEJO CORRECTO DEL ERROR DE VALIDACIÓN DE LA API
     if (error.response && error.response.data) {
       const data = error.response.data;
       
-      // Caso 1: Error de validación de FastAPI (suele ser un array)
       if (Array.isArray(data) && data[0] && data[0].msg) {
-        // Leemos el error "msg" que me mostraste
         feedbackMessage.value = data[0].msg; 
       } 
-      // Caso 2: Error genérico de FastAPI (como "detail": "...")
       else if (data.detail) {
         feedbackMessage.value = data.detail;
       }
-      // Caso 3: Fallback
       else {
         feedbackMessage.value = 'Ocurrió un error al enviar tu comentario.';
       }
     } else {
-      // Error de red u otro
       feedbackMessage.value = 'Error de red. Inténtalo de nuevo.';
     }
     
