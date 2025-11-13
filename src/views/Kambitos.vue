@@ -338,7 +338,7 @@ let ws = null;
 
 function handleWebSocketMessage(event) {
     try {
-        const message = JSON.MParse(event.data);
+        const message = JSON.parse(event.data);
         console.log('WS Message Received:', message);
 
         if (message.type === 'credits_updated') {
