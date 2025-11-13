@@ -40,15 +40,15 @@
                             <span class="text-base text-slate-500 dark:text-slate-400">Tu Saldo</span>
                             <div class="flex items-center gap-2 justify-center lg:justify-start">
                                 <img :src="MonedaSVG" alt="Moneda" class="inline-h-7 w-7 mr-1" />
-                                <span class="text-3xl font-extrabold text-slate-800 dark:text-white">{{ userCredits }}</span>
-                                <span class="font-lobster text-xl text-[#d7037b]">Kambitos</span>
+                                <span class="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-white">{{ userCredits }}</span>
+                                <span class="font-lobster text-lg sm:text-xl text-[#d7037b]">Kambitos</span>
                             </div>
                         </div>
                         
                         <div class="flex flex-col gap-4">
                             <h3 class="step-headline">1. Selecciona tu plan</h3>
                             
-                            <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                 <button v-for="plan in plans" 
                                       :key="plan.name"
                                       type="button" 
@@ -73,12 +73,14 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="hidden lg:flex lg:col-span-2 justify-center pt-12 order-2">
                         <transition name="avatar-swap" mode="out-in">
                             <img :src="currentAvatar" :key="currentAvatar" alt="Kambito Avatar" 
                                  class="avatar-image w-52 h-auto"/>
                         </transition>
                     </div>
+                    
                     <div class="lg:col-span-5 flex flex-col gap-5 order-3 z-10">
                         <h3 class="step-headline">2. Confirma tu compra</h3>
                         
@@ -149,8 +151,9 @@
         </div>
 
         <transition name="details-fade">
-            <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-                <div class="relative w-full max-w-md p-6 lg:p-8 bg-white rounded-2xl shadow-2xl dark:bg-slate-800 border dark:border-slate-700">
+            <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex justify-center items-start sm:items-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+                
+                <div class="relative w-full max-w-md p-4 sm:p-6 lg:p-8 bg-white rounded-2xl shadow-2xl dark:bg-slate-800 border dark:border-slate-700">
                     
                     <button @click="closeModal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
@@ -165,22 +168,22 @@
                         
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">¡Orden Creada!</h3>
                         
-                        <p class="text-slate-600 dark:text-slate-400 mb-6">
+                        <p class="text-slate-600 dark:text-slate-400 mb-4">
                             Por favor, realiza tu pago por Yape para completar la compra.
                         </p>
 
-                        <div class="qr-placeholder mb-6">
+                        <div class="qr-placeholder mb-4">
                             <img :src="qrCodeImage" alt="Código QR de pago" class="qr-image" />
                         </div>
 
-                        <div class="w-full p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border dark:border-slate-700 mb-6">
+                        <div class="w-full p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border dark:border-slate-700 mb-4">
                             <div class="flex justify-between items-center">
                                 <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Pagarás (Monto Exacto):</span>
                                 <span class="text-lg font-bold text-slate-900 dark:text-white">S/ {{ parseFloat(paymentDetails?.amount_to_pay).toFixed(2) }}</span>
                             </div>
                         </div>
                         
-                        <div class="w-full p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg mb-6">
+                        <div class="w-full p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg mb-4">
                             <p class="text-xs text-blue-800 dark:text-blue-200">
                                 <strong>Importante:</strong> El pago debe ser hecho desde la cuenta Yape a nombre de
                                 (<strong>{{ paymentDetails?.user_name_to_match }}</strong>)
@@ -216,7 +219,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'; // Importar los ganchos de ciclo de vida
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/user';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
@@ -302,8 +305,9 @@ async function handlePurchase() {
             showPaymentModal.value = true;
             console.log("Orden creada:", response.data);
             
-            // Usamos el nombre ingresado para mostrar la coincidencia esperada
-            paymentDetails.value.user_name_to_match = paymentName.value;
+            // LÍNEA ELIMINADA: Ya no sobrescribimos user_name_to_match, 
+            // usamos el valor normalizado que viene del backend.
+            // paymentDetails.value.user_name_to_match = paymentName.value;
 
         } else {
             throw new Error("El backend no devolvió datos.");
@@ -334,7 +338,7 @@ let ws = null;
 
 function handleWebSocketMessage(event) {
     try {
-        const message = JSON.parse(event.data);
+        const message = JSON.MParse(event.data);
         console.log('WS Message Received:', message);
 
         if (message.type === 'credits_updated') {
@@ -473,7 +477,7 @@ select.form-input {
 /* --- Estilos para QR Y FORMULARIO --- */
 .payment-qr-section {
     @apply bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/30 dark:border-slate-700;
-    @apply rounded-xl p-6 sm:p-10;
+    @apply rounded-xl p-6 lg:p-8;
     @apply h-full;
 }
 
@@ -482,7 +486,7 @@ select.form-input {
     @apply p-5;
 }
 .qr-image {
-    @apply w-48 h-48 rounded-lg bg-white p-1;
+    @apply w-36 h-36 sm:w-48 sm:h-48 rounded-lg bg-white p-1;
     @apply object-contain;
 }
 .payment-methods {
