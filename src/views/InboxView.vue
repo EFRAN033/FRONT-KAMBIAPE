@@ -80,7 +80,10 @@
                 v-for="c in filteredConversations"
                 :key="c.exchange.id"
                 class="relative"
-                :class="selectedConversation && selectedConversation.exchange.id === c.exchange.id ? 'bg-slate-50' : ''"
+                :class="{
+                  'bg-slate-50': selectedConversation && selectedConversation.exchange.id === c.exchange.id,
+                  'bg-red-50': c.unread_count > 0 && (!selectedConversation || selectedConversation.exchange.id !== c.exchange.id)
+                }"
               >
                 <div @click="selectConversation(c)" class="pl-4 pr-12 py-3 cursor-pointer transition-colors hover:bg-slate-50">
                     <span class="absolute inset-y-0 left-0 w-1" :class="statusStripeClass(c.exchange.status)"></span>
@@ -96,7 +99,11 @@
                           <p class="text-[15px] font-semibold text-slate-900 truncate" :title="c.user.full_name">{{ formatUserName(c.user.full_name) }}</p>
                           <span class="text-[11px] text-slate-500 whitespace-nowrap">{{ formatTime(c.last_message?.timestamp || c.exchange.created_at) }}</span>
                         </div>
-                        <p class="text-[13px] text-slate-600 mt-0.5 truncate">
+                        
+                        <p v-if="typingStatus[c.exchange.id]" class="text-[13px] text-green-600 mt-0.5 truncate animate-pulse">
+                          está escribiendo...
+                        </p>
+                        <p v-else class="text-[13px] text-slate-600 mt-0.5 truncate">
                           <span v-if="c.last_message?.sender_id === userStore.user?.id || (!c.last_message && c.exchange.proposer_user_id === userStore.user?.id)">Tú: </span>
                           {{ c.last_message?.text || c.exchange.initial_message || 'Propuesta iniciada...' }}
                         </p>
@@ -733,15 +740,16 @@ const API_BASE_URL = import.meta.env.VITE_APP_PUBLIC_URL || 'http://localhost:80
 const isLocationModalVisible = ref(false);
 let ws = null;
 
-const isOtherUserTyping = ref(false);
+const typingStatus = ref({}); // <-- Objeto para guardar el estado de todos
+const typingSignalSent = ref(false); // <-- CORRECCIÓN: Variable faltante
 let typingTimer = null;
-const typingSignalSent = ref(false);
 
-const iAmProposer = computed(() => {
-  if (!selectedConversation.value || !userStore.user) return false;
-  return selectedConversation.value.exchange.proposer_user_id === userStore.user.id;
+// 'isOtherUserTyping' ahora es un computed que reacciona a typingStatus
+const isOtherUserTyping = computed(() => {
+  if (!selectedConversation.value) return false;
+  // !! convierte el valor (true/undefined) a un booleano (true/false)
+  return !!typingStatus.value[selectedConversation.value.exchange.id];
 });
-
 const myProduct = computed(() => {
   if (!selectedConversation.value) return null;
   return iAmProposer.value ? selectedConversation.value.exchange.offer : selectedConversation.value.exchange.request;
@@ -1105,7 +1113,11 @@ const connectWebSocket = () => {
       }
       
       if (selectedConversation.value?.exchange.id === newMessage.proposal_id) {
-        isOtherUserTyping.value = false;
+        // CORRECCIÓN: Limpia el estado de "escribiendo" del chat actual
+        if (typingStatus.value[newMessage.proposal_id]) {
+            typingStatus.value[newMessage.proposal_id] = false;
+        }
+        
         const existingMsgIndex = messages.value.findIndex(m => m.tempId && m.sender_id === newMessage.sender_id && m.text === newMessage.text);
 
         if (existingMsgIndex !== -1) {
@@ -1116,14 +1128,16 @@ const connectWebSocket = () => {
 
         markMessagesAsRead([newMessage]);
       }
+    
+    // INICIO: CORRECCIÓN "readonly"
     } else if (response.type === 'user_typing') {
-        if (selectedConversation.value?.exchange.id === response.data.proposal_id) {
-            isOtherUserTyping.value = true;
-        }
+        const proposal_id = response.data.proposal_id;
+        typingStatus.value[proposal_id] = true;
+
     } else if (response.type === 'user_stopped_typing') {
-        if (selectedConversation.value?.exchange.id === response.data.proposal_id) {
-            isOtherUserTyping.value = false;
-        }
+        const proposal_id = response.data.proposal_id;
+        typingStatus.value[proposal_id] = false;
+    // FIN: CORRECCIÓN "readonly"
     }
   };
 };
@@ -1202,7 +1216,8 @@ const returnToConversationList = () => {
 const selectConversation = async (conversation) => {
   isChatViewVisible.value = true; 
 
-  isOtherUserTyping.value = false;
+  // Esta línea se eliminó correctamente para evitar el error "readonly"
+  // isOtherUserTyping.value = false; 
 
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;

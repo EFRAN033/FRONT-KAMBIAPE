@@ -254,7 +254,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useRouter } from 'vue-router'; // <-- Esta es la línea que corregí
+import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import { useInboxStore } from '@/stores/inbox';
 
@@ -275,6 +275,7 @@ const inboxStore = useInboxStore();
 
 const menuOpen = ref(false);
 const userMenuOpen = ref(false);
+let pollingInterval = null; // <-- Variable para guardar el temporizador
 
 const navLinks = [
   { path: '/', label: 'Inicio', icon: HomeIcon },
@@ -293,7 +294,7 @@ const logout = () => {
   userStore.clearUser();
   inboxStore.clearUnreadCount();
   menuOpen.value = false;
-  userMenuOpen.false;
+  userMenuOpen.value = false; // <-- CORREGIDO (tenía .false)
   router.push('/login');
 };
 
@@ -307,15 +308,32 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  
+  // --- INICIO: SOLUCIÓN POLLING ---
+  // Inicia un temporizador para verificar mensajes cada 15 segundos
+  pollingInterval = setInterval(() => {
+    // Solo verifica si el usuario está logueado
+    if (userStore.isLoggedIn) {
+      inboxStore.fetchUnreadCount();
+    }
+  }, 15000); // 15000ms = 15 segundos
+  // --- FIN: SOLUCIÓN POLLING ---
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  
+  // --- INICIO: LIMPIEZA POLLING ---
+  // Limpia el temporizador cuando el componente se destruye
+  // para evitar problemas de memoria.
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+  }
+  // --- FIN: LIMPIEZA POLLING ---
 });
 
-// Este watch ahora solo se encarga de cargar el conteo inicial de mensajes
-// cuando el usuario inicia sesión. La actualización en tiempo real la
-// gestiona el store de inbox a través de WebSockets.
+// Este watch ahora solo se encarga de cargar el conteo inicial
+// y el polling se encarga de las actualizaciones en "tiempo real".
 watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   if (isLoggedIn) {
     inboxStore.fetchUnreadCount();
