@@ -161,8 +161,8 @@
                   <button @click="returnToConversationList" class="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full lg:hidden">
                     <ArrowLeftIcon class="h-5 w-5" />
                   </button>
-                  <img @click="openProfilePanel(selectedConversation.user)" :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow cursor-pointer lg:cursor-default" />
-                  <div @click="openProfilePanel(selectedConversation.user)" class="min-w-0 cursor-pointer lg:cursor-default">
+                  <img @click="openProfilePanel(selectedConversation.user)" :src="getAvatarUrl(selectedConversation.user.avatar)" :alt="selectedConversation.user.full_name" class="h-10 w-10 rounded-full object-cover border border-white shadow cursor-pointer" />
+                  <div @click="openProfilePanel(selectedConversation.user)" class="min-w-0 cursor-pointer">
                     <h3 class="font-semibold text-[15px] text-slate-900 truncate" :title="selectedConversation.user.full_name">{{ formatUserName(selectedConversation.user.full_name) }}</h3>
                     
                     <div class="h-4">
@@ -291,86 +291,170 @@
                 </div>
               </div>
             </template>
-          </section>
 
-          <transition name="slide-fade">
-            <aside 
-              v-if="selectedProfileUser" 
-              class="absolute inset-0 w-full h-full bg-white transition-transform duration-300 ease-in-out lg:static lg:w-[30%] lg:flex-shrink-0 lg:border-l lg:border-slate-200 lg:translate-x-0 overflow-y-auto custom-scrollbar-unique"
-              :class="{ 'translate-x-0': selectedProfileUser, 'translate-x-full': !selectedProfileUser }"
-            >
-              <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-sm z-10">
-                <h2 class="text-base font-semibold">Perfil del Usuario</h2>
-                <button @click="closeProfilePanel" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800">
-                  <XMarkIcon class="w-5 h-5" />
-                </button>
-              </div>
-              <div class="flex flex-col p-6">
-                <div class="flex flex-col items-center text-center">
-                  <img :src="getAvatarUrl(selectedProfileUser.avatar)" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover mb-4 ring-2 ring-offset-2 ring-[#d7037b]/50">
-                  <h3 class="text-xl font-bold">{{ formatUserName(selectedProfileUser.full_name) }}</h3>
+            <transition name="modal-fade">
+              <div 
+                v-if="selectedProfileUser" 
+                @click.self="closeProfilePanel" 
+                class="absolute inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm lg:hidden"
+              >
+                <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 transform transition-all modal-container max-h-[85vh] flex flex-col">
                   
-                  <div v-if="selectedProfileUser.rating_count > 0" class="mt-2 flex items-center justify-center gap-1.5">
-                    <div class="flex items-center text-yellow-400">
-                      <StarIconSolid v-for="i in Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5"/>
-                      <StarIcon v-for="i in 5 - Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5 text-slate-300"/>
-                    </div>
-                    <span class="text-sm font-semibold text-slate-700">{{ selectedProfileUser.rating_score.toFixed(1) }}</span>
-                    <span class="text-xs text-slate-500">({{ selectedProfileUser.rating_count }} valoraciones)</span>
+                  <div class="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-sm z-10 rounded-t-lg">
+                    <h2 class="text-base font-semibold">Perfil del Usuario</h2>
+                    <button @click="closeProfilePanel" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800">
+                      <XMarkIcon class="w-5 h-5" />
+                    </button>
                   </div>
-                  <p v-else class="mt-2 text-sm text-slate-500 italic">
-                    Aún no tiene valoraciones.
-                  </p>
-                  </div>
-                <div class="mt-6 w-full text-left pt-4 border-t border-slate-200">
-                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Biografía</h4>
-                  <p class="text-sm text-slate-600 mt-2 italic">
-                    {{ selectedProfileUser.bio || 'Este usuario aún no ha añadido una biografía.' }}
-                  </p>
-                </div>
-                <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
-                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
-                    <MapPinIcon class="h-4 w-4 mr-2 text-slate-400" />
-                    Ubicación
-                  </h4>
-                  <p class="text-sm text-slate-600 mt-2">
-                    {{ formatUbicacion(selectedProfileUser.ubicacion) }}
-                  </p>
-                </div>
-                
-                <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
-                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventario del Usuario</h4>
-                  <div v-if="loadingProfileInventory" class="mt-4 text-center">
-                    <svg class="animate-spin h-6 w-6 text-[#d7037b] mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  </div>
-                  <div v-else-if="profileUserInventory.length === 0" class="mt-4 text-center text-sm text-slate-500 italic">
-                    Este usuario no tiene productos en su inventario.
-                  </div>
-                  <div v-else class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <a v-for="product in profileUserInventory" :key="product.id" :href="`/product/${product.id}`" target="_blank" class="block group">
-                      <div class="aspect-square bg-slate-100 rounded-md overflow-hidden relative">
-                        <img :src="getAvatarUrl(product.thumbnail_image_url)" :alt="product.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        <div class="absolute inset-0 bg-black/20"></div>
-                        <p class="absolute bottom-1.5 left-0 right-0 text-white text-[11px] font-semibold p-1.5 truncate text-center">{{ product.title }}</p>
-                      </div>
-                    </a>
-                  </div>
-                </div>
 
-                <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
-                  <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Intereses</h4>
-                  <div v-if="selectedProfileUser.interests && selectedProfileUser.interests.length > 0" class="flex flex-wrap gap-1.5 mt-2">
-                    <span v-for="interest in selectedProfileUser.interests" :key="interest.id" class="badge-sq">
-                      {{ interest.name }}
-                    </span>
+                  <div class="overflow-y-auto custom-scrollbar-unique">
+                    <div class="flex flex-col p-6">
+                      <div class="flex flex-col items-center text-center">
+                        <img :src="getAvatarUrl(selectedProfileUser.avatar)" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover mb-4 ring-2 ring-offset-2 ring-[#d7037b]/50">
+                        <h3 class="text-xl font-bold">{{ formatUserName(selectedProfileUser.full_name) }}</h3>
+                        
+                        <div v-if="selectedProfileUser.rating_count > 0" class="mt-2 flex items-center justify-center gap-1.5">
+                          <div class="flex items-center text-yellow-400">
+                            <StarIconSolid v-for="i in Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5"/>
+                            <StarIcon v-for="i in 5 - Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5 text-slate-300"/>
+                          </div>
+                          <span class="text-sm font-semibold text-slate-700">{{ selectedProfileUser.rating_score.toFixed(1) }}</span>
+                          <span class="text-xs text-slate-500">({{ selectedProfileUser.rating_count }} valoraciones)</span>
+                        </div>
+                        <p v-else class="mt-2 text-sm text-slate-500 italic">
+                          Aún no tiene valoraciones.
+                        </p>
+                        </div>
+                      <div class="mt-6 w-full text-left pt-4 border-t border-slate-200">
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Biografía</h4>
+                        <p class="text-sm text-slate-600 mt-2 italic">
+                          {{ selectedProfileUser.bio || 'Este usuario aún no ha añadido una biografía.' }}
+                        </p>
+                      </div>
+                      <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                          <MapPinIcon class="h-4 w-4 mr-2 text-slate-400" />
+                          Ubicación
+                        </h4>
+                        <p class="text-sm text-slate-600 mt-2">
+                          {{ formatUbicacion(selectedProfileUser.ubicacion) }}
+                        </p>
+                      </div>
+                      
+                      <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventario del Usuario</h4>
+                        <div v-if="loadingProfileInventory" class="mt-4 text-center">
+                          <svg class="animate-spin h-6 w-6 text-[#d7037b] mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        </div>
+                        <div v-else-if="profileUserInventory.length === 0" class="mt-4 text-center text-sm text-slate-500 italic">
+                          Este usuario no tiene productos en su inventario.
+                        </div>
+                        <div v-else class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          <a v-for="product in profileUserInventory" :key="product.id" :href="`/product/${product.id}`" target="_blank" class="block group">
+                            <div class="aspect-square bg-slate-100 rounded-md overflow-hidden relative">
+                              <img :src="getAvatarUrl(product.thumbnail_image_url)" :alt="product.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                              <div class="absolute inset-0 bg-black/20"></div>
+                              <p class="absolute bottom-1.5 left-0 right-0 text-white text-[11px] font-semibold p-1.5 truncate text-center">{{ product.title }}</p>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+
+                      <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Intereses</h4>
+                        <div v-if="selectedProfileUser.interests && selectedProfileUser.interests.length > 0" class="flex flex-wrap gap-1.5 mt-2">
+                          <span v-for="interest in selectedProfileUser.interests" :key="interest.id" class="badge-sq">
+                            {{ interest.name }}
+                          </span>
+                        </div>
+                        <p v-else class="text-sm text-slate-500 mt-2 italic">
+                          Este usuario no ha añadido intereses.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p v-else class="text-sm text-slate-500 mt-2 italic">
-                    Este usuario no ha añadido intereses.
-                  </p>
+
                 </div>
               </div>
-            </aside>
-          </transition>
+            </transition>
+            </section>
+
+          <aside 
+            v-if="selectedProfileUser" 
+            class="hidden lg:flex lg:flex-col lg:w-[30%] lg:flex-shrink-0 lg:border-l lg:border-slate-200 
+                   overflow-y-auto custom-scrollbar-unique"
+          >
+            <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-sm z-10">
+              <h2 class="text-base font-semibold">Perfil del Usuario</h2>
+              <button @click="closeProfilePanel" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800">
+                <XMarkIcon class="w-5 h-5" />
+              </button>
+            </div>
+            <div class="flex flex-col p-6">
+              <div class="flex flex-col items-center text-center">
+                <img :src="getAvatarUrl(selectedProfileUser.avatar)" alt="Foto de perfil" class="w-24 h-24 rounded-full object-cover mb-4 ring-2 ring-offset-2 ring-[#d7037b]/50">
+                <h3 class="text-xl font-bold">{{ formatUserName(selectedProfileUser.full_name) }}</h3>
+                
+                <div v-if="selectedProfileUser.rating_count > 0" class="mt-2 flex items-center justify-center gap-1.5">
+                  <div class="flex items-center text-yellow-400">
+                    <StarIconSolid v-for="i in Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5"/>
+                    <StarIcon v-for="i in 5 - Math.floor(selectedProfileUser.rating_score)" :key="i" class="h-5 w-5 text-slate-300"/>
+                  </div>
+                  <span class="text-sm font-semibold text-slate-700">{{ selectedProfileUser.rating_score.toFixed(1) }}</span>
+                  <span class="text-xs text-slate-500">({{ selectedProfileUser.rating_count }} valoraciones)</span>
+                </div>
+                <p v-else class="mt-2 text-sm text-slate-500 italic">
+                  Aún no tiene valoraciones.
+                </p>
+                </div>
+              <div class="mt-6 w-full text-left pt-4 border-t border-slate-200">
+                <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Biografía</h4>
+                <p class="text-sm text-slate-600 mt-2 italic">
+                  {{ selectedProfileUser.bio || 'Este usuario aún no ha añadido una biografía.' }}
+                </p>
+              </div>
+              <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                  <MapPinIcon class="h-4 w-4 mr-2 text-slate-400" />
+                  Ubicación
+                </h4>
+                <p class="text-sm text-slate-600 mt-2">
+                  {{ formatUbicacion(selectedProfileUser.ubicacion) }}
+                </p>
+              </div>
+              
+              <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inventario del Usuario</h4>
+                <div v-if="loadingProfileInventory" class="mt-4 text-center">
+                  <svg class="animate-spin h-6 w-6 text-[#d7037b] mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                </div>
+                <div v-else-if="profileUserInventory.length === 0" class="mt-4 text-center text-sm text-slate-500 italic">
+                  Este usuario no tiene productos en su inventario.
+                </div>
+                <div v-else class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <a v-for="product in profileUserInventory" :key="product.id" :href="`/product/${product.id}`" target="_blank" class="block group">
+                    <div class="aspect-square bg-slate-100 rounded-md overflow-hidden relative">
+                      <img :src="getAvatarUrl(product.thumbnail_image_url)" :alt="product.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                      <div class="absolute inset-0 bg-black/20"></div>
+                      <p class="absolute bottom-1.5 left-0 right-0 text-white text-[11px] font-semibold p-1.5 truncate text-center">{{ product.title }}</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <div class="mt-4 w-full text-left pt-4 border-t border-slate-200">
+                <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Intereses</h4>
+                <div v-if="selectedProfileUser.interests && selectedProfileUser.interests.length > 0" class="flex flex-wrap gap-1.5 mt-2">
+                  <span v-for="interest in selectedProfileUser.interests" :key="interest.id" class="badge-sq">
+                    {{ interest.name }}
+                  </span>
+                </div>
+                <p v-else class="text-sm text-slate-500 mt-2 italic">
+                  Este usuario no ha añadido intereses.
+                </p>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </main>
@@ -553,7 +637,7 @@
                 <div class="flex flex-col items-center">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">SU PRODUCTO</span>
                     <div class="w-full mt-2 bg-white border border-slate-200 rounded-lg shadow-sm p-3 transition-all hover:shadow-md">
-                        <div classs="aspect-square w-full rounded-md overflow-hidden bg-slate-100">
+                        <div class="aspect-square w-full rounded-md overflow-hidden bg-slate-100">
                             <img :src="getAvatarUrl(theirProduct.thumbnail_image_url)" alt="" class="w-full h-full object-cover">
                         </div>
                         <div class="text-center mt-3 px-1">
@@ -741,7 +825,7 @@ const isLocationModalVisible = ref(false);
 let ws = null;
 
 const typingStatus = ref({}); // <-- Objeto para guardar el estado de todos
-const typingSignalSent = ref(false); // <-- CORRECCIÓN: Variable faltante
+const typingSignalSent = ref(false); 
 let typingTimer = null;
 
 // 'isOtherUserTyping' ahora es un computed que reacciona a typingStatus
@@ -750,6 +834,12 @@ const isOtherUserTyping = computed(() => {
   // !! convierte el valor (true/undefined) a un booleano (true/false)
   return !!typingStatus.value[selectedConversation.value.exchange.id];
 });
+
+const iAmProposer = computed(() => {
+  if (!selectedConversation.value || !userStore.user) return false;
+  return selectedConversation.value.exchange.proposer_user_id === userStore.user.id;
+});
+
 const myProduct = computed(() => {
   if (!selectedConversation.value) return null;
   return iAmProposer.value ? selectedConversation.value.exchange.offer : selectedConversation.value.exchange.request;
@@ -1113,7 +1203,6 @@ const connectWebSocket = () => {
       }
       
       if (selectedConversation.value?.exchange.id === newMessage.proposal_id) {
-        // CORRECCIÓN: Limpia el estado de "escribiendo" del chat actual
         if (typingStatus.value[newMessage.proposal_id]) {
             typingStatus.value[newMessage.proposal_id] = false;
         }
@@ -1129,7 +1218,6 @@ const connectWebSocket = () => {
         markMessagesAsRead([newMessage]);
       }
     
-    // INICIO: CORRECCIÓN "readonly"
     } else if (response.type === 'user_typing') {
         const proposal_id = response.data.proposal_id;
         typingStatus.value[proposal_id] = true;
@@ -1137,7 +1225,6 @@ const connectWebSocket = () => {
     } else if (response.type === 'user_stopped_typing') {
         const proposal_id = response.data.proposal_id;
         typingStatus.value[proposal_id] = false;
-    // FIN: CORRECCIÓN "readonly"
     }
   };
 };
@@ -1215,9 +1302,6 @@ const returnToConversationList = () => {
 
 const selectConversation = async (conversation) => {
   isChatViewVisible.value = true; 
-
-  // Esta línea se eliminó correctamente para evitar el error "readonly"
-  // isOtherUserTyping.value = false; 
 
   if (selectedProfileUser.value) closeProfilePanel();
   if (selectedConversation.value?.exchange.id === conversation.exchange.id) return;
@@ -1341,6 +1425,13 @@ const statusText = (status) => ({
 </script>
 
 <style>
+/* ***
+  *** INICIO DE LA CORRECCIÓN CSS ***
+  ***
+  
+  Añadimos 'enter-to' y 'leave-from' para que la animación 'slide-fade'
+  sepa a dónde animar y desde dónde empezar a salir.
+*/
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: all 0.3s ease-out;
@@ -1350,6 +1441,16 @@ const statusText = (status) => ({
   transform: translateX(100%);
   opacity: 0;
 }
+.slide-fade-enter-to,
+.slide-fade-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+/* ***
+  *** FIN DE LA CORRECCIÓN CSS ***
+  ***
+*/
+
 @keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .animate-spin-slow{animation:spin-slow 8s linear infinite}
 
@@ -1396,7 +1497,6 @@ const statusText = (status) => ({
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 .modal-fade-enter-from .modal-container,
-/* Esta es la línea que tenía la 'a' extra. Ya está corregida. */
 .modal-fade-leave-to .modal-container {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
