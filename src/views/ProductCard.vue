@@ -8,28 +8,50 @@
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
       
-      <div class="md:col-span-1">
+      <div class="md:col-span-1 relative"> 
         <div class="relative rounded-lg overflow-hidden shadow-lg aspect-square bg-white sm:bg-gray-100 dark:bg-gray-800 sm:dark:bg-gray-700">
-          <transition name="fade-img" mode="out-in">
-            <img :key="currentImage" :src="currentImage" :alt="product.title" class="w-full h-full object-cover" loading="lazy" />
-          </transition>
+          
+          <div 
+            ref="imageContainer"
+            class="w-full h-full relative cursor-pointer md:cursor-crosshair"
+            @mousemove="handleMouseMove"
+            @mouseenter="showZoom"
+            @mouseleave="hideZoom"
+            @click="handleImageClick"
+          >
+            <transition name="fade-img" mode="out-in">
+              <img 
+                :key="currentImage" 
+                :src="currentImage" 
+                :alt="product.title" 
+                class="w-full h-full object-cover" 
+                loading="lazy" 
+              />
+            </transition>
+
+            <div 
+              v-show="isZoomVisible" 
+              class="absolute hidden md:block pointer-events-none"
+              :style="lensStyle"
+            ></div>
+          </div>
           
           <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
 
           <template v-if="images.length > 1">
-            <button @click="prevImage" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all focus:outline-none" aria-label="Imagen anterior">
+            <button @click.stop="prevImage" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 dark:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all focus:outline-none" aria-label="Imagen anterior">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <button @click="nextImage" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/80 dark:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all focus:outline-none" aria-label="Siguiente imagen">
+            <button @click.stop="nextImage" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 dark:bg-gray-900/60 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all focus:outline-none" aria-label="Siguiente imagen">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
             </button>
           </template>
           
-          <div v-if="images.length > 1" class="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
+          <div v-if="images.length > 1" class="absolute bottom-4 left-0 right-0 z-10 flex justify-center items-center gap-2">
             <button
               v-for="(img, idx) in images"
               :key="`dot-${idx}`"
-              @click="goTo(idx)"
+              @click.stop="goTo(idx)"
               class="w-2.5 h-2.5 rounded-full transition-all duration-300 shadow"
               :class="idx === currentIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'"
               :aria-label="`Ir a la imagen ${idx + 1}`"
@@ -37,6 +59,19 @@
           </div>
 
         </div>
+
+        <div
+          v-show="isZoomVisible"
+          class="absolute hidden md:block top-0 left-[103%] w-full h-full rounded-lg shadow-xl overflow-hidden bg-white border border-gray-200 dark:border-gray-700 dark:bg-gray-800"
+          style="z-index: 50;"
+        >
+          <img
+            :src="currentImage"
+            :alt="`${product.title} zoom`"
+            :style="zoomImageStyle"
+          />
+        </div>
+
         <div v-if="!hasImages" class="flex items-center justify-center h-full rounded-lg bg-gray-100 dark:bg-gray-700 aspect-square">
           <div class="text-center text-gray-500 dark:text-gray-400">
              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 3H8a2 2 0 00-2 2v0a2 2 0 002 2h8a2 2 0 002-2v0a2 2 0 00-2-2z"/></svg>
@@ -104,7 +139,7 @@
              Tu Producto
            </button>
         </div>
-        </aside>
+      </aside>
     </div>
 
     <transition name="fade">
@@ -181,6 +216,31 @@
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    </transition>
+
+    <transition name="fade">
+      <div 
+        v-if="isLightboxOpen" 
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        @click.self="closeLightbox"
+      >
+        <button @click="closeLightbox" class="absolute top-4 right-4 z-[52] p-2 bg-white/80 rounded-full shadow-lg" aria-label="Cerrar zoom">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+
+        <template v-if="images.length > 1">
+          <button @click.stop="prevImage" class="absolute left-4 top-1/2 -translate-y-1/2 z-[52] p-2 bg-white/80 rounded-full shadow-lg" aria-label="Imagen anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <button @click.stop="nextImage" class="absolute right-4 top-1/2 -translate-y-1/2 z-[52] p-2 bg-white/80 rounded-full shadow-lg" aria-label="Siguiente imagen">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </template>
+        
+        <div class="relative w-full h-full flex items-center justify-center z-[51]">
+          <img :src="currentImage" :alt="product.title" class="block max-w-full max-h-full object-contain" />
         </div>
       </div>
     </transition>
@@ -309,44 +369,33 @@ const closeProposeModal = () => {
   initialMessage.value = '';
 };
 
+// ... (submitProposal y sendInitialMessage sin cambios) ...
 const submitProposal = async () => {
   console.log("--- INICIANDO DEPURACIÓN DE PROPUESTA ---");
-
-  // 1. Validar que el usuario logueado no sea el dueño del producto
   if (userStore.user.id === props.product.user_id) {
     toast.error('No puedes hacer una propuesta por tu propio producto.');
     console.error("Error de lógica: El usuario intentó hacer una propuesta a sí mismo.");
     return;
   }
-  
-  // 2. Validar que se haya seleccionado un producto
   if (!selectedProductId.value) {
     toast.error('Por favor, selecciona un producto para intercambiar.');
     console.error("Error de validación: No se seleccionó ningún producto para ofrecer.");
     return;
   }
-
-  // 3. Imprimir y verificar todos los IDs
   const offeredId = selectedProductId.value;
   const requestedId = props.product.id;
   const receiverId = props.product.user_id;
-
   console.log("ID del Producto Ofrecido:", offeredId, `(tipo: ${typeof offeredId})`);
   console.log("ID del Producto Solicitado:", requestedId, `(tipo: ${typeof requestedId})`);
   console.log("ID del Usuario Receptor:", receiverId, `(tipo: ${typeof receiverId})`);
   console.log("Objeto 'product' completo recibido en props:", props.product);
-
-
-  // 4. Validar que todos los IDs sean números válidos
   if (typeof offeredId !== 'number' || typeof requestedId !== 'number' || typeof receiverId !== 'number') {
       toast.error('Error en los datos del producto. No se puede enviar la propuesta.');
       console.error("Error Crítico de Tipos: Uno o más IDs no son de tipo 'number'. Abortando.");
       return;
   }
-
   submitting.value = true;
   try {
-    // PASO 1: Crear la propuesta
     const proposalPayload = {
       offered_product_id: offeredId,
       requested_product_id: requestedId,
@@ -354,18 +403,14 @@ const submitProposal = async () => {
     console.log("Enviando Payload para CREAR PROPUESTA (/proposals):", proposalPayload);
     const response = await axios.post('/proposals', proposalPayload);
     const newProposal = response.data;
-
-    // PASO 2: Si la propuesta se creó, enviar el mensaje inicial
     if (newProposal && newProposal.id) {
       console.log("Propuesta creada con éxito. ID:", newProposal.id);
       const messageText = initialMessage.value.trim() || placeholderMessage.value;
       await sendInitialMessage(newProposal.id, messageText, receiverId);
     }
-    
     toast.success('¡Propuesta enviada con éxito!');
     closeProposeModal();
     router.push({ name: 'Inbox' });
-
   } catch (error) {
     console.error("--- ERROR AL ENVIAR LA PROPUESTA ---");
     console.error("Mensaje de error general:", error.message);
@@ -380,33 +425,20 @@ const submitProposal = async () => {
     submitting.value = false;
   }
 };
-
 const sendInitialMessage = async (proposalId, text, receiverId) => {
   const messageText = text.trim();
-
   if (!messageText) {
     console.warn("Mensaje inicial vacío, no se enviará.");
     return; 
   }
-
-  // 1. Crear un objeto FormData
   const formData = new FormData();
-
-  // 2. Añadir los campos que el backend espera (proposal_id y text)
   formData.append('proposal_id', proposalId);
   formData.append('text', messageText);
-
-  // El campo `receiver_id` no es necesario, ya que el backend no lo pide.
-  // El backend puede deducir quién es el receptor a partir de la propuesta (proposalId).
-  
   console.log("Enviando FormData para CREAR MENSAJE (/messages):", {
     proposal_id: proposalId,
     text: messageText,
   });
-
   try {
-    // 3. Enviar el objeto FormData
-    // Axios se encargará de establecer el 'Content-Type' a 'multipart/form-data'
     await axios.post('/messages', formData);
     console.log("Mensaje inicial enviado con éxito.");
   } catch (error) {
@@ -440,6 +472,109 @@ function normalizeImageUrl(url) {
 onMounted(() => {
   images.value.forEach((src) => { const i = new Image(); i.src = src; });
 });
+
+// --- LÓGICA DE ZOOM (DESKTOP Y MÓVIL) ---
+
+// --- 1. Lógica de Lightbox (Móvil) ---
+const isLightboxOpen = ref(false);
+
+const handleImageClick = () => {
+  // Breakpoint 'md' de Tailwind es 768px
+  if (window.innerWidth < 768) { 
+    isLightboxOpen.value = true;
+  }
+};
+
+const closeLightbox = () => {
+  isLightboxOpen.value = false;
+};
+
+// --- 2. Lógica de Panel de Zoom (Desktop) ---
+const imageContainer = ref(null);
+const isZoomVisible = ref(false);
+
+const zoomFactor = 2;
+const lensSize = 150;
+
+const lensTop = ref(0);
+const lensLeft = ref(0);
+const zoomImgTop = ref(0);
+const zoomImgLeft = ref(0);
+const zoomImgWidth = ref(0);
+const zoomImgHeight = ref(0);
+
+const lensStyle = computed(() => ({
+  display: isZoomVisible.value ? 'block' : 'none',
+  width: `${lensSize}px`,
+  height: `${lensSize}px`,
+  top: `${lensTop.value}px`,
+  left: `${lensLeft.value}px`,
+  position: 'absolute',
+  pointerEvents: 'none',
+  zIndex: 10,
+  backgroundColor: 'rgba(255, 255, 255, 0.4)',
+  border: '1px solid #fff',
+  cursor: 'crosshair',
+}));
+
+const zoomImageStyle = computed(() => ({
+  width: `${zoomImgWidth.value}px`,
+  height: `${zoomImgHeight.value}px`,
+  position: 'absolute',
+  top: `${zoomImgTop.value}px`,
+  left: `${zoomImgLeft.value}px`,
+  maxWidth: 'none',
+  maxHeight: 'none',
+  objectFit: 'cover',
+  willChange: 'transform',
+}));
+
+const showZoom = () => {
+  // Solo mostrar en desktop (md: 768px y más)
+  if (window.innerWidth < 768 || !hasImages.value) return; 
+  isZoomVisible.value = true;
+};
+
+const hideZoom = () => {
+  isZoomVisible.value = false;
+};
+
+const handleMouseMove = (e) => {
+  if (!imageContainer.value || !isZoomVisible.value) return;
+
+  const containerRect = imageContainer.value.getBoundingClientRect();
+  
+  let x = e.clientX - containerRect.left;
+  let y = e.clientY - containerRect.top;
+
+  if (x < 0 || x > containerRect.width || y < 0 || y > containerRect.height) {
+    hideZoom();
+    return;
+  }
+
+  // Posicionar selector
+  let lensX = x - lensSize / 2;
+  let lensY = y - lensSize / 2;
+  lensX = Math.max(0, Math.min(lensX, containerRect.width - lensSize));
+  lensY = Math.max(0, Math.min(lensY, containerRect.height - lensSize));
+  lensLeft.value = lensX;
+  lensTop.value = lensY;
+
+  // Posicionar imagen ampliada
+  const magnifiedWidth = containerRect.width * zoomFactor;
+  const magnifiedHeight = containerRect.height * zoomFactor;
+  zoomImgWidth.value = magnifiedWidth;
+  zoomImgHeight.value = magnifiedHeight;
+
+  const ratioX = (containerRect.width > lensSize) ? lensX / (containerRect.width - lensSize) : 0;
+  const ratioY = (containerRect.height > lensSize) ? lensY / (containerRect.height - lensSize) : 0;
+
+  const imgOffsetX = ratioX * (magnifiedWidth - containerRect.width);
+  const imgOffsetY = ratioY * (magnifiedHeight - containerRect.height);
+
+  zoomImgLeft.value = -imgOffsetX;
+  zoomImgTop.value = -imgOffsetY;
+};
 </script>
 
 <style scoped>
