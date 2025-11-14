@@ -196,8 +196,7 @@
               
               <router-link
                 to="/kambitos"
-                class="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center"
-                @click="menuOpen = false"
+                class="px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center" @click="menuOpen = false"
               >
                 <BanknotesIcon class="h-5 w-5 mr-3 text-[#d7037b]" />
                 Mis Kambitos
@@ -208,23 +207,20 @@
 
               <router-link
                 to="/profile"
-                class="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center"
-                @click="menuOpen = false"
+                class="px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center" @click="menuOpen = false"
               >
                 <UserIcon class="h-5 w-5 mr-3 text-[#d7037b]" />
                 Mi perfil
               </router-link>
               <router-link
                 to="/settings"
-                class="block px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center"
-                @click="menuOpen = false"
+                class="px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center" @click="menuOpen = false"
               >
                 <Cog6ToothIcon class="h-5 w-5 mr-3 text-[#d7037b]" /> Configuración
               </router-link>
               <button
                 @click="logout"
-                class="block w-full text-left px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center"
-              >
+                class="w-full text-left px-4 py-3 text-base font-medium text-gray-800 hover:bg-[#fce4ec] rounded-lg transition-colors flex items-center" >
                 <PowerIcon class="h-5 w-5 mr-3 text-[#d7037b]" />
                 Cerrar sesión
               </button>
@@ -338,7 +334,7 @@ watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   if (isLoggedIn) {
     inboxStore.fetchUnreadCount();
   } else {
-    inboxStore.clearUnreadCount();
+    inDboxStore.clearUnreadCount();
   }
 }, { immediate: true });
 
